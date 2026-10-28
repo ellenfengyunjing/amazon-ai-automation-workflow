@@ -1,0 +1,2208 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>小清跨境 · 新品上架自动化工作台</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#17233d;--ink:#0b1423;--ink2:#41536b;--ink3:#63748c;--ink4:#8a99ad;--ink5:#a9b5c6;
+  --line:#e4eaf3;--line2:#eef2f8;--bg:#f4f7fc;--card:#fff;
+  --blue:#2b5cff;--blues:#eaf0ff;--grn:#0b7a5b;--grns:#e6f6f0;
+  --red:#be123c;--reds:#fdeaee;--amb:#9a5b00;--ambs:#fdf3e3;
+  --pur:#6d3ac7;--purs:#f1ebfd;--cy:#0e7490;--cys:#e5f5f9;
+}
+html,body{height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  font-size:13px;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;overflow:hidden}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+button{cursor:pointer;border:none;background:none}
+.app{display:flex;height:100vh}
+
+.side{width:228px;flex:0 0 228px;background:#fff;border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+.brand{padding:14px 16px 12px;border-bottom:1px solid var(--line2);display:flex;gap:9px;align-items:center}
+.blogo{width:26px;height:26px;border-radius:7px;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:700;flex:0 0 26px}
+.bname{font-size:13px;font-weight:700;line-height:1.2}
+.bsub{font-size:9.5px;color:var(--ink4);margin-top:2px;letter-spacing:.3px}
+.nav{flex:1;overflow:auto;padding:8px 8px 6px}
+.nlab{font-size:10px;font-weight:700;color:var(--ink5);letter-spacing:.6px;padding:9px 8px 5px}
+.nitem{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:7px;cursor:pointer;
+  font-size:12.5px;color:var(--ink2);margin-bottom:1px;position:relative;line-height:1.35}
+.nitem:hover{background:#f5f8fe}
+.nitem.on{background:var(--navy);color:#fff}
+.nitem.on .ncount{background:rgba(255,255,255,.22);color:#fff}
+.nitem .no{width:14px;flex:0 0 14px;font-size:10.5px;color:var(--ink5);font-variant-numeric:tabular-nums}
+.nitem.on .no{color:rgba(255,255,255,.7)}
+.nitem .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ncount{min-width:17px;height:16px;padding:0 5px;border-radius:8px;background:#eef2f8;color:var(--ink3);
+  font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.ncount.hot{background:var(--reds);color:var(--red)}
+.ncount.done{background:var(--grns);color:var(--grn)}
+.fbbtn{margin:8px 10px;padding:8px 10px;border:1px dashed #c5d2e6;border-radius:8px;font-size:12px;color:var(--ink2);
+  display:flex;align-items:center;gap:7px;cursor:pointer;background:#fbfcfe;flex:0 0 auto}
+.fbbtn:hover{border-color:var(--blue);color:var(--blue);background:#f4f8ff}
+.sfoot{border-top:1px solid var(--line2);padding:9px 10px 11px}
+.rolelab{font-size:10px;color:var(--ink5);font-weight:700;letter-spacing:.4px;margin:0 2px 6px}
+.roles{display:flex;gap:4px;flex-wrap:wrap}
+.rbtn{flex:1 1 auto;padding:5px 6px;border-radius:6px;border:1px solid var(--line);font-size:11px;color:var(--ink3);background:#fff;text-align:center}
+.rbtn.on{background:var(--navy);color:#fff;border-color:var(--navy);font-weight:600}
+.rbtn:hover:not(.on){border-color:#c9d5e8}
+
+.shell{flex:1;display:flex;flex-direction:column;min-width:0;min-height:0}
+.topbar{height:50px;flex:0 0 50px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;
+  gap:10px;padding:0 18px;z-index:20}
+.tb-t{font-size:13px;font-weight:700}
+.tb-s{font-size:11px;color:var(--ink4);padding-left:10px;border-left:1px solid var(--line);margin-left:2px}
+.tb-r{margin-left:auto;display:flex;align-items:center;gap:7px}
+.main{flex:1;overflow:auto;padding:0 0 24px;min-height:0}
+/* v11: 冻结区（模块标题 + 步骤导航 sticky） */
+.mhead{position:sticky;top:0;z-index:15;background:var(--bg);padding:14px 18px 0;border-bottom:1px solid var(--line);
+  box-shadow:0 3px 8px rgba(23,35,61,.04)}
+.mbody{padding:13px 18px 24px}
+.shead{display:flex;align-items:flex-start;gap:12px;margin-bottom:10px}
+.shead h1{font-size:16px;font-weight:700;letter-spacing:-.2px;line-height:1.25}
+.shead .smeta{font-size:11.5px;color:var(--ink3);margin-top:3px}
+.shead .right{margin-left:auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.sub{display:flex;align-items:center;gap:0;background:#fff;border:1px solid var(--line);border-radius:8px 8px 0 0;
+  padding:8px 12px;overflow-x:auto;margin-bottom:-1px;position:relative;z-index:2}
+.sub.solo{border-radius:8px}
+.sub .st{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink4);cursor:pointer;
+  white-space:nowrap;padding:2px 0;flex:0 0 auto}
+.sub .st:hover{color:var(--ink2)}
+.sub .st .dot{width:16px;height:16px;border-radius:50%;border:1.5px solid #d3dcea;display:flex;align-items:center;
+  justify-content:center;font-size:9.5px;font-weight:700;color:var(--ink4);flex:0 0 16px}
+.sub .st.cur{color:var(--navy);font-weight:700}
+.sub .st.cur .dot{background:var(--navy);border-color:var(--navy);color:#fff}
+.sub .st.done{color:var(--grn)}
+.sub .st.done .dot{background:var(--grns);border-color:#a9dbc9;color:var(--grn)}
+.sub .ln{flex:0 0 22px;height:1px;background:#dde5f0;margin:0 8px}
+.subhint{margin-left:auto;padding-left:12px;font-size:10px;color:var(--ink5);white-space:nowrap;flex:0 0 auto}
+/* v11: 底部下一步指引条（冻结） */
+.foot{height:46px;flex:0 0 46px;background:#fff;border-top:1px solid var(--line);display:flex;align-items:center;
+  gap:12px;padding:0 18px;z-index:20}
+.foot .fi{width:15px;height:15px;border-radius:50%;background:var(--blues);color:#1a3fd0;font-size:10px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;flex:0 0 15px}
+.foot .ft{font-size:12px;color:var(--ink2);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.foot .ft b{color:var(--ink);font-weight:700}
+.foot .fr{margin-left:auto;display:flex;gap:7px;align-items:center;flex:0 0 auto}
+
+.btn{height:28px;padding:0 11px;border-radius:6px;border:1px solid var(--line);background:#fff;font-size:12px;
+  color:var(--ink2);display:inline-flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap;transition:.12s}
+.btn:hover{border-color:#c5d2e6;background:#fafcff}
+.btn.p{background:var(--navy);color:#fff;border-color:var(--navy);font-weight:600}
+.btn.p:hover{background:#22304f}
+.btn.g{background:var(--grn);color:#fff;border-color:var(--grn);font-weight:600}
+.btn.g:hover{background:#0a6b50}
+.btn.d{background:#fff;color:var(--red);border-color:#f3c3cc}
+.btn.d:hover{background:var(--reds)}
+.btn.s{height:24px;padding:0 8px;font-size:11px;border-radius:5px}
+.btn.xs{height:21px;padding:0 7px;font-size:10.5px;border-radius:4px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.on{background:var(--blues);border-color:#bcd0ff;color:#1a3fd0;font-weight:600}
+.pill{height:19px;padding:0 7px;border-radius:4px;font-size:10.5px;font-weight:600;display:inline-flex;
+  align-items:center;gap:3px;white-space:nowrap}
+.p-ok{background:var(--grns);color:var(--grn)}
+.p-do{background:var(--blues);color:#1a3fd0}
+.p-wait{background:var(--ambs);color:var(--amb)}
+.p-bad{background:var(--reds);color:var(--red)}
+.p-mute{background:#eef2f8;color:var(--ink3)}
+.p-pur{background:var(--purs);color:var(--pur)}
+.p-cy{background:var(--cys);color:var(--cy)}
+.inp{height:28px;padding:0 8px;border:1px solid var(--line);border-radius:5px;background:#fff;font-size:12px;width:100%;outline:none}
+.inp:focus{border-color:#9fb8e8;box-shadow:0 0 0 2px rgba(43,92,255,.09)}
+.inp.s{height:24px;font-size:11px;padding:0 5px}
+textarea.inp{height:auto;padding:7px 8px;line-height:1.55;resize:vertical}
+select.inp{appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='8' height='5'><path d='M0 0h8L4 5z' fill='%238a99ad'/></svg>");
+  background-repeat:no-repeat;background-position:right 6px center;padding-right:18px}
+.cbx{width:14px;height:14px;border:1.5px solid #c5d2e6;border-radius:3.5px;background:#fff;display:inline-flex;
+  align-items:center;justify-content:center;flex:0 0 14px;cursor:pointer;position:relative}
+.cbx.on{background:var(--blue);border-color:var(--blue)}
+.cbx.on::after{content:"";width:4px;height:7px;border:1.5px solid #fff;border-top:0;border-left:0;transform:rotate(42deg) translate(-1px,-1px)}
+.tip{display:flex;gap:8px;padding:8px 11px;border-radius:7px;font-size:11.5px;line-height:1.6;align-items:flex-start}
+.tip .ico{width:14px;height:14px;border-radius:50%;background:currentColor;color:#fff;font-size:9px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;flex:0 0 14px;margin-top:1px}
+.tip.b{background:var(--blues);color:#25459e}
+.tip.g{background:var(--grns);color:#0a6b50}
+.tip.w{background:var(--ambs);color:#8a5200}
+.mb10{margin-bottom:10px}.mt10{margin-top:10px}
+.rowline{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.dim{color:var(--ink4)}.sm{font-size:11.5px}.xs{font-size:11px}
+.ell{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
+
+.card{background:#fff;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.card+.card{margin-top:11px}
+.card>h3{font-size:12.5px;font-weight:700;padding:10px 14px;border-bottom:1px solid var(--line2);
+  display:flex;align-items:center;gap:8px;line-height:1.3}
+.card>h3 .n{font-size:10.5px;font-weight:600;color:var(--ink4);background:#f2f6fc;border-radius:4px;padding:2px 6px}
+.card>h3 .acts{margin-left:auto;display:flex;gap:6px;align-items:center}
+.cb{padding:13px 14px}
+.cb.tight{padding:0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+@media(max-width:1180px){.grid2,.grid3{grid-template-columns:1fr}}
+
+.tbl{width:100%}
+.tr{display:grid;align-items:center;gap:8px;padding:0 14px;border-bottom:1px solid var(--line2);min-height:46px}
+.tr.th{min-height:34px;background:#f8fafd;border-bottom:1px solid var(--line);font-size:10.5px;
+  font-weight:700;color:var(--ink4);letter-spacing:.2px}
+.tr:last-child{border-bottom:none}
+.tr.body:hover{background:#fafcff}
+.tr.gray{opacity:.55}
+.sku{display:flex;gap:8px;align-items:center;min-width:0}
+.sku .ph{width:32px;height:32px;border-radius:5px;background:linear-gradient(135deg,#e8eef8,#d5e0f0);flex:0 0 32px;
+  display:flex;align-items:center;justify-content:center;font-size:9px;color:#8fa3bd;font-weight:700}
+.sku .nm{font-size:12px;font-weight:600;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sku .cd{font-size:10px;color:var(--ink4);margin-top:2px;font-family:ui-monospace,monospace;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.trfoot{padding:9px 14px;font-size:11px;color:var(--ink4);display:flex;gap:9px;align-items:center;
+  background:#fbfcfe;border-top:1px solid var(--line2)}
+.xrow{grid-column:1/-1;background:#f8fafd;border-bottom:1px solid var(--line2);padding:11px 14px 11px 56px}
+.xrow .xg{display:grid;grid-template-columns:repeat(6,1fr);gap:6px 14px}
+.xrow .xf{font-size:10.5px;line-height:1.5}
+.xrow .xf b{display:block;color:var(--ink4);font-weight:600;font-size:9.5px;margin-bottom:1px}
+.xrow .xf span{color:var(--ink2);font-weight:600}
+.xdots{display:flex;gap:4px;flex-wrap:wrap;margin-top:9px;padding-top:9px;border-top:1px dashed var(--line2)}
+.xdots .xd{display:flex;align-items:center;gap:4px;font-size:10px;padding:2px 7px;border-radius:9px;background:#fff;border:1px solid var(--line2)}
+.xdots .xd i{width:7px;height:7px;border-radius:50%;display:inline-block}
+.xdots .xd.done{color:#0b7a5b}.xdots .xd.done i{background:#12a06a}
+.xdots .xd.doing{color:#1a3fd0}.xdots .xd.doing i{background:#3d6dff}
+.xdots .xd.rej{color:#be123c;background:#fffafa;border-color:#f3c3cc}.xdots .xd.rej i{background:#e5484d}
+.xdots .xd.wait{color:var(--ink4)}.xdots .xd.wait i{background:#c5d2e6}
+.expbtn{cursor:pointer;user-select:none}
+
+/* v11: 多维表格单元格（卖点 / Listing / 说明书 AI 生成字段） */
+.mcell{padding:8px 0;min-width:0}
+.mcell .mc-top{display:flex;align-items:center;gap:6px;margin-bottom:5px;flex-wrap:wrap}
+.mcell .mc-name{font-size:11px;font-weight:700;color:var(--pur)}
+.mcell .mc-st{font-size:10px}
+.mcell .mc-body{font-size:11px;color:var(--ink2);line-height:1.6;border:1px solid var(--line2);border-radius:6px;
+  background:#fbfcfe;padding:7px 9px;cursor:pointer;transition:.12s;position:relative}
+.mcell .mc-body:hover{border-color:#c5b3f2;background:#faf9ff}
+.mcell .mc-body .mtxt{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.mcell .mc-body .mop{margin-top:5px;font-size:10px;color:var(--pur);font-weight:600}
+.langrow{display:flex;gap:4px;flex-wrap:wrap}
+.lchip{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--line);border-radius:12px;padding:2px 9px;
+  font-size:10.5px;font-weight:600;color:var(--ink3);cursor:pointer;background:#fff}
+.lchip:hover{border-color:#9dbaff;color:#1a3fd0}
+.lchip.on{background:var(--blues);border-color:#9dbaff;color:#1a3fd0}
+.prow{display:flex;gap:5px;align-items:center;padding:6px 0;border-bottom:1px dashed var(--line2)}
+.prow:last-child{border-bottom:none}
+.prow .pl2{width:30px;flex:0 0 30px;font-size:10px;font-weight:700;color:var(--ink4);font-family:ui-monospace,monospace}
+.prow .pt2{flex:1;min-width:0;font-size:11px;line-height:1.55;color:var(--ink2)}
+
+/* v11: 图表 */
+.chart{display:flex;flex-direction:column;gap:8px}
+.spark{display:flex;align-items:flex-end;gap:7px;height:118px;padding-top:6px}
+.spark .sb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;height:100%;min-width:0}
+.spark .sb i{width:100%;max-width:56px;border-radius:3px 3px 0 0;background:linear-gradient(180deg,#8fb0ff,#2b5cff);min-height:2px;flex:0 0 auto}
+.spark .sb b{font-size:9.5px;font-weight:700;color:var(--ink2);white-space:nowrap}
+.spark .sb span{font-size:9px;color:var(--ink4);white-space:nowrap}
+.brow{display:grid;grid-template-columns:104px 1fr 52px;gap:9px;align-items:center;font-size:11.5px}
+.brow .bl{color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.brow .bt{height:15px;border-radius:4px;background:#f1f5fb;overflow:hidden}
+.brow .bt i{display:block;height:100%;border-radius:4px;background:var(--blue);transition:width .4s}
+.brow .bv{text-align:right;font-weight:700;font-variant-numeric:tabular-nums;font-size:11.5px}
+.brow .bv small{font-weight:600;color:var(--ink4);font-size:10px;margin-left:2px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media(max-width:1100px){.kpis{grid-template-columns:repeat(2,1fr)}}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:8px;padding:11px 13px}
+.kpi .l{font-size:10.5px;color:var(--ink4);font-weight:600;margin-bottom:5px}
+.kpi .v{font-size:20px;font-weight:700;letter-spacing:-.6px;line-height:1;font-variant-numeric:tabular-nums}
+.kpi .v small{font-size:11px;font-weight:600;color:var(--ink4);margin-left:2px}
+.kpi .m{font-size:10.5px;color:var(--ink4);margin-top:5px}
+
+/* v11: AI 过程折叠区 */
+.fold{grid-column:1/-1;background:#fbfcfe;border-bottom:1px solid var(--line2)}
+.fold-h{display:flex;align-items:center;gap:8px;padding:7px 14px 7px 56px;cursor:pointer;font-size:11px;color:var(--ink3);font-weight:600}
+.fold-h:hover{color:var(--ink)}
+.fold-h .arr{transition:.15s;font-size:9px;color:var(--ink5)}
+.fold-h.open .arr{transform:rotate(90deg)}
+.fold-b{padding:2px 14px 12px 56px;display:none}
+.fold.open .fold-b{display:block}
+.fold.open .fold-h{color:var(--ink)}
+.runlogs{font-size:10.5px;line-height:1.9;color:var(--ink3);font-family:ui-monospace,monospace;border:1px solid var(--line2);
+  border-radius:7px;background:#fff;padding:9px 12px}
+.bar{height:4px;background:#eef2f8;border-radius:2px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--blue);border-radius:2px;transition:width .3s}
+.runlogs b{color:#1a3fd0;font-weight:700}
+.runlogs .ok{color:var(--grn);font-weight:600}
+.runlogs .ai{color:var(--pur);font-weight:600}
+
+/* v11: 生图工作台（参考附件样式） */
+.gtabs{display:flex;gap:0;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff;width:max-content}
+.gtab2{padding:7px 18px;font-size:12px;font-weight:600;color:var(--ink3);cursor:pointer;display:flex;gap:6px;align-items:center}
+.gtab2+.gtab2{border-left:1px solid var(--line)}
+.gtab2.on{background:var(--navy);color:#fff}
+.gstats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media(max-width:1100px){.gstats{grid-template-columns:repeat(2,1fr)}}
+.gstat{background:#fff;border:1px solid var(--line);border-radius:9px;padding:11px 13px;display:flex;gap:10px;align-items:center}
+.gstat .gi{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex:0 0 34px}
+.gstat .gl{font-size:10.5px;color:var(--ink4);font-weight:600}
+.gstat .gv{font-size:19px;font-weight:700;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
+.gstat .gv small{font-size:10px;color:var(--ink4);font-weight:600}
+.task{border:1px solid var(--line);border-radius:9px;background:#fff;overflow:hidden}
+.task+.task{margin-top:11px}
+.task-h{display:flex;align-items:center;gap:9px;padding:10px 13px;border-bottom:1px solid var(--line2);flex-wrap:wrap}
+.task-h .tk-sku{display:flex;gap:8px;align-items:center;min-width:0}
+.task-h .tk-sku .ph{width:30px;height:30px;border-radius:6px;background:linear-gradient(135deg,#e8eef8,#d5e0f0);
+  display:flex;align-items:center;justify-content:center;font-size:9px;color:#8fa3bd;font-weight:700;flex:0 0 30px}
+.task-h .tk-nm{font-size:12.5px;font-weight:700;max-width:280px}
+.task-h .tk-cd{font-size:10px;color:var(--ink4);font-family:ui-monospace,monospace}
+.task-h .tk-meta{margin-left:auto;display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+.task-sub{display:flex;gap:5px;padding:7px 13px 0;flex-wrap:wrap;align-items:center}
+.tsub{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line);border-radius:14px;padding:2px 10px;
+  font-size:10.5px;font-weight:600;color:var(--ink3);cursor:pointer;background:#fff}
+.tsub.on{background:var(--blues);border-color:#9dbaff;color:#1a3fd0}
+.tsub .tc{font-size:9.5px;color:var(--ink5)}
+.tsub.on .tc{color:#1a3fd0}
+.task-g{padding:10px 13px 13px}
+.tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:8px}
+.thumb{position:relative;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:linear-gradient(140deg,#e9eff9,#d7e2f2);
+  aspect-ratio:1;cursor:pointer}
+.thumb:hover{border-color:#bcd0ff}
+.thumb.sel{outline:2px solid var(--blue);outline-offset:-1px}
+.thumb .cat{position:absolute;top:5px;left:5px;font-size:9px;font-weight:700;padding:1px 6px;border-radius:4px;background:rgba(23,35,61,.72);color:#fff}
+.thumb .st3{position:absolute;top:5px;right:31px;z-index:2}
+.thumb .st3.p{font-size:9px;font-weight:700;padding:1px 6px;border-radius:4px;background:rgba(11,122,91,.9);color:#fff}
+.thumb .st3.w{font-size:9px;font-weight:700;padding:1px 6px;border-radius:4px;background:rgba(154,91,0,.9);color:#fff}
+.thumb .st3.b{font-size:9px;font-weight:700;padding:1px 6px;border-radius:4px;background:rgba(190,18,60,.9);color:#fff}
+.thumb .st3.n{font-size:9px;font-weight:700;padding:1px 6px;border-radius:4px;background:rgba(138,153,173,.9);color:#fff}
+.thumb .ck{position:absolute;top:5px;right:5px;background:rgba(255,255,255,.92);border-radius:4px;padding:2px;z-index:3;cursor:pointer}
+.thumb .tb2{position:absolute;left:0;right:0;bottom:0;padding:3px 6px;font-size:9px;color:#fff;font-weight:600;
+  background:rgba(23,35,61,.66);display:flex;justify-content:space-between;align-items:center}
+.thumb .acts2{position:absolute;inset:0;background:rgba(11,20,35,.5);display:flex;align-items:center;justify-content:center;
+  gap:5px;opacity:0;transition:.15s;pointer-events:none}
+.thumb:hover .acts2{opacity:1}
+.thumb .acts2 .btn{height:22px;font-size:10px;background:#fff;color:var(--ink);border:none;border-radius:4px;padding:0 8px;pointer-events:auto}
+.gbar{position:fixed;left:240px;right:14px;bottom:14px;z-index:45;background:var(--navy);color:#fff;border-radius:11px;
+  padding:10px 16px;display:flex;align-items:center;gap:9px;box-shadow:0 -2px 20px rgba(23,35,61,.30);flex-wrap:wrap;
+  opacity:0;transform:translateY(10px);pointer-events:none;transition:opacity .18s,transform .18s}
+.gbar.on{opacity:1;transform:none;pointer-events:auto}
+.gbar b{font-size:12.5px;white-space:nowrap}
+.gbar .btn{background:rgba(255,255,255,.13);color:#fff;border-color:rgba(255,255,255,.3);height:27px;font-size:11.5px}
+.gbar .btn.p{background:var(--blue);border-color:var(--blue)}
+.gbar .btn.g{background:var(--grn);border-color:var(--grn)}
+.gbar .btn:hover{background:rgba(255,255,255,.24)}
+
+/* v11: 上架亚马逊表格 */
+.amz .tr{min-height:40px}
+.miss{color:var(--red);font-weight:700}
+.amzcell{font-size:11px;color:var(--ink2);line-height:1.5;min-width:0}
+.amzcell .aell{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.amzcell.lk{cursor:pointer;color:#1a3fd0;font-weight:600}
+.amzcell.lk:hover{text-decoration:underline}
+
+/* v11: 设置 */
+.setnav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:11px}
+.scard{border:1px solid var(--line);border-radius:8px;margin-bottom:11px;overflow:hidden}
+.scard .sh{display:flex;align-items:center;gap:8px;padding:9px 13px;background:#fff;border-bottom:1px solid var(--line2);font-size:12.5px;font-weight:700}
+.scard .sh .no{font-size:10px;color:#fff;background:var(--blue);border-radius:4px;padding:1px 6px;font-weight:700}
+.scard .sb{padding:12px 13px}
+
+/* v11: 说明书页缩略 */
+.pgwrap{display:flex;gap:9px;overflow:auto;padding-bottom:4px}
+.pg{flex:0 0 96px;border:1px solid var(--line);border-radius:6px;background:#fff;padding:7px;
+  cursor:pointer;position:relative;aspect-ratio:3/4;display:flex;flex-direction:column;gap:4px}
+.pg.on{border-color:var(--blue);box-shadow:0 0 0 2px rgba(43,92,255,.12)}
+.pg .pl{height:4px;border-radius:2px;background:#e6ecf5}
+.pg .pl.w{width:70%}
+.pg .pl.s{width:45%}
+.pg .pim{flex:1;border-radius:4px;background:linear-gradient(140deg,#f2f6fc,#e2eaf6);min-height:0}
+.pg .pn2{position:absolute;right:5px;bottom:3px;font-size:8.5px;color:var(--ink4)}
+
+.mask{position:fixed;inset:0;background:rgba(11,20,35,.4);display:none;align-items:center;justify-content:center;
+  z-index:60;padding:20px}
+.mask.on{display:flex}
+.mbox{background:#fff;border-radius:11px;width:100%;max-width:520px;max-height:88vh;overflow:auto;
+  box-shadow:0 12px 40px rgba(11,20,35,.22)}
+.mbox.w{max-width:760px}
+.mbox h4{font-size:13.5px;font-weight:700;padding:14px 16px;border-bottom:1px solid var(--line2)}
+.mbody{padding:14px 16px}
+.mfoot{padding:12px 16px;border-top:1px solid var(--line2);display:flex;gap:8px;justify-content:flex-end;background:#fbfcfe}
+.fld{margin-bottom:11px}
+.fld label{display:block;font-size:11px;font-weight:600;color:var(--ink3);margin-bottom:5px}
+.fld label span{font-weight:400;color:var(--ink5)}
+.fbshot{border:1px dashed #c5d2e6;border-radius:7px;padding:14px 10px;text-align:center;font-size:11px;color:var(--ink4);cursor:pointer}
+.fbshot:hover{border-color:var(--blue);color:var(--blue)}
+.shotlist{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
+.shotlist .sc{display:flex;gap:5px;align-items:center;border:1px solid var(--line);border-radius:6px;padding:3px 8px;font-size:10.5px;color:var(--ink2);background:#fff}
+.toast{position:fixed;left:50%;bottom:74px;transform:translate(-50%,10px);background:var(--navy);color:#fff;
+  font-size:12px;padding:8px 14px;border-radius:7px;opacity:0;pointer-events:none;transition:.22s;z-index:80;
+  max-width:520px;box-shadow:0 6px 20px rgba(11,20,35,.25);text-align:center}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.toast.ok{background:var(--grn)}
+.toast.bad{background:#a01033}
+.empty{padding:38px 20px;text-align:center;color:var(--ink4)}
+.empty .e1{font-size:12.5px;font-weight:600;color:var(--ink3);margin-bottom:5px}
+.empty .e2{font-size:11px}
+.main{padding-bottom:0}
+.mbody{padding-bottom:70px}
+
+/* ============ v13: 右侧详情抽屉 ============ */
+.drwmask{position:fixed;inset:0;background:rgba(11,20,35,.32);z-index:58;display:none}
+.drwmask.on{display:block}
+.drw{position:fixed;top:0;right:0;width:620px;max-width:90vw;height:100vh;background:#fff;z-index:59;
+  display:flex;flex-direction:column;box-shadow:-14px 0 40px rgba(11,20,35,.16);transform:translateX(100%);
+  transition:transform .22s cubic-bezier(.2,.7,.3,1)}
+.drw.on{transform:none}
+.drw-h{padding:13px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;flex:0 0 auto;cursor:default}
+.drw-h .dt{font-size:13.5px;font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.drw-h .dc{font-size:10.5px;color:var(--ink4);margin-top:2px}
+.drw-h .dx{margin-left:auto;flex:0 0 auto;width:26px;height:26px;border-radius:6px;border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;color:var(--ink3);font-size:13px;cursor:pointer}
+.drw-h .dx:hover{border-color:#c5d2e6;background:#f6f9fe;color:var(--ink)}
+.drw-b{flex:1;overflow:auto;padding:14px 18px;min-height:0}
+.drw-f{flex:0 0 auto;border-top:1px solid var(--line);padding:10px 18px;display:flex;gap:8px;justify-content:flex-end;
+  background:#fbfcfe;flex-wrap:wrap}
+.drw-b .xg{display:grid;grid-template-columns:repeat(3,1fr);gap:7px 16px}
+@media(max-width:1400px){.drw-b .xg{grid-template-columns:repeat(2,1fr)}}
+.drw-b .xf{font-size:10.5px;line-height:1.5;min-width:0}
+.drw-b .xf b{display:block;color:var(--ink4);font-weight:600;font-size:9.5px;margin-bottom:1px}
+.drw-b .xf span{color:var(--ink2);font-weight:600;word-break:break-word}
+
+/* ============ v13: 语种 / 类型 下拉多选单元格 ============ */
+.lsel{position:relative;min-width:0}
+.lsel .lbtn{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line);border-radius:6px;
+  background:#fff;padding:4px 9px;font-size:11.5px;color:var(--ink2);cursor:pointer;white-space:nowrap}
+.lsel .lbtn:hover{border-color:#9dbaff;color:#1a3fd0}
+.lsel .lbtn .lb-v{color:var(--ink);font-weight:600}
+.lsel .lbtn .car{color:var(--ink4);font-size:9px}
+.lpop{position:absolute;top:calc(100% + 6px);left:0;z-index:40;background:#fff;border:1px solid var(--line);
+  border-radius:9px;box-shadow:0 12px 32px rgba(11,20,35,.16);padding:10px;min-width:216px}
+.lpop .lpi{display:flex;align-items:center;gap:8px;padding:6px;border-radius:6px;cursor:pointer;font-size:12px}
+.lpop .lpi:hover{background:#f6f9fe}
+.lpop .lpf{display:flex;justify-content:flex-end;gap:6px;margin-top:8px;padding-top:8px;border-top:1px solid var(--line2)}
+.lpop .lpc{display:flex;flex-wrap:wrap;gap:5px;padding:2px}
+.lpop .lplab{font-size:10px;font-weight:700;color:var(--ink5);padding:2px 6px 4px;letter-spacing:.3px}
+
+/* ============ v13: 分页条 ============ */
+.pgbar{display:flex;align-items:center;gap:8px;padding:9px 14px;border-top:1px solid var(--line2);
+  font-size:11px;color:var(--ink3);flex-wrap:wrap}
+.pgbar .pgn{display:flex;gap:4px;margin-left:auto}
+.pgbar .pbt{min-width:24px;height:22px;border-radius:5px;border:1px solid var(--line);background:#fff;
+  font-size:11px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0 6px}
+.pgbar .pbt.cur{background:var(--navy);color:#fff;border-color:var(--navy);font-weight:700}
+.pgbar .pbt:disabled{opacity:.35;cursor:default}
+
+/* ============ v13: 表格行 hover / 斑马纹 ============ */
+.tr.body:hover{background:#f4f8fe}
+.cb.tight .tr.body:nth-child(even){background:#fbfcfe}
+.cb.tight .tr.body:nth-child(even):hover{background:#f4f8fe}
+
+/* ============ v13: 步骤条数据副标题 + 右侧下一步 ============ */
+.sub .st{flex-direction:column;align-items:flex-start;gap:1px;line-height:1.25}
+.sub .st .ssb{font-size:9.5px;color:var(--ink5);font-weight:500}
+.sub .st.cur .ssb{color:#5a6fee}
+.sub .subnext{margin-left:auto;padding-left:12px;flex:0 0 auto}
+
+/* ============ v13: 输入页（左流程说明 + 右表单） ============ */
+.flowwrap{display:grid;grid-template-columns:300px 1fr;gap:11px;align-items:start}
+@media(max-width:1180px){.flowwrap{grid-template-columns:1fr}}
+.vflow{background:#fff;border:1px solid var(--line);border-radius:9px;padding:14px 16px}
+.vflow h4{font-size:12.5px;font-weight:700;margin-bottom:4px}
+.vflow .vf-sub{font-size:11px;color:var(--ink3);line-height:1.6;margin-bottom:12px}
+.vstep{display:flex;gap:10px;position:relative;padding-bottom:15px}
+.vstep:last-child{padding-bottom:0}
+.vstep::before{content:"";position:absolute;left:11px;top:26px;bottom:2px;width:1.5px;background:var(--line)}
+.vstep:last-child::before{display:none}
+.vstep .vno{width:23px;height:23px;border-radius:50%;background:var(--blues);color:#1a3fd0;font-size:11px;
+  font-weight:700;display:flex;align-items:center;justify-content:center;flex:0 0 23px;z-index:1}
+.vstep b{font-size:12px;display:block;line-height:1.3}
+.vstep span{font-size:10.5px;color:var(--ink3);line-height:1.5;display:block;margin-top:2px}
+.vflow .vf-tip{margin-top:12px;padding-top:10px;border-top:1px dashed var(--line);font-size:10.5px;color:var(--ink4);line-height:1.6}
+
+/* ============ v13: 上架宽表横向滚动 ============ */
+.amzscroll{overflow-x:auto}
+.amzscroll .tr{min-width:1180px}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand">
+      <div class="blogo">小清</div>
+      <div><div class="bname">新品上架工作台</div><div class="bsub">XIAOQING · AMAZON OPS</div></div>
+    </div>
+    <div class="nav" id="navWrap"></div>
+    <div class="fbbtn" data-act="feedback">💡 问题反馈<span class="dim" style="font-size:10px;margin-left:auto">飞书通知</span></div>
+    <div class="sfoot">
+      <div class="rolelab">当前身份</div>
+      <div class="roles" id="roleWrap"></div>
+    </div>
+  </aside>
+  <div class="shell">
+    <div class="topbar">
+      <div class="tb-t" id="tbT">商品池</div>
+      <div class="tb-s" id="tbS"></div>
+      <div class="tb-r"><span class="pill p-wait" style="cursor:pointer">⚡ 4.2M / 11M</span><button class="btn s" data-act="reset">重置</button></div>
+    </div>
+    <div class="main" id="main"></div>
+    <div class="foot" id="foot"></div>
+  </div>
+</div>
+<div class="gbar" id="gbar"></div>
+<div class="mask" id="mask"><div class="mbox" id="mbox"></div></div>
+<div class="toast" id="toast"></div>
+<div class="drwmask" id="drwmask"></div>
+<div class="drw" id="drw">
+  <div class="drw-h" id="drwH"></div>
+  <div class="drw-b" id="drwB"></div>
+  <div class="drw-f" id="drwF"></div>
+</div>
+<script>
+/* =========================================================
+   0. 依赖模型
+   ========================================================= */
+const DEP = {
+  accept: [],
+  sp:     ['accept'],
+  copy:   ['sp'],
+  manual: ['sp'],
+  brief:  ['sp'],
+  gen:    ['brief'],
+  sipp:   ['copy','manual','gen']
+};
+
+const MODS = [
+  {k:'pick',   no:'',  name:'选品调研',    grp:'商品中心', steps:['调研条件','深度调研报告','建议清单与导入'], roles:'all',
+   sub:'流程入口 · 圈定类目 → AI 深度调研 → 建议导入商品池'},
+  {k:'pool',   no:'',  name:'商品池',      grp:'商品中心', steps:['商品池'], roles:'all',
+   sub:'全部 SKU 总览 · 确认选品后流转 ① 样品验收'},
+  {k:'accept', no:'①', name:'样品验收',    grp:'新品管理', steps:['样品验收'], roles:'all',
+   sub:'环节 1/7 · 上游：商品池 → 下游：② 卖点生成（审核通过后 AI 自动生成素材）'},
+  {k:'sp',     no:'②', name:'卖点生成',    grp:'新品管理', steps:['卖点生成'], roles:'all',
+   sub:'环节 2/7 · 上游：① 验收审核 → 下游：③ Listing / ④ 说明书 / ⑤ 图片需求表'},
+  {k:'copy',   no:'③', name:'Listing 文案',grp:'新品管理', steps:['Listing 文案'], roles:'all',
+   sub:'环节 3/7 · 上游：② 卖点 → 下游：⑦ 上架（顶部可切换 深度分析报告 视图）'},
+  {k:'manual', no:'④', name:'说明书',      grp:'新品管理', steps:['说明书'], roles:'all',
+   sub:'环节 4/7 · 上游：② 卖点 → 下游：⑦ 上架'},
+  {k:'brief',  no:'⑤', name:'图片需求表',  grp:'新品管理', steps:['图片需求表'], roles:'all',
+   sub:'环节 5/7 · 上游：② 卖点 → 下游：⑥ AI 批量生图（确认需求后自动创建任务）'},
+  {k:'gen',    no:'⑥', name:'AI 批量生图', grp:'新品管理', steps:['AI 批量生图'], roles:'all',
+   sub:'环节 6/7 · 上游：⑤ 图片需求 → 下游：⑦ 上架（顶部可切换 图片库）'},
+  {k:'sipp',   no:'⑦', name:'上架',        grp:'新品管理', steps:['上架'], roles:'all',
+   sub:'环节 7/7 · 汇总 ①—⑥ 全部输出 · 按亚马逊新品上架表字段展示，可导出 Excel'},
+  {k:'set',    no:'',  name:'设置',        grp:'系统', steps:['设置'], roles:'all',
+   sub:'管理员：账号 / AI / 接口全局配置 · 员工：仅自己的配置'}
+];
+
+const FULL = {accept:3, sp:1, copy:1, manual:1, brief:1, gen:1, sipp:1};
+const EXEC = ['accept','sp','copy','manual','brief','gen','sipp'];
+const NEXT = {accept:'sp', sp:'copy', copy:'sipp', manual:'sipp', brief:'gen', gen:'sipp', sipp:null};
+
+const ROLES = {
+  admin: {n:'管理员', sub:'全部权限'},
+  staff: {n:'员工',   sub:'仅自己的配置'}
+};
+
+/* =========================================================
+   1. SKU 主表
+   ========================================================= */
+const SK = [
+  {id:'S1', code:'2410-011', name:'金属画框挂钩套件 11 件装', asin:'B0D8XK2M7Q',
+   cat:'家居 › 画框挂钩', market:'US', price:'$14.9', sales:'3,200', score:78, owner:'Ellen',
+   at:{accept:3,sp:1,copy:1,brief:1,gen:1,manual:1,sipp:1}},
+  {id:'S2', code:'2410-014', name:'免钉无痕挂钩 8 件装', asin:'B0D9T7L4RK',
+   cat:'家居 › 多用途挂钩', market:'US', price:'$9.9', sales:'2,860', score:71, owner:'小林',
+   at:{accept:3,sp:1,copy:1,brief:1,gen:1,manual:1,sipp:1}},
+  {id:'S3', code:'2410-019', name:'磁吸挂钩 4 件套', asin:'B0D9K3P8NM',
+   cat:'家居 › 磁吸挂钩', market:'US + DE', price:'$11.5', sales:'1,240', score:69, owner:'小林',
+   at:{accept:3,sp:1}},
+  {id:'S4', code:'2410-022', name:'门后挂钩 6 件装', asin:'B0D9M6R2TV',
+   cat:'家居 › 门后挂钩', market:'US', price:'$12.9', sales:'980', score:66, owner:'阿May',
+   at:{accept:1}},
+  {id:'S5', code:'2410-025', name:'户外不锈钢挂钩 12 件装', asin:'B0D9W8C5JQ',
+   cat:'户外 › 挂钩', market:'US', price:'$18.9', sales:'760', score:64, owner:'Ellen',
+   at:{accept:2}},
+  {id:'S6', code:'2410-028', name:'可伸缩挂杆 1.2m', asin:'B0D8H5N9PL',
+   cat:'家居 › 挂杆', market:'US', price:'$21.9', sales:'540', score:58, owner:'Ellen',
+   at:{}, poolOnly:true},
+  {id:'S7', code:'2410-030', name:'陶瓷装饰挂钩 2 件装', asin:'B0D9F2X7GH',
+   cat:'家居 › 装饰挂钩', market:'US', price:'$13.5', sales:'320', score:41, owner:'阿May',
+   at:{accept:2}, rej:{n:'资料不实：供应商给的单钩承重 30 Lbs，实测挂 12 Lbs 变形，与规格书不符'}},
+  {id:'S8', code:'2410-033', name:'免打孔钥匙挂钩 6 件装', asin:'B0D9Y4B6NW',
+   cat:'家居 › 钥匙挂钩', market:'US', price:'$10.9', sales:'1,760', score:73, owner:'阿May',
+   at:{accept:3,sp:1,copy:1,brief:1}},
+  {id:'S9', code:'2410-036', name:'折叠式挂衣钩 4 件装', asin:'B0D9J8V3QC',
+   cat:'家居 › 挂衣钩', market:'US + DE', price:'$15.9', sales:'1,120', score:67, owner:'小林',
+   at:{accept:3,sp:1,copy:1,brief:1,gen:1}},
+  {id:'S10',code:'2410-040', name:'浴室吸盘挂钩 5 件装', asin:'B0D9R5T2KM',
+   cat:'家居 › 吸盘挂钩', market:'US', price:'$12.5', sales:'1,430', score:70, owner:'阿May',
+   at:{accept:3,sp:1}},
+  {id:'S11',code:'2410-043', name:'双层置物挂钩 2 件装', asin:'B0D9C7N4YZ',
+   cat:'家居 › 收纳挂钩', market:'US', price:'$16.9', sales:'620', score:62, owner:'小林',
+   at:{accept:3,sp:1,copy:1,brief:1,gen:1,manual:1}},
+  {id:'S12',code:'2410-046', name:'折叠衣帽钩 3 件装', asin:'B0D9B9M6WQ',
+   cat:'家居 › 衣帽钩', market:'US', price:'$13.9', sales:'890', score:68, owner:'Ellen',
+   at:{accept:3,sp:1,copy:1,brief:1,gen:1,manual:1,sipp:1}},
+  {id:'S13',code:'2410-049', name:'隐形钥匙挂钩 8 件装', asin:'B0D9G3K8LP',
+   cat:'家居 › 免钉挂钩', market:'US', price:'$9.5', sales:'210', score:37, owner:'阿May',
+   at:{accept:2}, stop:true, stopr:'质量问题：3 个样品里 2 个背胶脱落，供应商模具问题短期改不了'},
+  {id:'S14',code:'2410-052', name:'不锈钢 S 钩 10 件装', asin:'B0D9P4M7XT',
+   cat:'家居 › S 钩', market:'US', price:'$11.9', sales:'1,540', score:72, owner:'小林',
+   at:{}, poolOnly:true},
+  {id:'S15',code:'2410-055', name:'吸盘毛巾架 2 件装', asin:'B0D9V2R8KN',
+   cat:'家居 › 毛巾架', market:'US', price:'$17.9', sales:'700', score:65, owner:'阿May',
+   at:{accept:2}},
+  {id:'S16',code:'2410-058', name:'折叠挂钩组合 6 件装', asin:'B0D9N8T3WZ',
+   cat:'家居 › 折叠挂钩', market:'US', price:'$15.5', sales:'1,320', score:74, owner:'Ellen',
+   at:{accept:3,sp:1,copy:1,brief:1,gen:1,manual:1,sipp:1}},
+  {id:'S17',code:'2410-061', name:'免钉浴室挂钩 4 件装', asin:'B0D9S6K2YH',
+   cat:'家居 › 浴室挂钩', market:'US', price:'$12.9', sales:'980', score:63, owner:'小林',
+   at:{accept:3}}
+];
+
+const DIM = {
+  S1:['42×32×9 cm','1.28 kg'], S2:['28×20×6 cm','0.62 kg'], S3:['16×12×4 cm','0.34 kg'],
+  S4:['35×18×7 cm','0.88 kg'], S5:['38×26×8 cm','1.55 kg'], S6:['120×6×6 cm','0.92 kg'],
+  S7:['22×16×10 cm','0.46 kg'],S8:['24×16×5 cm','0.52 kg'], S9:['30×22×6 cm','0.74 kg'],
+  S10:['20×14×5 cm','0.41 kg'],S11:['32×24×7 cm','0.96 kg'],S12:['26×18×6 cm','0.58 kg'],
+  S13:['22×15×4 cm','0.38 kg'],S14:['18×12×4 cm','0.28 kg'],S15:['34×20×8 cm','0.86 kg'],
+  S16:['28×20×6 cm','0.66 kg'],S17:['22×16×6 cm','0.44 kg']
+};
+SK.forEach(function(s){ const d=DIM[s.id]; if(d){ s.size=d[0]; s.wt=d[1]; } });
+
+/* 创建日期 → 处理截止（+7 天） */
+const CDAYS = {S1:'10-11',S2:'10-14',S3:'10-16',S4:'10-20',S5:'10-21',S6:'10-24',S7:'10-18',
+  S8:'10-19',S9:'10-20',S10:'10-17',S11:'10-18',S12:'10-15',S13:'10-13',S14:'10-26',S15:'10-22',
+  S16:'10-12',S17:'10-23'};
+function cdate(s){ return CDAYS[s.id] || '10-26'; }
+function ddate(s){ const p=cdate(s).split('-'); const d=+p[1]+7;
+  return p[0]+'-'+(d>31?d-31:d); }
+function overdue(s){ const n=atOf(s,'accept'); if(n>=3||s.stop) return false;
+  const p=cdate(s).split('-'); return (+p[1]+7) <= 28; }
+
+/* =========================================================
+   2. 12 项必备资料字段
+   ========================================================= */
+const FIELDS = [
+  ['材质','碳钢 + 镀镍','规格书'],['表面处理','电镀镍，盐雾 48h','规格书'],
+  ['单钩承重','50 Lbs','供应商告知'],['产品尺寸','','实测'],
+  ['单件重量','','实测'],['包装尺寸','',''],
+  ['毛重','',''],['包装方式','彩盒 + 说明卡','供应商告知'],
+  ['适用墙面','乳胶漆 / 瓷砖 / 木板','官网'],['安装方式','免钉胶 / 螺丝双装','规格书'],
+  ['件数','','实测'],['保修','2 年','供应商告知']
+];
+/* 按 SKU 生成字段状态：ok / miss（未提供标红） */
+function fieldsOf(s){
+  const n = atOf(s,'accept');
+  let miss = 6;                       /* 默认（刚进验收）缺 6 项 */
+  if(s.filled || n>=3) miss=0;        /* 资料已补齐 → 全绿 */
+  else if(n>=2) miss=2; else if(n===1) miss=4;
+  if(s.id==='S7') miss=3;             /* 驳回案例 */
+  return FIELDS.map(function(f,i){
+    const st = i<miss ? 'miss' : 'ok';
+    const val = st==='ok' ? (f[1]==='' ? (['产品尺寸','单件重量','件数'].indexOf(f[0])>=0 ? (f[0]==='件数'?'11 件':f[0]==='产品尺寸'?(s.size||'42×32×9 cm'):(s.wt||'1.28 kg')):f[1]) : f[1]) : '';
+    return [f[0], val, f[2], st];
+  });
+}
+function missCount(s){ return fieldsOf(s).filter(function(f){return f[3]==='miss';}).length; }
+
+/* =========================================================
+   3. AI 生成内容模板
+   ========================================================= */
+const SP_TPL = {
+  EN:[['全套配件一次买齐，不用另外再配','件数 / 包装清单'],
+      ['免钉胶 + 螺丝双安装，租房也能用','实测墙面适配'],
+      ['单钩承重 50 Lbs，挂重物不塌','承重实测'],
+      ['镀镍防锈，浴室厨房都能挂','规格书 · 盐雾 48h'],
+      ['贴合墙面不外凸，柜门能关严','与头部 3 个竞品对比']],
+  DE:[['Komplettes Zubehör-Set – kein separates Zubehör nötig','件数 / 包装清单'],
+      ['Kleben oder schrauben – auch für Mietwohnungen','实测墙面适配'],
+      ['Bis 50 Lbs (22,7 kg) pro Haken','承重实测'],
+      ['Nickel-beschichtet, rostfrei für Bad und Küche','规格书 · 盐雾 48h'],
+      ['Fliegend montiert, Schranktüren schließen normal','与头部 3 个竞品对比']]
+};
+
+const SP_PROMPT = '你是亚马逊资深运营。请基于【商品信息】【样品实测】【竞品差评 VOC】提炼 5 条买家能秒懂的产品卖点：每条不超过 90 字符、突出可验证的数据与场景、避免绝对化用语；输出默认英文，勾选的其他语种逐条对应翻译。';
+
+const TITLE_TPL = {
+  EN:'Picture Hanger Hooks Kit 11 Pcs, Heavy Duty Metal Wall Hooks up to 50 Lbs per Hook, No-Drill Dual Installation for Frames, Mirrors & Decor',
+  DE:'Bildhaken-Set 11 Stück, schwere Metall-Wandhaken bis 22,7 kg pro Haken, bohrfreie Doppelmontage für Rahmen, Spiegel & Deko'
+};
+const BULLET_TPL = {
+  EN:['【50 Lbs Real Load Test】Each hook individually tested to hold 50 lbs — certified lab report included, no fake numbers.',
+      '【Rent-Friendly Dual Install】Industrial adhesive OR screws, both included; removes clean without wall damage.',
+      '【11-Pc Complete Kit】Every size hook, pins and level included — no extra purchases needed.',
+      '【Rustproof Nickel Finish】48h salt-spray tested; safe for bathroom, kitchen and outdoor use.',
+      '【Low-Profile Design】Hooks sit 6mm off the wall so cabinet doors still close flush.'],
+  DE:['【22,7 kg reale Belastung】Jeder Haken einzeln getestet und zertifiziert – Laborbericht beiliegend.',
+      '【Mietwohnungsgeeignet】Industrie-Kleber ODER Schrauben, beides im Set; rückstandsfrei entfernbar.',
+      '【11-teiliges Komplett-Set】Alle Größen, Stifte und Wasserwaage inklusive.',
+      '【Rostfrei vernickelt】48h Salzspray-Test; ideal für Bad, Küche und Outdoor.',
+      '【Flache Bauform】6 mm Abstand zur Wand – Schranktüren schließen bündig.']
+};
+
+const PICK_KW = [
+  ['picture hanger', 18100, 2400, '低'],
+  ['metal wall hook', 12400, 1800, '低'],
+  ['frame hanging hooks', 7600, 1100, '中'],
+  ['heavy duty wall hooks', 5900, 900, '高'],
+  ['no drill hangers', 4300, 760, '低']
+];
+const KW_STRATEGY = [
+  ['标题','picture hanger · heavy duty · 50 Lbs','核心词前置，流量词与差异词 1:1'],
+  ['五点 1','50 Lbs 实测数据','搜「heavy duty」人群的信任钩子'],
+  ['五点 2','no drill / rent friendly','吃「no drill hangers」4.3K 月搜'],
+  ['五点 3','11 Pcs complete kit','对打竞品「配件少件 14%」差评'],
+  ['后台 Search Terms','frame mirror decor hanging','埋长尾词，不与标题重复'],
+  ['A+ / 图文','gallery · apartment','品牌词 + 场景词']
+];
+
+const IMGTYPES = [
+  ['01','白底主图',true],['02','场景图',true],['03','安装步骤',true],['04','承重演示',true],['05','尺寸标注',true],
+  ['06','细节特写',false],['07','配件清单',false],['08','包装展示',false],['09','对比图',false]
+];
+const LANGS = ['EN','DE','FR','JP'];
+const DEF_LANGS = ['EN'];
+
+/* 生图数据：按 SKU × 语种 × 图片类型 */
+const G_STAT = {S1:'ok',S2:'ok',S9:'doing',S11:'doing',S12:'ok',S16:'ok'};
+const G_DOING = {S9:0.45,S11:0.72};   /* 进行中任务的进度 */
+function gimgs(s){
+  if(!G_STAT[s.id]) return [];
+  const out=[], langs = s.market.indexOf('DE')>=0 ? ['EN','DE'] : ['EN'];
+  IMGTYPES.forEach(function(t){
+    langs.forEach(function(l,li){
+      const base = s.id==='S9' ? li*9+(+t[0]) : 0;
+      let st = 'wait';
+      if(G_STAT[s.id]==='ok') st = (t[0]==='09') ? 'todo' : 'ok';
+      else { if(base < 10) st='ok'; else st='wait'; }
+      out.push({sku:s.id, type:t[1], ti:t[0], lang:l, st:st});
+    });
+  });
+  return out;
+}
+
+/* 选品调研数据 */
+const RESEARCH = [
+  {asin:'B0CQ7H4M2K', name:'金属画框挂钩套件 11 件装', price:'$14.9', sales:'3,200', score:78, verdict:'建议做', vk:'ok',
+   diff:'11 件全配件 + 单钩 50 Lbs，正面补「少件」和「挂不住」两个差评主因',
+   why:'月销 3,200 · 评论增速 +180/月 · $14.9 落在 $12–16 空档带 · 毛利率 34.8%'},
+  {asin:'B0CR9T6L3N', name:'免钉无痕挂钩 8 件装', price:'$9.9', sales:'2,860', score:71, verdict:'建议做', vk:'ok',
+   diff:'主打「撕下无痕」，把退货率最高的留胶问题做成第一卖点',
+   why:'月销 2,860 · 留胶 22% 是全类目第一差评 → 双安装方式正面解决 · $9.9 档仍保 24% 毛利'},
+  {asin:'B0CS2P8V5B', name:'免打孔钥匙挂钩 6 件装', price:'$10.9', sales:'1,760', score:73, verdict:'建议做', vk:'ok',
+   diff:'6 件装改 8 件装，同价位多给 2 个，直接吃掉「数量不够」差评',
+   why:'4.7 分本批最高 · 成本仅 +¥1.1 · 门后 / 柜内场景图竞品普遍缺失'},
+  {asin:'B0CV8N4J6A', name:'浴室吸盘挂钩 5 件装', price:'$12.5', sales:'1,430', score:70, verdict:'建议做', vk:'ok',
+   diff:'真空旋钮式替代按压式，掉落是最大差评词，解决它就是差异点',
+   why:'浴室场景与画框钩人群互补 · 0.41kg 轻小件 FBA 费低'},
+  {asin:'B0CT5K3R9W', name:'折叠式挂衣钩 4 件装', price:'$15.9', sales:'1,120', score:67, verdict:'谨慎', vk:'warn',
+   diff:'结构件，折叠阻尼是核心；外观专利 1 件近似，需要先做规避设计',
+   why:'仅 6 家在售折叠款 · 锌合金合页良率是关键 · US D981,234 专利相关度中'}
+];
+
+/* 深度调研报告数据（可视化） */
+const PICK_TREND = [['11月',62400],['12月',58900],['1月',31200],['2月',29800],['3月',34500],['4月',36100],
+  ['5月',38900],['6月',41200],['7月',43600],['8月',45800],['9月',42400],['10月',48100]];
+const PICK_PRICE = [['$6–9',14],['$9–12',27],['$12–16',31],['$16–20',18],['$20 以上',10]];
+const PICK_VOC = [['承重虚标 / 挂不住',24],['背胶失效 · 撕下留胶',21],['配件少件',14],
+  ['包装破损',11],['外观色差',9],['安装说明看不懂',7],['其他',14]];
+const PICK_CONC = [['头部品牌占比','38%'],['FBA 占比','91%'],['平均评论数','862'],['新品占比（<6 月）','14%']];
+const PICK_TOP = [
+  ['Command™ 金属挂钩系列', '$11.4', '5,100', '3,820', '4.6', 17.2],
+  ['Lutron 免钉画框钩', '$13.8', '2,940', '1,650', '4.5', 9.8],
+  ['Hillman 多件套', '$12.6', '2,120', '1,204', '4.6', 7.1],
+  ['OOK 画廊系列', '$16.2', '1,480', '986', '4.4', 4.9],
+  ['其余长尾 47 家', '$10.9', '合计 12,400', '—', '4.3', 61.0]
+];
+const PICK_COST = [
+  ['1688 采购（11 件套）', '¥8.2 / 套', '碳钢镀镍，1,000 套起订'],
+  ['国内物流 + 打托', '¥0.6 / 套', '义乌仓 → 宁波港'],
+  ['海运头程（美西）', '¥1.1 / 套', '拼箱，约 32 天'],
+  ['FBA 履约费（小标准件）', '$3.28 / 件', '重量分档 8 oz 内'],
+  ['平台佣金', '15%', '家居类目']
+];
+const PICK_PROFIT = [
+  ['$12.9', '¥8.2', '$5.22', '$3.55', '27.5%'],
+  ['$14.9', '¥8.2', '$5.22', '$5.18', '34.8%'],
+  ['$16.9', '¥8.2', '$5.31', '$6.82', '40.4%']
+];
+const PICK_PERSONA = [
+  ['租房上班族', 34, '不钻孔、退租无痕、随手挂画', '「renter friendly」出现在 41% 五点描述'],
+  ['家庭整理型主妇', 29, '一次买齐、承重可靠、厨房浴室通用', '多件装 SKU 评论中「quantity」提及率 27%'],
+  ['房东 / 装修师傅', 22, '批量采购、单价低、安装快', 'B2B 词「bulk picture hangers」月搜 1.9K 且竞品少'],
+  ['工艺品爱好者', 15, '挂画框不伤作品、可调高度', '「gallery」相关词 CTR 高，客单价上探 $18+']
+];
+const PICK_PAT = [
+  ['US D981,234', '外观 · 折叠挂钩', '中', '不做折叠结构即不落入保护范围'],
+  ['US D972,105', '外观 · 陶瓷造型', '高', '陶瓷品类整体放弃'],
+  ['US 11,402,881', '发明 · 背胶配方', '低', '外购标准 3M 胶贴，规避配方权利要求']
+];
+const PICK_ACT = [
+  ['承重虚标 / 挂不住', '24%', '五点只写「heavy duty」无数据', '单钩 50 Lbs 实测 + 验收拍照留证，主图放承重数据'],
+  ['背胶失效 · 撕下留胶', '21%', '无解法，评论区无官方回复', '双安装方式（免钉胶 / 螺丝）+ 说明书附除胶卡'],
+  ['配件少件', '14%', '抽查 3 家均有 1–2% 少件差评', '彩盒内加配件清点卡，验收环节逐件核对'],
+  ['包装破损', '11%', '泡棉单层', '双层瓦楞 + 独立分格，跌落测试进 ⑦ 上架']
+];
+
+/* =========================================================
+   4. 状态与工具
+   ========================================================= */
+const S = { m:1, step:0, role:'admin', open:null, sel:new Set(), exp:new Set(),
+  langs:{sp:{},copy:{},manual:{},brief:{}}, gsel:new Set(), gtab:'bench',
+  types:{}, fshots:[], running:null, cview:'list', csel:null,
+  drw:null, lpop:null, pg:{} };
+
+function $(q){ return document.querySelector(q); }
+function sk(id){ return SK.find(function(x){ return x.id===id; }); }
+function M(k){ return MODS.find(function(m){ return m.k===k; }); }
+function MI(k){ return MODS.findIndex(function(m){ return m.k===k; }); }
+function full(k){ return FULL[k] || 1; }
+function atOf(s,k){ return s.at[k]||0; }
+function esc(t){ return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function mstat(s,k){
+  if(s.stop) return 'stop';
+  if(k==='accept' && s.rej) return 'rej';
+  const n=atOf(s,k), f=full(k);
+  if(n>=f) return 'done';
+  if(n>0) return 'doing';
+  return canStart(s,k) ? 'todo' : 'wait';
+}
+function canStart(s,k){
+  if(s.stop) return false;
+  const deps=DEP[k]||[];
+  for(let i=0;i<deps.length;i++){ if(mstat(s,deps[i])!=='done') return false; }
+  return true;
+}
+/* 模块可见 SKU 列表 */
+function modsk(k){
+  return SK.filter(function(s){
+    if(s.poolOnly) return k==='pool' || k==='pick';
+    return true;
+  });
+}
+function skStat(s){
+  if(s.stop) return ['已终止','p-bad'];
+  if(s.rej) return ['已驳回','p-bad'];
+  for(let i=0;i<EXEC.length;i++){ const st=mstat(s,EXEC[i]);
+    if(st==='doing'||st==='rej') return ['进行中 · '+M(EXEC[i]).name,'p-do']; }
+  for(let i=0;i<EXEC.length;i++){ if(mstat(s,EXEC[i])==='todo') return ['待处理 · '+M(EXEC[i]).name,'p-wait']; }
+  return ['已完成上架','p-ok'];
+}
+function curNode(s){
+  for(let i=0;i<EXEC.length;i++){ if(mstat(s,EXEC[i])==='rej') return EXEC[i]; }
+  for(let i=0;i<EXEC.length;i++){ if(mstat(s,EXEC[i])==='doing') return EXEC[i]; }
+  for(let i=0;i<EXEC.length;i++){ if(mstat(s,EXEC[i])==='todo') return EXEC[i]; }
+  return null;
+}
+function toast(msg,cls){
+  const t=$('#toast'); t.textContent=msg; t.className='toast on '+(cls||'');
+  clearTimeout(t._tm); t._tm=setTimeout(function(){ t.className='toast'; },2600);
+}
+/* =========================================================
+   5. 通用渲染件
+   ========================================================= */
+function skuCell(s,extra){
+  return '<div class="sku"><div class="ph">IMG</div><div style="min-width:0;flex:1">'+
+    '<div class="nm">'+esc(s.name)+'</div>'+
+    '<div class="cd">'+esc(s.code)+' · '+esc(s.asin)+' · '+esc(s.market)+'</div>'+
+    (extra||'')+'</div></div>';
+}
+function cbxCell(on,act,id){
+  return '<div class="cbx'+(on?' on':'')+'" data-act="'+act+'" data-id="'+id+'"></div>';
+}
+function statPill(st,map){
+  const m=map||{done:['完成','p-ok'],doing:['进行中','p-do'],todo:['待处理','p-wait'],wait:['等待上游','p-mute'],rej:['已驳回','p-bad'],stop:['已终止','p-bad']};
+  const p=m[st]||['—','p-mute'];
+  return '<span class="pill '+p[1]+'">'+p[0]+'</span>';
+}
+function langChips(mod,id,def){
+  const cur=S.langs[mod][id]||def||DEF_LANGS.slice();
+  let h='<div class="langrow">';
+  LANGS.forEach(function(l){
+    h+='<span class="lchip'+(cur.indexOf(l)>=0?' on':'')+'" data-act="lang" data-mod="'+mod+'" data-id="'+id+'" data-l="'+l+'">'+l+'</span>';
+  });
+  return h+'</div>';
+}
+/* v13: 语种下拉多选单元格（飞书多维表格风） */
+function langSel(mod,id){
+  const cur=S.langs[mod][id]||DEF_LANGS.slice();
+  const open=S.lpop===mod+':'+id;
+  let h='<div class="lsel"><button class="lbtn" data-act="lpop" data-mod="'+mod+'" data-id="'+id+'" '+
+    'title="点击选择语种（可多选）"><span class="lb-v">'+cur.join(' / ')+'</span>'+
+    '<span class="dim" style="font-size:10px">('+cur.length+')</span><span class="car">▼</span></button>';
+  if(open){
+    h+='<div class="lpop"><div class="lplab">生成语种（可多选 · 默认 EN）</div>'+
+      LANGS.map(function(l){
+        const on=cur.indexOf(l)>=0;
+        return '<div class="lpi" data-act="lset" data-mod="'+mod+'" data-id="'+id+'" data-l="'+l+'">'+
+          '<span class="cbx'+(on?' on':'')+'"></span>'+l+
+          '<span class="xs dim" style="margin-left:auto">'+(l==='EN'?'默认':'可选')+'</span></div>';
+      }).join('')+
+      '<div class="lpf"><button class="btn xs" data-act="lclose">收起</button>'+
+      '<button class="btn xs p" data-act="lclose">确定 '+cur.length+' 个语种</button></div></div>';
+  }
+  return h+'</div>';
+}
+/* v13: 图片类型下拉多选单元格 */
+function typeSel(id){
+  const def=IMGTYPES.filter(function(t){return t[2];}).map(function(t){return t[0];});
+  const cur=S.types[id]||def;
+  const open=S.lpop==='type:'+id;
+  const names=cur.map(function(c){ const t=IMGTYPES.find(function(x){return x[0]===c;}); return t?t[1]:c; });
+  let h='<div class="lsel"><button class="lbtn" data-act="lpop" data-mod="type" data-id="'+id+'" '+
+    'title="点击选择图片类型（可多选）"><span class="lb-v">'+(names.length?names.slice(0,3).join(' / '):'—')+
+    (names.length>3?' 等':'')+'</span><span class="dim" style="font-size:10px">('+cur.length+' 种)</span>'+
+    '<span class="car">▼</span></button>';
+  if(open){
+    h+='<div class="lpop" style="min-width:300px"><div class="lplab">图片类型（可多选 · 默认常规 5 类）</div><div class="lpc">'+
+      IMGTYPES.map(function(t){
+        const on=cur.indexOf(t[0])>=0;
+        return '<span class="lchip'+(on?' on':'')+'" data-act="tset" data-id="'+id+'" data-t="'+t[0]+'">'+t[1]+'</span>';
+      }).join('')+'</div>'+
+      '<div class="lpf"><span class="xs dim" style="margin-right:auto">已选 '+cur.length+' 种</span>'+
+      '<button class="btn xs p" data-act="lclose">确定</button></div></div>';
+  }
+  return h+'</div>';
+}
+/* v13: 分页（每页 8 条，前端模拟） */
+const PGSZ=8;
+function pgOf(k,list){
+  const total=list.length, pages=Math.max(1,Math.ceil(total/PGSZ));
+  const p=Math.min(S.pg[k]||1,pages); S.pg[k]=p;
+  return list.slice((p-1)*PGSZ,p*PGSZ);
+}
+function pgBar(k,total){
+  if(total<=PGSZ) return '';
+  const pages=Math.ceil(total/PGSZ), p=S.pg[k]||1;
+  let n='<div class="pgn">';
+  n+='<button class="pbt" data-act="pgp" data-k="'+k+'" '+(p<=1?'disabled':'')+'>‹</button>';
+  n+='<button class="pbt cur">'+p+' / '+pages+'</button>';
+  n+='<button class="pbt" data-act="pgn2" data-k="'+k+'" '+(p>=pages?'disabled':'')+'>›</button>';
+  n+='</div>';
+  return '<div class="pgbar"><span>共 <b>'+total+'</b> 条 · 每页 '+PGSZ+' 条 · 第 '+p+'/'+pages+' 页</span>'+n+'</div>';
+}
+function typeChips(id){
+  const cur=S.types[id]||IMGTYPES.filter(function(t){return t[2];}).map(function(t){return t[0];});
+  let h='<div class="langrow">';
+  IMGTYPES.forEach(function(t){
+    h+='<span class="lchip'+(cur.indexOf(t[0])>=0?' on':'')+'" data-act="type" data-id="'+id+'" data-t="'+t[0]+'">'+t[1]+'</span>';
+  });
+  return h+'</div>';
+}
+
+/* =========================================================
+   6. 骨架渲染：侧栏 / 顶栏 / 底部指引
+   ========================================================= */
+function renderNav(){
+  let h='',grp='';
+  MODS.forEach(function(m,i){
+    if(m.grp!==grp){ grp=m.grp; h+='<div class="nlab">'+grp+'</div>'; }
+    const cnt = (m.k==='pool') ? SK.length :
+      (m.k==='pick' ? RESEARCH.length : modsk(m.k).filter(function(s){return mstat(s,m.k)!=='done'&&mstat(s,m.k)!=='wait';}).length);
+    const hot = m.k!=='pool'&&m.k!=='pick'&&cnt>0;
+    h+='<div class="nitem'+(S.m===i?' on':'')+'" data-act="goto" data-k="'+m.k+'">'+
+      (m.no?'<span class="no">'+m.no+'</span>':'<span class="no"></span>')+
+      '<span class="nm">'+m.name+'</span>'+
+      (cnt?'<span class="ncount'+(hot?' hot':'')+'">'+cnt+'</span>':'')+'</div>';
+  });
+  $('#navWrap').innerHTML=h;
+  $('#roleWrap').innerHTML=Object.keys(ROLES).map(function(r){
+    return '<button class="rbtn'+(S.role===r?' on':'')+'" data-act="role" data-r="'+r+'">'+ROLES[r].n+'</button>';
+  }).join('');
+}
+function renderTop(){
+  const m=MODS[S.m];
+  $('#tbT').textContent=m.name;
+  $('#tbS').textContent=m.grp+(m.no?' · '+m.no:'')+' · 当前身份：'+ROLES[S.role].n;
+}
+function footGuidance(){
+  const m=MODS[S.m], k=m.k;
+  let txt='', next=null;
+  if(k==='pick'){ txt=S.step===0?'设置调研条件，圈出目标类目与价格带':(S.step===1?'查看 AI 深度调研报告（趋势 / 痛点 / 竞品 / 毛利 / 专利）':'勾选建议商品，导入商品池开始流程'); next=S.step<2?S.step+1:null; }
+  else if(k==='pool') txt='勾选 SKU 后点击「确认选品」，确认后自动流转 ① 样品验收';
+  else if(k==='accept') txt='已验收但资料未补齐的 SKU 默认 7 天内补齐；补齐后勾选或单个「审核通过」，流转 ② 卖点生成（AI 自动生成卖点 / Listing / 说明书 / 图片素材）';
+  else if(k==='sp') txt='编辑提示词后点击「生成卖点」；人工确认后 SKU 与卖点流转 ③ Listing / ④ 说明书 / ⑤ 图片需求表';
+  else if(k==='copy') txt=S.cview==='report'?'顶部切换 SKU 查看各 SKU 的埋词与竞争度分析报告':'点击「重新生成」可附带修改指令；审核通过后 Listing 文案流转 ⑦ 上架';
+  else if(k==='manual') txt='点击缩略页可放大查看与修改；「确认入库」后说明书流转 ⑦ 上架';
+  else if(k==='brief') txt='勾选语种与图片类型后「确认需求」，需求自动流转 ⑥ AI 批量生图';
+  else if(k==='gen') txt='单张或批量审图：通过入库图片库；「发给 Agent 改图」附带指令二次生图';
+  else if(k==='sipp') txt='缺失字段标红提醒，可点击查看修改（支持编辑 SKU 与 AI 生成内容）；右上角导出上架表格 Excel';
+  else if(k==='set') txt=S.role==='admin'?'管理员：账号 / AI 配置 / 第三方接口全局面板':'员工：仅可管理自己的飞书配置、通知联系人与密码';
+  let h='<div class="fi">i</div><div class="ft"><b>下一步：</b>'+txt+'</div>';
+  if(next!==null) h+='<div class="fr"><button class="btn s" data-act="stepprev">上一步</button><button class="btn s p" data-act="stepnext">下一步</button></div>';
+  else if(S.step>0) h+='<div class="fr"><button class="btn s" data-act="stepprev">上一步</button></div>';
+  $('#foot').innerHTML=h;
+}
+
+/* =========================================================
+   7. 主渲染
+   ========================================================= */
+function render(){
+  renderNav(); renderTop(); footGuidance();
+  const m=MODS[S.m];
+  const V={pick:vPick,pool:vPool,accept:vAccept,sp:vSp,copy:vCopy,manual:vManual,
+    brief:vBrief,gen:vGen,sipp:vSipp,set:vSet};
+  let inner=(V[m.k]||vPool)();
+  $('#main').innerHTML='<div class="mhead"><div class="shead">'+
+    '<div><h1>'+m.name+'</h1><div class="smeta">'+(m.sub||'')+'</div></div>'+
+    '<div class="right">'+(m.head||'')+'</div></div>'+
+    (m.steps.length>1?'<div class="sub">'+stepbar(m)+'</div>':'')+
+    '</div><div class="mbody">'+inner+'</div>';
+  renderGbar(); renderDrw();
+}
+function stepbar(m){
+  const sub=stepSub(m);
+  let h='';
+  m.steps.forEach(function(st,i){
+    if(i>0) h+='<span class="ln"></span>';
+    h+='<div class="st'+(S.step===i?' cur':(S.step>i?' done':''))+'" data-act="step" data-i="'+i+'">'+
+      '<span style="display:flex;align-items:center;gap:6px"><span class="dot">'+(S.step>i?'✓':i+1)+'</span>'+st+'</span>'+
+      '<span class="ssb">'+(sub[i]||'')+'</span></div>';
+  });
+  h+='<span class="subnext">'+
+    (S.step>0?'<button class="btn s" data-act="stepprev">← 上一步</button>':'')+
+    (S.step<m.steps.length-1?'<button class="btn s p" data-act="stepnext">下一步：'+m.steps[S.step+1]+' →</button>':'')+
+    '</span>';
+  return h;
+}
+/* v13: 每步数据副标题（竞品式：当前步骤带实时数据） */
+function stepSub(m){
+  if(m.k==='pick') return ['类目 + 价格带 + 数据源','10 组可视化图表 · 4 KPI',RESEARCH.length+' 条建议 · 待导入'];
+  return m.steps.map(function(){ return ''; });
+}
+
+/* v13: 右侧详情抽屉（替代行内折叠展开） */
+const DRW={};
+function renderDrw(){
+  const d=S.drw, mask=$('#drwmask'), box=$('#drw');
+  if(!d){ mask.classList.remove('on'); box.classList.remove('on'); return; }
+  const s=sk(d.id);
+  if(!s){ S.drw=null; renderDrw(); return; }
+  const B=DRW[d.k];
+  if(!B){ mask.classList.remove('on'); box.classList.remove('on'); return; }
+  mask.classList.add('on'); box.classList.add('on');
+  $('#drwH').innerHTML='<div style="min-width:0"><div class="dt">'+(B.title?B.title(s):esc(s.name))+'</div>'+
+    '<div class="dc">'+(B.sub?B.sub(s):esc(s.code)+' · '+esc(s.asin)+' · '+esc(s.market))+'</div></div>'+
+    '<button class="dx" data-act="drwclose" title="关闭">✕</button>';
+  $('#drwB').innerHTML=B.body(s);
+  $('#drwF').innerHTML=B.foot?B.foot(s):'<button class="btn" data-act="drwclose">关闭抽屉</button>';
+}
+function openDrw(k,id){ S.lpop=null; S.drw={k:k,id:id}; render(); }
+
+/* =========================================================
+   8. 选品调研（3 步：条件 → 深度报告 → 建议清单）
+   ========================================================= */
+function vPick(){
+  if(S.step===0){
+    return '<div class="flowwrap">'+
+    '<div class="vflow"><h4>这个功能怎么用</h4>'+
+      '<div class="vf-sub">设置调研条件后，AI 自动抓取竞品 / 差评 / 关键词数据，产出深度调研报告与建议清单，确认后一键导入商品池。</div>'+
+      '<div class="vstep"><div class="vno">1</div><div><b>设置调研条件</b><span>圈定目标类目、价格带与数据源</span></div></div>'+
+      '<div class="vstep"><div class="vno">2</div><div><b>AI 自动调研</b><span>抓取 TOP 60 竞品 · 3,214 条差评 · 关键词与专利风险</span></div></div>'+
+      '<div class="vstep"><div class="vno">3</div><div><b>查看深度报告</b><span>趋势 / 痛点 / 毛利 / 人群 · 10 组可视化图表</span></div></div>'+
+      '<div class="vstep"><div class="vno">4</div><div><b>勾选导入商品池</b><span>'+RESEARCH.length+' 条建议，确认后进入新品流程</span></div></div>'+
+      '<div class="vf-tip">ⓘ 全程约 30–60 秒 · 调用 MCP 接口（卖家精灵 / EchoTik / VOC 差评库）· 开始前会先确认本次分析范围</div></div>'+
+    '<div><div class="card"><h3>调研条件<span class="n">STEP 1 · 必填</span></h3><div class="cb grid2">'+
+      fld('调研关键词<span class="req">* 必填</span>','metal picture hanger hook')+
+      fld('目标市场','select',[['US','US'],['US + DE','US + DE'],['UK','UK'],['JP','JP']])+
+      fld('价格带','$9 – 16')+
+      fld('数据源','卖家精灵 + EchoTik + VOC 差评库（MCP 已连接）')+
+      '</div>'+
+      '<div class="cb" style="border-top:1px solid var(--line2)"><div class="rowline">'+
+      '<button class="btn p" style="height:34px;padding:0 22px;font-size:13px" data-act="stepnext">开始调研 → 查看深度调研报告</button>'+
+      '<span class="xs dim">预计消耗 0 点（演示）· 约 30–60 秒出结果</span></div></div></div>'+
+      '<div class="card"><h3>AI 调研进度<span class="n">MCP</span></h3><div class="cb">'+
+      '<div class="runlogs"><b>01</b> 抓取类目 TOP 60 竞品（卖家精灵）<span class="ok"> ✓ 60 条</span><br>'+
+      '<b>02</b> 差评 VOC 聚类分析（共 3,214 条）<span class="ok"> ✓ 7 类痛点</span><br>'+
+      '<b>03</b> 价格带 / 毛利 / 专利风险计算 <span class="ok"> ✓ 完成</span><br>'+
+      '<b>04</b> 输出深度调研报告 + 5 条建议清单 <span class="ai">→ 人工确认</span></div></div></div>'+
+    '</div></div>';
+  }
+  if(S.step===1){ return pickReport(); }
+  const rows=RESEARCH.map(function(r,i){
+    return '<div class="tr body" style="grid-template-columns:40px 2.4fr 90px 110px 1.2fr 110px 150px 132px">'+
+      cbxCell(S.sel.has(r.asin),'selR',r.asin)+
+      '<div><div class="sku"><div class="ph">IMG</div><div style="min-width:0"><div class="nm">'+esc(r.name)+'</div>'+
+      '<div class="cd">'+r.asin+' · 差评对策：'+esc(r.diff)+'</div></div></div></div>'+
+      '<div><span class="pill p-mute">'+r.price+'</span></div>'+
+      '<div class="sm">月销 '+r.sales+'</div>'+
+      '<div class="xs dim ell">'+esc(r.why)+'</div>'+
+      '<div><span class="pill '+(r.vk==='ok'?'p-ok':r.vk==='warn'?'p-wait':'p-bad')+'">'+r.verdict+'</span></div>'+
+      '<div><span class="pill p-cy">评分 '+r.score+'</span></div>'+
+      '<div class="rowline"><button class="btn s p" data-act="impR" data-id="'+r.asin+'">导入商品池</button>'+
+      '<button class="btn s" data-act="holdR" data-id="'+r.asin+'">暂不考虑</button>'+
+      '<button class="btn s" data-act="editR" data-id="'+r.asin+'">修改</button></div></div>';
+  }).join('');
+  return '<div class="card"><h3>建议清单与导入<span class="n">STEP 3</span><span class="acts">'+
+    '<button class="btn s" data-act="stepprev">← 返回报告</button>'+
+    '<button class="btn s p" data-act="impSel">批量导入商品池 ('+S.sel.size+')</button></span></h3><div class="cb tight">'+
+    '<div class="tr th" style="grid-template-columns:40px 2.4fr 90px 110px 1.2fr 110px 150px 132px">'+
+    '<div></div><div>商品</div><div>价格</div><div>月销</div><div>推荐理由</div><div>结论</div><div>选品评分</div><div>操作</div></div>'+
+    rows+
+    '<div class="trfoot">共 '+RESEARCH.length+' 条建议 · 导入后在商品池确认选品，流转 ① 样品验收</div></div></div>';
+}
+/* 深度调研报告（可视化） */
+function pickReport(){
+  let trend='';
+  const mx=Math.max.apply(null,PICK_TREND.map(function(t){return t[1];}));
+  PICK_TREND.forEach(function(t){
+    trend+='<div class="sb"><i style="height:'+Math.max(3,Math.round(t[1]/mx*92))+'px"></i><b>'+(t[1]/1000).toFixed(1)+'K</b><span>'+t[0]+'</span></div>';
+  });
+  let price='';
+  const pm=Math.max.apply(null,PICK_PRICE.map(function(t){return t[1];}));
+  PICK_PRICE.forEach(function(t){
+    price+='<div class="brow"><span class="bl">'+t[0]+'</span><div class="bt"><i style="width:'+Math.round(t[1]/pm*100)+'%"></i></div>'+
+    '<span class="bv">'+t[1]+'<small>%</small></span></div>';
+  });
+  let voc='';
+  const vm=Math.max.apply(null,PICK_VOC.map(function(t){return t[1];}));
+  PICK_VOC.forEach(function(t){
+    voc+='<div class="brow"><span class="bl">'+t[0]+'</span><div class="bt"><i style="width:'+Math.round(t[1]/vm*100)+'%;background:var(--red)"></i></div>'+
+    '<span class="bv">'+t[1]+'<small>%</small></span></div>';
+  });
+  const kw=PICK_KW.map(function(k){
+    const w=Math.round(k[1]/18100*100);
+    const cl=k[3]==='高'?'p-bad':(k[3]==='中'?'p-wait':'p-ok');
+    return '<div class="brow"><span class="bl">'+k[0]+'</span><div class="bt"><i style="width:'+w+'%"></i></div>'+
+    '<span class="bv">'+(k[1]/1000).toFixed(1)+'<small>K</small></span></div>';
+  }).join('');
+  const conc=PICK_CONC.map(function(c){ return '<div class="mini"><div class="ml">'+c[0]+'</div><div class="mv">'+c[1]+'</div></div>'; }).join('');
+  const top=PICK_TOP.map(function(t){
+    return '<div class="dimrow"><div class="dn xs ell" style="max-width:170px">'+t[0]+'</div><div class="dd xs">$'+t[1]+'</div>'+
+    '<div class="dd xs">'+t[2]+'</div><div class="dd xs">'+t[3]+'</div><div class="dd xs">★'+t[4]+'</div>'+
+    '<div class="dv"><span class="pill p-mute">'+t[5]+'%</span></div></div>';
+  }).join('');
+  const persona=PICK_PERSONA.map(function(pp){
+    return '<div class="dimrow"><div class="dn xs" style="max-width:100px">'+pp[0]+'</div>'+
+    '<div class="dd xs"><span class="pill p-cy">'+pp[1]+'%</span> <span class="dim">'+pp[2]+'</span><br><span class="dim">'+pp[3]+'</span></div></div>';
+  }).join('');
+  const cost=PICK_COST.map(function(c){
+    return '<div class="dimrow"><div class="dn xs" style="max-width:150px">'+c[0]+'</div><div class="dd xs">'+c[1]+'</div>'+
+    '<div class="dd xs dim">'+c[2]+'</div></div>';
+  }).join('');
+  const profit=PICK_PROFIT.map(function(pp){
+    return '<div class="dimrow"><div class="dn xs" style="max-width:60px">'+pp[0]+'</div><div class="dd xs">'+pp[1]+'</div>'+
+    '<div class="dd xs dim">'+pp[2]+'</div><div class="dd xs">'+pp[3]+'</div>'+
+    '<div class="dv"><span class="pill '+(pp[4]==='34.8%'?'p-ok':'p-mute')+'">'+pp[4]+'</span></div></div>';
+  }).join('');
+  const pat=PICK_PAT.map(function(pp){
+    const cl=pp[2]==='高'?'p-bad':(pp[2]==='中'?'p-wait':'p-ok');
+    return '<div class="dimrow"><div class="dn xs" style="max-width:130px;font-family:ui-monospace,monospace">'+pp[0]+'</div>'+
+    '<div class="dd xs">'+pp[1]+'</div><div class="dd"><span class="pill '+cl+'">'+pp[2]+'</span></div>'+
+    '<div class="dd xs dim" style="max-width:200px">'+pp[3]+'</div></div>';
+  }).join('');
+  const act=PICK_ACT.map(function(pp){
+    return '<div class="dimrow"><div class="dn xs" style="max-width:130px"><span class="pill p-bad">'+pp[1]+'</span><br>'+pp[0]+'</div>'+
+    '<div class="dd xs dim">'+pp[2]+'</div><div class="dd xs" style="max-width:220px"><b>'+pp[3]+'</b></div></div>';
+  }).join('');
+  return '<div class="rowline mb10"><span class="tip b" style="flex:1"><span class="ico">AI</span><div>'+
+    '类目：家居 › 画框挂钩（US）· 60 竞品 · 3,214 条差评 · 数据源：卖家精灵 / EchoTik / VOC（MCP）</div></span>'+
+    '<button class="btn s" data-act="stepprev">← 调研条件</button><button class="btn p" data-act="stepnext">进入建议清单 →</button></div>'+
+    '<div class="kpis mb10">'+
+    '<div class="kpi"><div class="l">类目月销量</div><div class="v">48.1<small>K</small></div><div class="m">近 12 月 ↑ 12%</div></div>'+
+    '<div class="kpi"><div class="l">均价 / 空档带</div><div class="v">$12.6</div><div class="m">$12–16 占 31%</div></div>'+
+    '<div class="kpi"><div class="l">头部品牌占比</div><div class="v">38<small>%</small></div><div class="m">无绝对垄断</div></div>'+
+    '<div class="kpi"><div class="l">目标毛利率</div><div class="v">34.8<small>%</small></div><div class="m">$14.9 定价档</div></div>'+
+    '</div>'+
+    '<div class="grid2 mb10">'+
+    '<div class="card"><h3>类目月销趋势<span class="n">12 个月</span></h3><div class="cb"><div class="spark">'+trend+'</div></div></div>'+
+    '<div class="card"><h3>价格带分布<span class="n">$12–16 空档</span></h3><div class="cb"><div class="chart">'+price+'</div>'+
+    '<div class="rowline mt10">'+conc+'</div></div></div>'+
+    '</div>'+
+    '<div class="grid2 mb10">'+
+    '<div class="card"><h3>差评 VOC 痛点分布<span class="n">3,214 条聚类</span></h3><div class="cb"><div class="chart">'+voc+'</div></div></div>'+
+    '<div class="card"><h3>核心关键词流量与竞争度</h3><div class="cb"><div class="chart">'+kw+'</div></div></div>'+
+    '</div>'+
+    '<div class="grid2 mb10">'+
+    '<div class="card"><h3>TOP 竞品份额<span class="n">价格 / 月销 / 评论 / 评分</span></h3><div class="cb tight">'+
+    '<div class="dimrow" style="font-size:10px;color:var(--ink4);font-weight:700"><div class="dn">竞品</div><div class="dd">均价</div><div class="dd">月销</div><div class="dd">评论</div><div class="dd">评分</div><div class="dv">份额</div></div>'+top+'</div></div>'+
+    '<div class="card"><h3>目标人群画像</h3><div class="cb tight">'+persona+'</div></div>'+
+    '</div>'+
+    '<div class="grid2 mb10">'+
+    '<div class="card"><h3>成本结构<span class="n">11 件套 / 千套起订</span></h3><div class="cb tight">'+cost+'</div></div>'+
+    '<div class="card"><h3>定价毛利测算</h3><div class="cb tight">'+
+    '<div class="dimrow" style="font-size:10px;color:var(--ink4);font-weight:700"><div class="dn">定价</div><div class="dd">货本</div><div class="dd">头程+费</div><div class="dd">净毛利</div><div class="dv">毛利率</div></div>'+profit+'</div></div>'+
+    '</div>'+
+    '<div class="grid2">'+
+    '<div class="card"><h3>专利风险<span class="n">3 件相关</span></h3><div class="cb tight">'+
+    '<div class="dimrow" style="font-size:10px;color:var(--ink4);font-weight:700"><div class="dn">编号</div><div class="dd">类型</div><div class="dd">相关度</div><div class="dd">处理</div></div>'+pat+'</div></div>'+
+    '<div class="card"><h3>痛点 → 差异化对策<span class="n">AI 生成</span></h3><div class="cb tight">'+act+'</div></div>'+
+    '</div>';
+}
+function fld(label,val,type){
+  if(type==='select'){
+    return '<div class="fld"><label>'+label+'</label><select class="inp">'+val.map(function(o){return '<option>'+o[0]+'</option>';}).join('')+'</select></div>';
+  }
+  return '<div class="fld"><label>'+label+'</label><input class="inp" value="'+esc(val)+'"></div>';
+}
+
+/* =========================================================
+   9. 商品池（统计 + 7 节点进度 + 行展开）
+   ========================================================= */
+function poolStats(){
+  const all=SK, active=all.filter(function(s){ return !s.stop&&!s.rej&&curNode(s)&&curNode(s)!=='sipp'; });
+  const done=all.filter(function(s){ return atOf(s,'sipp')>=1; });
+  const todo=all.filter(function(s){ return !s.poolOnly&&!s.stop&&atOf(s,'accept')===0; });
+  const od=all.filter(function(s){ return overdue(s)&&missCount(s)>0; });
+  const nodeCount={}; EXEC.forEach(function(k){ nodeCount[k]=all.filter(function(s){ return mstat(s,k)==='done'; }).length; });
+  let pipe='';
+  EXEC.forEach(function(k,i){
+    const mm=M(k);
+    pipe+='<div style="flex:1;min-width:120px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:8px 10px;cursor:pointer" data-act="goto" data-k="'+k+'">'+
+    '<div class="xs dim" style="font-weight:600">'+(mm.no?mm.no+' ':'')+mm.name+'</div>'+
+    '<div style="display:flex;align-items:baseline;gap:5px;margin-top:3px"><b style="font-size:16px">'+nodeCount[k]+'</b><span class="xs dim">/ '+all.length+'</span></div>'+
+    '<div class="bar" style="margin:5px 0 0"><i style="width:'+Math.round(nodeCount[k]/all.length*100)+'%"></i></div></div>';
+  });
+  return '<div class="kpis mb10">'+
+    '<div class="kpi"><div class="l">商品池总数</div><div class="v">'+all.length+'</div><div class="m">含 '+all.filter(function(s){return s.poolOnly;}).length+' 个待确认</div></div>'+
+    '<div class="kpi"><div class="l">进行中</div><div class="v">'+active.length+'</div><div class="m">分布 7 个环节</div></div>'+
+    '<div class="kpi"><div class="l">已完成上架</div><div class="v">'+done.length+'</div><div class="m">全流程走完</div></div>'+
+    '<div class="kpi"><div class="l">验收逾期</div><div class="v" style="color:'+(od.length?'var(--red)':'var(--ink)')+'">'+od.length+'</div><div class="m">7 天期限缺资料</div></div>'+
+    '</div>'+
+    '<div class="card mb10"><div class="cb"><div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:2px">'+pipe+
+    '<div style="flex:0 0 auto;display:flex;flex-direction:column;justify-content:center;gap:3px;padding-left:6px">'+
+    '<span class="xs dim">点击环节卡片直达</span></div></div></div></div>';
+}
+function vPool(){
+  const cols='30px 24px 2.1fr 132px 76px 76px 210px 178px';
+  const all=modsk('pool');
+  const list=pgOf('pool',all);
+  let rows=list.map(function(s){
+    const st=skStat(s);
+    let r='<div class="tr body" style="grid-template-columns:'+cols+'">'+
+      (canStart(s,'accept')?cbxCell(S.sel.has(s.id),'sel',s.id):'<div></div>')+
+      '<div class="expbtn" data-act="drw" data-k="pool" data-id="'+s.id+'" title="点击查看 SKU 详情" style="font-size:10px;color:var(--ink5)">▶</div>'+
+      skuCell(s,'<div class="cd">'+esc(s.cat)+' · '+esc(s.owner)+'</div>')+
+      '<div><span class="pill p-mute">'+s.price+'</span></div>'+
+      '<div class="sm">月销 '+s.sales+'</div>'+
+      '<div><span class="pill p-cy">'+s.score+'</span></div>'+
+      '<div>'+poolDots(s)+'</div>'+
+      '<div class="rowline"><span class="pill '+st[1]+'">'+st[0]+'</span>'+
+      (canStart(s,'accept')?'<button class="btn s p" data-act="confirmS" data-id="'+s.id+'">确认选品</button>':'')+
+      (curNode(s)?'<button class="btn s" data-act="goto1" data-id="'+s.id+'">处理</button>':'')+
+      '</div></div>';
+    return r;
+  }).join('');
+  return poolStats()+
+    '<div class="card"><h3>商品池 · 全部 SKU<span class="n">'+all.length+'</span><span class="acts">'+
+    '<button class="btn s" data-act="newSku">新建商品</button></span></h3><div class="cb tight">'+
+    '<div class="tr th" style="grid-template-columns:'+cols+'">'+
+    '<div></div><div></div><div>商品（名称 / ASIN / 类目 / 负责人）</div><div>售价</div><div>月销</div><div>评分</div>'+
+    '<div>7 环节进度（①验收 ②卖点 ③Listing ④说明书 ⑤需求表 ⑥生图 ⑦上架）</div><div>状态 / 操作</div></div>'+
+    rows+pgBar('pool',all.length)+
+    '<div class="trfoot">勾选后底部浮出批量「确认选品」· 点击行 ▶ 打开 SKU 详情抽屉（12 项字段 + 各环节进度）</div></div></div>';
+}
+function poolDots(s){
+  let h='<div class="rowline" style="gap:3px" title="'+esc((curNode(s)?('当前：'+M(curNode(s)).name):'未开始'))+'">';
+  EXEC.forEach(function(k){
+    const st=mstat(s,k);
+    const c=st==='done'?'#12a06a':(st==='doing'?'#3d6dff':(st==='rej'?'#e5484d':(st==='todo'?'#7aa6ff':'#d9dfe9')));
+    h+='<i style="width:9px;height:9px;border-radius:50%;background:'+c+';display:inline-block;flex:0 0 9px" title="'+M(k).no+' '+M(k).name+'"></i>';
+  });
+  const cur=curNode(s);
+  h+='<span class="xs dim" style="margin-left:5px;max-width:100px" >'+(cur?esc(M(cur).name):(s.poolOnly?'待确认选品':'未开始'))+'</span></div>';
+  return h;
+}
+/* v13: 商品池 SKU 详情抽屉内容 */
+DRW.pool={
+  title:function(s){ return esc(s.name); },
+  sub:function(s){ return esc(s.code)+' · '+esc(s.asin)+' · '+esc(s.market)+' · 负责人：'+esc(s.owner); },
+  body:function(s){
+    let dots='';
+    EXEC.forEach(function(k){
+      const st=mstat(s,k), mm=M(k);
+      const cls=st==='done'?'done':(st==='doing'||st==='rej'?'rej':(st==='todo'?'doing':'wait'));
+      const mark=st==='done'?' ✓':(st==='rej'?' ✕':(st==='doing'?' …':''));
+      dots+='<div class="xd '+cls+'"><i></i>'+mm.no+' '+mm.name+mark+'</div>';
+    });
+    let h='<div class="xg">'+
+    '<div class="xf"><b>ASIN</b><span>'+esc(s.asin)+'</span></div>'+
+    '<div class="xf"><b>站点</b><span>'+esc(s.market)+'</span></div>'+
+    '<div class="xf"><b>创建日期</b><span>'+cdate(s)+'</span></div>'+
+    '<div class="xf"><b>负责人</b><span>'+esc(s.owner)+'</span></div>'+
+    '<div class="xf"><b>售价</b><span>'+s.price+'</span></div>'+
+    '<div class="xf"><b>选品评分</b><span>'+s.score+'</span></div>'+
+    '<div class="xf"><b>月销</b><span>'+s.sales+'</span></div>'+
+    '<div class="xf"><b>类目</b><span>'+esc(s.cat)+'</span></div>'+
+    '<div class="xf"><b>商品规格</b><span>'+esc(s.size||'待实测')+' / '+esc(s.wt||'待实测')+'</span></div>'+
+    '<div class="xf"><b>差评对策</b><span>'+(s.rej?esc(s.rej.n):'11 件全配件 + 50 Lbs 承重')+'</span></div>'+
+    '<div class="xf"><b>验收截止</b><span>'+ddate(s)+(overdue(s)?' <span class="req">（已逾期）</span>':'')+'</span></div>'+
+    '<div class="xf"><b>生图</b><span>'+(atOf(s,'gen')?'已入库':(gimgs(s).length?'进行中':'—'))+'</span></div>'+
+    '</div>';
+    if(s.rej) h+='<div class="tip r mb10 mt10"><span class="ico">!</span><div><b>驳回：</b>'+esc(s.rej.n)+'</div></div>';
+    if(s.stop) h+='<div class="tip r mb10 mt10"><span class="ico">!</span><div><b>已终止：</b>'+esc(s.stopr)+'</div></div>';
+    h+='<div class="dim xs" style="font-weight:700;margin:12px 0 6px">7 环节进度</div><div class="xdots">'+dots+'</div>';
+    return h;
+  },
+  foot:function(s){
+    return (canStart(s,'accept')?'<button class="btn p" data-act="confirmS" data-id="'+s.id+'" data-drw="1">确认选品 → 流转 ①</button>':'')+
+    (curNode(s)?'<button class="btn" data-act="goto1" data-id="'+s.id+'">去 '+M(curNode(s)).name+' 处理</button>':'')+
+    '<button class="btn" data-act="drwclose">关闭</button>';
+  }
+};
+/* =========================================================
+   10. ① 样品验收（验收 + 补资料合并）
+   ========================================================= */
+function vAccept(){
+  const all=modsk('accept').filter(function(s){ return atOf(s,'accept')>0 || canStart(s,'accept'); });
+  const list=pgOf('accept',all);
+  const cols='30px 24px 2fr 92px 132px 118px 1.5fr 96px 190px';
+  let rows=list.map(function(s){
+    const n=atOf(s,'accept'), miss=missCount(s);
+    const sign = s.stop ? '<span class="pill p-bad">样品异常</span>'
+      : n>=2 ? '<span class="pill p-ok">已签收</span>'
+      : '<span class="pill p-wait">运输中</span>';
+    const acres = s.stop ? '<span class="pill p-bad">已终止</span>'
+      : s.rej ? '<span class="pill p-bad">已驳回</span>'
+      : n>=3 ? '<span class="pill p-ok">审核通过</span>'
+      : miss===0 ? '<span class="pill p-do">待审核</span>'
+      : '<span class="pill p-wait">待补资料</span>';
+    const f12=fieldsOf(s);
+    const missTags=f12.filter(function(f){ return f[3]==='miss'; });
+    /* v13: 紧凑标签列——只显示缺失项（红）+ 汇总 */
+    let tags='';
+    if(miss===0){
+      tags='<span class="pill p-ok">12 项已齐全 ✓</span>';
+    } else {
+      tags='<span class="xs" style="line-height:2">'+
+        missTags.slice(0,3).map(function(f){ return '<span class="pill p-bad" title="'+esc(f[1]||'未提供')+'">'+f[0]+'</span>';}).join(' ')+
+        (missTags.length>3?'<span class="pill p-bad">+'+(missTags.length-3)+'</span>':'')+
+        ' <span class="pill p-mute">'+(12-miss)+' 项已有</span></span>';
+    }
+    let r='<div class="tr body" style="grid-template-columns:'+cols+'">'+
+      (n<3&&!s.stop&&!s.rej?cbxCell(S.sel.has(s.id),'sel',s.id):'<div></div>')+
+      '<div class="expbtn" data-act="drw" data-k="accept" data-id="'+s.id+'" title="查看验收详情 / 12 项字段" style="font-size:10px;color:var(--ink5)">▶</div>'+
+      skuCell(s,'<div class="cd">'+esc(s.size||'—')+' / '+esc(s.wt||'—')+' · '+s.price+'</div>')+
+      '<div>'+sign+'</div>'+
+      '<div>'+(miss===0?'<span class="pill p-ok">已齐全</span>':'<span class="pill p-bad">缺 '+miss+' 项</span>')+'</div>'+
+      '<div class="xs '+(overdue(s)&&miss>0?'miss':'dim')+'">'+cdate(s)+' → '+ddate(s)+(overdue(s)&&miss>0?'<br>已逾期':'')+'</div>'+
+      '<div style="min-width:0">'+tags+'</div>'+
+      '<div>'+acres+'</div>'+
+      '<div class="rowline"><button class="btn s" data-act="fillD" data-id="'+s.id+'">修改资料</button>'+
+      (n<3&&miss===0&&!s.rej&&!s.stop?'<button class="btn s g" data-act="passA" data-id="'+s.id+'">审核通过</button>':'')+
+      (miss>0&&!s.stop?'<button class="btn s" data-act="feishu1" data-id="'+s.id+'">飞书提醒</button>':'')+
+      '</div></div>';
+    return r;
+  }).join('');
+  return '<div class="card"><h3>样品验收 · 已确认选品 SKU<span class="n">'+all.length+'</span></h3><div class="cb tight">'+
+    '<div class="tr th" style="grid-template-columns:'+cols+'">'+
+    '<div></div><div></div><div>商品（名称 / ASIN / 规格 / 价格）</div><div>签收进度</div><div>必备资料</div><div>创建→截止</div>'+
+    '<div>缺失字段（点 ▶ 看全部 12 项）</div><div>验收结果</div><div>操作</div></div>'+
+    rows+pgBar('accept',all.length)+
+    '<div class="trfoot">已验收但资料未补齐：默认 7 天内补齐，系统到期自动飞书通知负责人 · 勾选后底部浮出「批量审核通过 / 飞书提醒」</div></div></div>';
+}
+/* v13: 验收详情抽屉 */
+DRW.accept={
+  title:function(s){ return esc(s.name); },
+  sub:function(s){ return '验收详情 · '+esc(s.code)+' · '+esc(s.asin)+' · 创建 '+cdate(s)+' · 截止 '+ddate(s)+(overdue(s)?'（已逾期）':''); },
+  body:function(s){
+    const f12=fieldsOf(s), miss=missCount(s);
+    let fl=f12.map(function(f){
+      return '<div class="xf"><b>'+f[0]+'</b><span class="'+(f[3]==='miss'?'miss':'')+'">'+
+        (f[3]==='ok'?(f[1]||'—')+' <span class="dim" style="font-weight:400">('+f[2]+')</span>':'未提供')+'</span></div>';
+    }).join('');
+    let h='';
+    if(s.rej) h+='<div class="tip r mb10"><span class="ico">!</span><div><b>验收驳回：</b>'+esc(s.rej.n)+'</div></div>';
+    if(s.stop) h+='<div class="tip r mb10"><span class="ico">!</span><div><b>已终止：</b>'+esc(s.stopr)+'</div></div>';
+    h+='<div class="rowline mb10">'+
+      '<span class="xs dim">五项检查：</span>'+
+      '<span class="pill p-ok">外观 ✓</span><span class="pill p-ok">件数 ✓</span><span class="pill p-ok">承重实测 ✓</span>'+
+      '<span class="pill p-ok">重量尺寸 ✓</span><span class="pill '+(s.rej?'p-bad':'p-ok')+'">与规格书一致 '+(s.rej?'✕':'✓')+'</span></div>';
+    h+='<div class="dim xs" style="font-weight:700;margin:4px 0 6px">12 项必备资料（绿=已有 · 红=缺失）</div>';
+    h+='<div class="xg" style="grid-template-columns:repeat(4,1fr)">'+fl+'</div>';
+    if(miss>0) h+='<div class="tip w mt10"><span class="ico">i</span><div>还缺 <b>'+miss+'</b> 项必填资料 · 点击右下角「修改资料」补齐，保存后标签自动转绿。</div></div>';
+    return h;
+  },
+  foot:function(s){
+    const n=atOf(s,'accept'), miss=missCount(s);
+    return '<button class="btn p" data-act="fillD" data-id="'+s.id+'">修改资料（补齐缺失字段）</button>'+
+    (n<3&&miss===0&&!s.rej&&!s.stop?'<button class="btn g" data-act="passA" data-id="'+s.id+'">审核通过 → 流转 ②③④⑤</button>':'')+
+    (miss>0&&!s.stop?'<button class="btn" data-act="feishu1" data-id="'+s.id+'">飞书提醒负责人</button>':'')+
+    '<button class="btn" data-act="drwclose">关闭</button>';
+  }
+};
+/* 修改资料抽屉（modal，按 12 必填字段） */
+function fillModal(id){
+  const s=sk(id), f12=fieldsOf(s);
+  let fl=f12.map(function(f,i){
+    return '<div class="fld"><label>'+f[0]+(f[3]==='miss'?' <span class="req">* 未提供</span>':'')+'</label>'+
+      '<input class="inp" value="'+esc(f[1])+'" placeholder="'+(f[2]?'来源：'+f[2]:'待补充')+'"></div>';
+  }).join('');
+  return {t:'修改资料 · '+s.name, w:'w', b:
+    '<div class="tip w mb10"><span class="ico">i</span><div>缺失必填字段标红；补齐保存后，「必备资料状态」标签自动转绿。上传实拍图用于 ⑤ 图片需求表与 ⑥ AI 生图参考。</div></div>'+
+    '<div class="grid2">'+fl+'</div>'+
+    '<div class="fld"><label>商品实拍图 <span>（上传样品照片，作为生图参考）</span></label>'+
+    '<div class="fbshot" data-act="upshot">📷 点击上传实拍图（可多张）</div>'+
+    '<div class="shotlist">'+(S.fshots.map(function(x){return '<span class="sc">📎 '+x+' <span class="dim" data-act="delshot" data-f="'+x+'">✕</span></span>';}).join('')||'<span class="xs dim">未上传</span>')+'</div></div>',
+    f:'<button class="btn" data-act="mclose">取消</button><button class="btn g" data-act="fillSave" data-id="'+id+'">保存资料</button>'};
+}
+/* =========================================================
+   11. ② 卖点生成（多维表格风格）
+   ========================================================= */
+function spLangs(id){ return S.langs.sp[id]||DEF_LANGS.slice(); }
+function vSp(){
+  const all=modsk('sp').filter(function(s){ return canStart(s,'sp'); });
+  const list=pgOf('sp',all);
+  const cols='30px 24px 1.8fr 150px 2.6fr 168px';
+  let rows=list.map(function(s){
+    const st=mstat(s,'sp');
+    const ls=spLangs(s.id);
+    const done=st==='done';
+    let r='<div class="tr body" style="grid-template-columns:'+cols+'">'+
+      (done?'<div></div>':cbxCell(S.sel.has(s.id),'sel',s.id))+
+      '<div class="expbtn" data-act="drw" data-k="sp" data-id="'+s.id+'" title="查看 AI 生成过程与结果" style="font-size:10px;color:var(--ink5)">▶</div>'+
+      skuCell(s,'<div class="cd">'+esc(s.size||'—')+' · '+esc(s.wt||'—')+' · '+s.price+'</div>')+
+      '<div>'+langSel('sp',s.id)+'</div>'+
+      '<div class="mcell"><div class="mc-top"><span class="mc-name">AI 生成卖点</span>'+
+        (done?'<span class="pill p-ok">已生成 '+ls.length+' 语种</span>':'<span class="pill p-do">待生成</span>')+
+        '<span class="pill p-mute" data-act="pedit" data-id="'+s.id+'" style="cursor:pointer" title="点击自定义提示词">✎ 提示词</span></div>'+
+        '<div class="mc-body" data-act="spv" data-id="'+s.id+'">'+
+        (done?'<div class="mtxt">'+ls.map(function(l){return '<b style="color:var(--pur)">'+l+'</b>：'+esc(SP_TPL[l]?SP_TPL[l][0][0]:SP_TPL.EN[0][0])+'…';}).join('<br>')+'</div><div class="mop">点击查看多语种卖点 · 修改保存</div>'
+             :'<span class="dim">默认内置提示词 · 引用商品信息 + 语种生成</span>')+'</div></div>'+
+      '<div class="rowline">'+
+      '<button class="btn s" data-act="spgen" data-id="'+s.id+'">'+(done?'重新生成':'生成卖点')+'</button>'+
+      (done?'<button class="btn s g" data-act="sppass" data-id="'+s.id+'">确认卖点</button>':'')+'</div></div>';
+    return r;
+  }).join('');
+  return '<div class="card"><h3>卖点生成 · 基于审核通过的 SKU<span class="n">'+all.length+'</span></h3><div class="cb tight">'+
+    '<div class="tr th" style="grid-template-columns:'+cols+'">'+
+    '<div></div><div></div><div>商品信息（名称 / ASIN / 规格 / 价格）</div><div>语种（下拉多选）</div><div>AI 生成卖点（可编辑提示词）</div><div>操作</div></div>'+
+    rows+pgBar('sp',all.length)+
+    '<div class="trfoot">勾选后底部浮出「批量生成卖点」· 点击行 ▶ 打开抽屉查看 AI 生成过程与证据链 · 确认卖点后流转 ③④⑤</div></div></div>';
+}
+/* v13: 卖点 AI 过程与结果抽屉 */
+DRW.sp={
+  title:function(s){ return esc(s.name); },
+  sub:function(s){ return 'AI 卖点生成 · '+(mstat(s,'sp')==='done'?'已生成 '+spLangs(s.id).length+' 语种':'待生成')+' · 模型 GPT-4o · Skill: sp-gen'; },
+  body:function(s){
+    const ls=spLangs(s.id), done=mstat(s,'sp')==='done';
+    let pts=SP_TPL.EN.map(function(p,i){
+      return '<div class="prow"><span class="pl2">0'+(i+1)+'</span><div class="pt2"><b>'+esc(p[0])+'</b><br><span class="dim xs">证据链：'+esc(p[1])+'</span></div></div>';
+    }).join('');
+    let h='<div class="runlogs mb10">'+
+    '<b>AI 过程</b>（模型：GPT-4o · Skill：sp-gen）<br>'+
+    '01 读取商品信息 / 12 项字段 / 实测数据 <span class="ok">✓</span><br>'+
+    '02 竞品差评 VOC 聚类（7 类痛点）<span class="ok">✓</span><br>'+
+    '03 生成 5 条卖点（每条带证据链）<span class="ok">✓</span><br>'+
+    '04 '+ls.length+' 语种输出 '+(done?'<span class="ok">✓</span>':'…')+'</div>';
+    if(done){
+      h+='<div class="dim xs" style="font-weight:700;margin:4px 0 6px">EN 卖点（5 条 · 每条附证据链）</div>'+
+      '<div style="border:1px solid var(--line2);border-radius:7px;background:#fff;padding:9px 12px">'+pts+'</div>';
+      if(ls.length>1){
+        h+='<div class="dim xs" style="font-weight:700;margin:12px 0 4px">其他语种预览</div>'+
+        '<div class="xs" style="line-height:1.8">'+ls.filter(function(l){return l!=='EN';}).map(function(l){
+          return '<b style="color:var(--pur)">'+l+'</b>：'+esc((SP_TPL[l]||SP_TPL.EN)[0][0])+'…';}).join('<br>')+'</div>';
+      }
+    } else {
+      h+='<div class="tip b"><span class="ico">AI</span><div>点击右下角「生成卖点」开始生成；语种在列表的语种下拉中勾选（默认 EN）。</div></div>';
+    }
+    return h;
+  },
+  foot:function(s){
+    const done=mstat(s,'sp')==='done';
+    return '<button class="btn p" data-act="spgen" data-id="'+s.id+'">'+(done?'重新生成':'生成卖点')+'</button>'+
+    (done?'<button class="btn" data-act="spv" data-id="'+s.id+'">查看 / 修改多语种卖点</button>'+
+      '<button class="btn g" data-act="sppass" data-id="'+s.id+'">确认卖点 → 流转 ③④⑤</button>':'')+
+    '<button class="btn" data-act="drwclose">关闭</button>';
+  }
+};
+/* 卖点查看 / 修改 modal */
+function spModal(id){
+  const s=sk(id), ls=spLangs(id);
+  let b='';
+  ls.forEach(function(l){
+    const arr=SP_TPL[l]||SP_TPL.EN;
+    b+='<div class="fld"><label>'+l+' 卖点</label><textarea class="inp" rows="6">'+
+      arr.map(function(p){return '• '+p[0]+'（证据：'+p[1]+'）';}).join('\n')+'</textarea></div>';
+  });
+  b+='<div class="fld"><label>生成提示词 <span>（可自定义，保存后对该 SKU 生效）</span></label>'+
+     '<textarea class="inp" rows="4">'+esc(SP_PROMPT)+'</textarea></div>';
+  return {t:'多语种卖点 · '+s.name, w:'w', b:b,
+    f:'<button class="btn" data-act="mclose">取消</button><button class="btn g" data-act="spsave" data-id="'+id+'">保存修改</button>'};
+}
+
+/* =========================================================
+   12. ③ Listing 文案
+   ========================================================= */
+function vCopy(){
+  const all=modsk('copy').filter(function(s){ return canStart(s,'copy'); });
+  const list=pgOf('copy',all);
+  const cols='30px 24px 1.7fr 150px 2.7fr 190px';
+  let rows=list.map(function(s){
+    const st=mstat(s,'copy');
+    const done=st==='done';
+    let r='<div class="tr body" style="grid-template-columns:'+cols+'">'+
+      (done?'<div></div>':cbxCell(S.sel.has(s.id),'sel',s.id))+
+      '<div class="expbtn" data-act="drw" data-k="copy" data-id="'+s.id+'" title="查看分析过程与埋词策略" style="font-size:10px;color:var(--ink5)">▶</div>'+
+      skuCell(s,'<div class="cd">卖点 '+(atOf(s,'sp')?'已确认 ✓':'…')+' · '+s.price+'</div>')+
+      '<div>'+langSel('copy',s.id)+'</div>'+
+      '<div class="mcell"><div class="mc-top"><span class="mc-name">AI 生成 Listing</span>'+
+        (done?'<span class="pill p-ok">已生成</span>':'<span class="pill p-do">待生成</span>')+'</div>'+
+        '<div class="mc-body" data-act="cpyv" data-id="'+s.id+'">'+
+        (done?'<div class="mtxt"><b style="color:var(--pur)">EN 标题：</b>'+esc(TITLE_TPL.EN)+'<br><b style="color:var(--pur)">EN 五点：</b>· '+esc(BULLET_TPL.EN[0])+'…</div><div class="mop">点击查看多语种 Listing（标题 + 五点）</div>'
+             :'<span class="dim">工作流：竞品埋词分析 → 埋词策略 → 文案生成</span>')+'</div></div>'+
+      '<div class="rowline">'+
+      '<button class="btn s" data-act="cpygen" data-id="'+s.id+'" '+(done?'':'disabled')+'>'+(done?'重新生成':'生成中')+'</button>'+
+      '<button class="btn s" data-act="cpyv2" data-id="'+s.id+'" '+(done?'':'disabled')+'>人工修改</button>'+
+      (done?'<button class="btn s g" data-act="cpypass" data-id="'+s.id+'">审核通过</button>':'')+'</div></div>';
+    return r;
+  }).join('');
+  return '<div class="rowline mb10"><div class="gtabs">'+
+    '<div class="gtab2'+(S.cview!=='report'?' on':'')+'" data-act="cview" data-v="list">📋 文案列表（SKU + AI 生成内容）</div>'+
+    '<div class="gtab2'+(S.cview==='report'?' on':'')+'" data-act="cview" data-v="report">📊 深度分析报告（埋词 / 竞争度）</div>'+
+    '</div><span class="xs dim">点击行 ▶ 打开该 SKU 分析抽屉 · 报告页顶部切换 SKU 查看完整可视化报告</span></div>'+
+    (S.cview==='report' ? cpyReport(all) :
+    '<div class="card"><h3>Listing 文案 · 基于已确认卖点 SKU<span class="n">'+all.length+'</span></h3><div class="cb tight">'+
+    '<div class="tr th" style="grid-template-columns:'+cols+'">'+
+    '<div></div><div></div><div>商品信息</div><div>语种（下拉多选）</div><div>AI 生成 Listing 文案（标题 / 五点）</div><div>操作</div></div>'+
+    rows+pgBar('copy',all.length)+
+    '<div class="trfoot">勾选后底部浮出「批量重新生成」（可附修改指令）· 审核通过后流转 ⑦ 上架</div></div></div>');
+}
+/* 深度分析报告视图：顶部 SKU 切换 + 可视化报告 */
+function cpyReport(list){
+  const dones=list.filter(function(s){ return atOf(s,'copy'); });
+  const cur = S.csel && dones.some(function(s){return s.id===S.csel;}) ? sk(S.csel) : dones[0];
+  if(!cur) return '<div class="card"><div class="empty"><div class="e1">暂无已生成 Listing 的 SKU</div>'+
+    '<div class="e2">先在「文案列表」页生成并确认 Listing</div></div></div>';
+  let tabs='<div class="rowline mb10" style="gap:5px">'+dones.map(function(s){
+    return '<span class="lchip'+(s.id===cur.id?' on':'')+'" style="padding:3px 12px" data-act="csel" data-id="'+s.id+'">'+esc(s.name.slice(0,12))+'</span>';
+  }).join('')+'</div>';
+  const s=cur;
+  let kw=PICK_KW.map(function(k){
+    const w=Math.round(k[1]/18100*100);
+    const cl=k[3]==='高'?'p-bad':(k[3]==='中'?'p-wait':'p-ok');
+    return '<div class="brow"><span class="bl">'+k[0]+'</span><div class="bt"><i style="width:'+w+'%"></i></div>'+
+      '<span class="bv">'+(k[1]/1000).toFixed(1)+'<small>K</small></span><span class="pill '+cl+'" style="flex:0 0 44px;justify-content:center">'+k[3]+'</span></div>';
+  }).join('');
+  const voc=PICK_VOC.slice(0,5).map(function(t){
+    const vm=Math.max.apply(null,PICK_VOC.map(function(x){return x[1];}));
+    return '<div class="brow"><span class="bl">'+t[0]+'</span><div class="bt"><i style="width:'+Math.round(t[1]/vm*100)+'%;background:var(--red)"></i></div>'+
+    '<span class="bv">'+t[1]+'<small>%</small></span></div>';
+  }).join('');
+  const strat=KW_STRATEGY.map(function(k){
+    return '<div class="dimrow"><div class="dn">'+k[0]+'</div><div class="dd"><b>'+k[1]+'</b><br><span class="xs dim">'+k[2]+'</span></div>'+
+      '<div class="dv"><span class="pill p-ok">已埋</span></div></div>';
+  }).join('');
+  const comp=[['Command™','heavy duty picture hangers','no drill','11 piece','50 lbs'],
+    ['Lutron','picture hanging kit','damage free','complete kit','—'],
+    ['Hillman','wall hooks heavy duty','renter friendly','assorted','22 lbs']].map(function(c){
+    return '<div class="dimrow"><div class="dn xs" style="max-width:80px">'+c[0]+'</div>'+
+    '<div class="dd xs ell" style="max-width:170px">'+c[1]+'</div><div class="dd xs ell" style="max-width:130px">'+c[2]+'</div><div class="dd xs ell" style="max-width:110px">'+c[3]+'</div>'+
+    '<div class="dd"><span class="pill '+(c[4]==='50 lbs'?'p-ok':(c[4]==='—'?'p-mute':'p-wait'))+'">'+c[4]+'</span></div></div>';
+  }).join('');
+  return tabs+
+    '<div class="kpis mb10">'+
+    '<div class="kpi"><div class="l">核心词月搜索</div><div class="v">18.1<small>K</small></div><div class="m">picture hanger</div></div>'+
+    '<div class="kpi"><div class="l">在售竞品</div><div class="v">52</div><div class="m">头部占比 38%</div></div>'+
+    '<div class="kpi"><div class="l">词覆盖</div><div class="v">5<small>/5</small></div><div class="m">核心词 100% 埋入</div></div>'+
+    '<div class="kpi"><div class="l">预估点击率</div><div class="v">+23<small>%</small></div><div class="m">vs 类目均值</div></div>'+
+    '</div>'+
+    '<div class="grid2 mb10">'+
+    '<div class="card"><h3>关键词流量与竞争度<span class="n">SIF + 卖家精灵</span></h3><div class="cb">'+
+    '<div class="chart">'+kw+'</div></div></div>'+
+    '<div class="card"><h3>竞品差评 VOC（文案对打点）</h3><div class="cb"><div class="chart">'+voc+'</div></div></div>'+
+    '</div>'+
+    '<div class="grid2 mb10">'+
+    '<div class="card"><h3>埋词策略矩阵<span class="n">6 位置</span></h3><div class="cb tight">'+
+    '<div class="dimrow" style="font-size:10px;color:var(--ink4);font-weight:700"><div class="dn">位置</div><div class="dd">埋入词</div><div class="dv">状态</div></div>'+strat+'</div></div>'+
+    '<div class="card"><h3>TOP 竞品 Listing 埋词对比</h3><div class="cb tight">'+
+    '<div class="dimrow" style="font-size:10px;color:var(--ink4);font-weight:700"><div class="dn">竞品</div><div class="dd">标题主词</div><div class="dd">五点差异词</div><div class="dd">件数词</div><div class="dd">承重词</div></div>'+comp+'</div></div>'+
+    '</div>'+
+    '<div class="card"><h3>AI 工作流过程<span class="n">MCP：卖家精灵 + SIF</span></h3><div class="cb">'+
+    '<div class="runlogs"><b>01</b> 抓取类目 TOP 60 竞品 Listing <span class="ok">✓</span><br>'+
+    '<b>02</b> 关键词流量与竞争度分析（5 核心词 + 23 长尾）<span class="ok">✓</span><br>'+
+    '<b>03</b> 生成埋词策略（标题 / 五点 / 后台 6 位置）<span class="ok">✓</span><br>'+
+    '<b>04</b> 多语种文案生成 + 违禁词复核 <span class="ok">✓</span><br>'+
+    '<b>05</b> 词覆盖校验：5/5 核心词已埋入 <span class="ok">✓</span></div>'+
+    '<div class="rowline mt10"><button class="btn s" data-act="cview" data-v="list">← 返回文案列表</button>'+
+    '<button class="btn s p" data-act="cpyv" data-id="'+s.id+'">查看该 SKU 最终文案</button></div>'+
+    '</div></div>';
+}
+/* v13: Listing 分析过程抽屉（替代行内折叠） */
+DRW.copy={
+  title:function(s){ return esc(s.name); },
+  sub:function(s){ return 'Listing 工作流 · MCP：卖家精灵 + SIF · 核心词覆盖 5/5 · 竞品 52 家'; },
+  body:function(s){
+    let kw=PICK_KW.map(function(k){
+      const w=Math.round(k[1]/18100*100);
+      const cl=k[3]==='高'?'p-bad':(k[3]==='中'?'p-wait':'p-ok');
+      return '<div class="brow"><span class="bl">'+k[0]+'</span><div class="bt"><i style="width:'+w+'%"></i></div>'+
+      '<span class="bv">'+(k[1]/1000).toFixed(1)+'<small>K</small></span><span class="pill '+cl+'" style="flex:0 0 44px;justify-content:center">'+k[3]+'</span></div>';
+    }).join('');
+    let voc=PICK_VOC.slice(0,4).map(function(t){
+      const vm=Math.max.apply(null,PICK_VOC.map(function(x){return x[1];}));
+      return '<div class="brow"><span class="bl">'+t[0]+'</span><div class="bt"><i style="width:'+Math.round(t[1]/vm*100)+'%;background:var(--red)"></i></div>'+
+      '<span class="bv">'+t[1]+'<small>%</small></span></div>';
+    }).join('');
+    let st=KW_STRATEGY.map(function(k){
+      return '<div class="dimrow"><div class="dn xs" style="max-width:88px">'+k[0]+'</div><div class="dd xs"><b>'+k[1]+'</b><br><span class="dim">'+k[2]+'</span></div>'+
+      '<div class="dv"><span class="pill p-ok">已埋</span></div></div>';
+    }).join('');
+    return '<div class="runlogs mb10">'+
+    '<b>AI 工作流</b>· 核心词覆盖 5/5 · 竞品 52 家 · 头部占比 38%<br>'+
+    '01 抓取类目 TOP 60 竞品 Listing <span class="ok">✓</span><br>'+
+    '02 关键词流量与竞争度分析 <span class="ok">✓</span><br>'+
+    '03 生成埋词策略（6 位置）<span class="ok">✓</span><br>'+
+    '04 多语种文案生成 + 违禁词复核 <span class="ok">✓</span></div>'+
+    '<div class="grid2 mb10">'+
+    '<div class="card"><h3>关键词流量与竞争度</h3><div class="cb"><div class="chart">'+kw+'</div></div></div>'+
+    '<div class="card"><h3>竞品差评 VOC</h3><div class="cb"><div class="chart">'+voc+'</div></div></div>'+
+    '</div>'+
+    '<div class="card"><h3>埋词策略<span class="n">6 位置</span></h3><div class="cb tight">'+
+    '<div class="dimrow" style="font-size:10px;color:var(--ink4);font-weight:700"><div class="dn">位置</div><div class="dd">埋入词</div><div class="dv">状态</div></div>'+st+'</div></div>';
+  },
+  foot:function(s){
+    const done=mstat(s,'copy')==='done';
+    return '<button class="btn p" data-act="cview2report" data-id="'+s.id+'">📊 打开完整深度分析报告</button>'+
+    (done?'<button class="btn" data-act="cpyv" data-id="'+s.id+'">查看 / 修改文案</button>'+
+      '<button class="btn g" data-act="cpypass" data-id="'+s.id+'">审核通过 → 流转 ⑦</button>':
+      '<button class="btn" data-act="cpygen" data-id="'+s.id+'">重新生成（可附指令）</button>')+
+    '<button class="btn" data-act="drwclose">关闭</button>';
+  }
+};
+/* Listing 查看/修改 modal */
+function cpyModal(id){
+  const s=sk(id), ls=S.langs.copy[id]||DEF_LANGS.slice();
+  let b='';
+  ls.forEach(function(l){
+    const tt=TITLE_TPL[l]||TITLE_TPL.EN, bb=BULLET_TPL[l]||BULLET_TPL.EN;
+    b+='<div class="fld"><label>'+l+' 标题</label><textarea class="inp" rows="2">'+esc(tt)+'</textarea></div>'+
+       '<div class="fld"><label>'+l+' 五点描述</label><textarea class="inp" rows="5">'+
+       bb.map(function(x){return '• '+x;}).join('\n')+'</textarea></div>';
+  });
+  return {t:'Listing 文案 · '+s.name, w:'w', b:b,
+    f:'<button class="btn" data-act="mclose">取消</button><button class="btn g" data-act="cpysave" data-id="'+id+'">保存修改</button>'};
+}
+/* =========================================================
+   13. ④ 说明书
+   ========================================================= */
+function vManual(){
+  const all=modsk('manual').filter(function(s){ return canStart(s,'manual'); });
+  const list=pgOf('manual',all);
+  const cols='30px 24px 1.9fr 150px 2.2fr 186px';
+  let rows=list.map(function(s){
+    const st=mstat(s,'manual'), done=st==='done';
+    let r='<div class="tr body" style="grid-template-columns:'+cols+'">'+
+      (done?'<div></div>':cbxCell(S.sel.has(s.id),'sel',s.id))+
+      '<div class="expbtn" data-act="drw" data-k="manual" data-id="'+s.id+'" title="查看说明书内容" style="font-size:10px;color:var(--ink5)">▶</div>'+
+      skuCell(s,'<div class="cd">'+esc(s.size||'—')+' · 件数 '+(atOf(s,'accept')?'11 件':'—')+'</div>')+
+      '<div>'+langSel('manual',s.id)+'</div>'+
+      '<div class="mcell"><div class="mc-top"><span class="mc-name">AI 生成说明书</span>'+
+        (done?'<span class="pill p-ok">已生成 '+(S.langs.manual[s.id]||['EN']).length+' 语种 · 6 页</span>':'<span class="pill p-do">待生成</span>')+'</div>'+
+        '<div class="mc-body" data-act="mnv" data-id="'+s.id+'">'+
+        (done?'<div class="mtxt">安装步骤 4 步图解 · 承重与墙面适配表 · 除胶卡 · 多语种排版 PDF</div><div class="mop">点击查看 / 放大 / 下载</div>'
+             :'<span class="dim">引用 12 项字段 + 卖点 + 安装图位生成</span>')+'</div></div>'+
+      '<div class="rowline"><button class="btn s" data-act="mnv2" data-id="'+s.id+'" '+(done?'':'disabled')+'>查看修改</button>'+
+      '<button class="btn s" data-act="mngen" data-id="'+s.id+'" '+(done?'':'disabled')+'>重新生成</button>'+
+      (done?'<button class="btn s g" data-act="mnpass" data-id="'+s.id+'">确认入库</button>':'')+'</div></div>';
+    return r;
+  }).join('');
+  return '<div class="card"><h3>说明书 · 基于已确认卖点 SKU<span class="n">'+all.length+'</span></h3><div class="cb tight">'+
+    '<div class="tr th" style="grid-template-columns:'+cols+'">'+
+    '<div></div><div></div><div>商品信息</div><div>语种（下拉多选）</div><div>AI 生成说明书</div><div>操作</div></div>'+
+    rows+pgBar('manual',all.length)+
+    '<div class="trfoot">勾选后底部浮出「批量重新生成」· 点击行 ▶ 打开抽屉查看 6 页缩略图 · 确认入库后流转 ⑦ 上架</div></div></div>';
+}
+/* v13: 说明书抽屉 */
+DRW.manual={
+  title:function(s){ return esc(s.name); },
+  sub:function(s){ return '说明书 · '+(mstat(s,'manual')==='done'?(S.langs.manual[s.id]||['EN']).length+' 语种 · 6 页 PDF':'待生成')+' · 图文排版工作流'; },
+  body:function(s){
+    const done=mstat(s,'manual')==='done';
+    let h='<div class="runlogs mb10"><b>AI 过程</b>（图文排版 + 多语种）<br>'+
+    '01 字段 / 卖点 / 安装步骤读取 <span class="ok">✓</span><br>02 图文混排 6 页 <span class="ok">✓</span><br>'+
+    '03 PDF 导出 × ' + (S.langs.manual[s.id]||['EN']).length + ' 语种 <span class="ok">✓</span></div>';
+    if(!done) return h+'<div class="tip b"><span class="ico">AI</span><div>点击右下角「重新生成」开始生成说明书。</div></div>';
+    let pgs='';
+    for(let i=1;i<=6;i++){
+      pgs+='<div class="pg" data-act="pgv" data-id="'+s.id+'" data-p="'+i+'">'+
+        '<div class="pl"></div><div class="pl w"></div><div class="pl s"></div><div class="pim"></div>'+
+        '<span class="pn2">P'+i+'</span></div>';
+    }
+    return h+'<div class="pgwrap">'+pgs+'</div>'+
+    '<div class="xs dim" style="margin-top:8px">点击任一页可放大查看、修改内容或下载 PDF</div>';
+  },
+  foot:function(s){
+    const done=mstat(s,'manual')==='done';
+    return (done?'<button class="btn p" data-act="mnv" data-id="'+s.id+'">查看 / 修改</button>'+
+      '<button class="btn" data-act="mngen" data-id="'+s.id+'">重新生成</button>'+
+      '<button class="btn g" data-act="mnpass" data-id="'+s.id+'">确认入库 → 流转 ⑦</button>':
+      '<button class="btn p" data-act="mngen" data-id="'+s.id+'">生成说明书</button>')+
+    '<button class="btn" data-act="drwclose">关闭</button>';
+  }
+};
+function mnModal(id){
+  return {t:'说明书预览 · P'+(S.pg||1), w:'w', b:
+    '<div style="aspect-ratio:3/4;max-width:340px;margin:0 auto;border:1px solid var(--line);border-radius:9px;background:linear-gradient(160deg,#f6f9fd,#e8eff8);padding:22px 18px">'+
+    '<div style="font-size:15px;font-weight:800;margin-bottom:4px">Installation Guide</div>'+
+    '<div style="font-size:10px;color:var(--ink4);margin-bottom:14px">金属画框挂钩套件 · 11 件装</div>'+
+    '<div class="pl" style="height:6px;border-radius:3px;background:#dfe8f4;margin-bottom:8px"></div>'+
+    '<div class="pl w" style="height:6px;border-radius:3px;background:#dfe8f4;margin-bottom:16px;width:70%"></div>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+
+    '<div style="aspect-ratio:1;border-radius:7px;background:linear-gradient(140deg,#e9eff9,#d7e2f2)"></div>'+
+    '<div style="aspect-ratio:1;border-radius:7px;background:linear-gradient(140deg,#e9eff9,#d7e2f2)"></div></div>'+
+    '<div style="font-size:10px;color:var(--ink3);line-height:1.8;margin-top:12px">1. 清洁墙面并标记位置<br>2. 撕开背胶或打孔固定<br>3. 静置 24h 后挂物（最大 50 Lbs）</div></div>'+
+    '<div class="fld mt10"><label>页面内容（可修改）</label><textarea class="inp" rows="3">1. 清洁墙面并标记位置 2. 撕开背胶或打孔固定 3. 静置 24h 后挂物（最大 50 Lbs）</textarea></div>',
+    f:'<button class="btn" data-act="mclose">取消</button><button class="btn" data-act="dlpg">⬇ 下载 PDF</button><button class="btn g" data-act="mcloseok">保存</button>'};
+}
+
+/* =========================================================
+   14. ⑤ 图片需求表
+   ========================================================= */
+function vBrief(){
+  const all=modsk('brief').filter(function(s){ return canStart(s,'brief'); });
+  const list=pgOf('brief',all);
+  const cols='1.9fr 170px 210px 1.2fr 150px';
+  let rows=list.map(function(s){
+    const st=mstat(s,'brief'), done=st==='done';
+    const types=S.types[s.id]||IMGTYPES.filter(function(t){return t[2];}).map(function(t){return t[0];});
+    return '<div class="tr body" style="grid-template-columns:'+cols+'">'+
+      skuCell(s,'<div class="cd">卖点 '+(atOf(s,'sp')?'✓':'…')+' · '+esc(s.size||'—')+'</div>')+
+      '<div>'+langSel('brief',s.id)+'</div>'+
+      '<div>'+typeSel(s.id)+'</div>'+
+      '<div class="sm">将生成 <b>'+types.length*(S.langs.brief[s.id]||['EN']).length+'</b> 张 <span class="dim xs">('+types.length+' 类型 × '+(S.langs.brief[s.id]||['EN']).length+' 语种)</span></div>'+
+      '<div class="rowline"><button class="btn s" data-act="briefe" data-id="'+s.id+'">修改</button>'+
+      (done?'<span class="pill p-ok">已确认 ✓</span>':'<button class="btn s g" data-act="briefok" data-id="'+s.id+'">确认需求</button>')+'</div></div>';
+  }).join('');
+  return '<div class="card"><h3>图片需求表 · 基于已确认卖点 SKU<span class="n">'+all.length+'</span></h3><div class="cb tight">'+
+    '<div class="tr th" style="grid-template-columns:'+cols+'">'+
+    '<div>商品信息 + 图片</div><div>语种（下拉多选）</div><div>图片类型（下拉多选 · 默认常规 5 类）</div><div>预计生成</div><div>操作</div></div>'+
+    rows+pgBar('brief',all.length)+
+    '<div class="trfoot">「确认需求」后产品信息与图片要求流转 ⑥ AI 批量生图，自动创建生图任务</div></div></div>';
+}
+
+/* =========================================================
+   15. ⑥ AI 批量生图（工作台 + 图片库）
+   ========================================================= */
+function vGen(){
+  const tasks=modsk('gen').filter(function(s){ return canStart(s,'gen') && (atOf(s,'gen')>0||gimgs(s).length); });
+  let h='<div class="rowline mb10"><div class="gtabs">'+
+    '<div class="gtab2'+(S.gtab==='bench'?' on':'')+'" data-act="gtab" data-t="bench">🖼 AI 生图工作台</div>'+
+    '<div class="gtab2'+(S.gtab==='lib'?' on':'')+'" data-act="gtab" data-t="lib">📁 图片库</div></div>'+
+    (S.gtab==='bench'?'<span class="xs dim">确认 ⑥ 需求后自动创建生图任务 · 按语种和图片类型批量生成</span>':
+     '<span class="xs dim">已确认入库的 SKU 图片 · 支持批量下载 · 自动流转 ⑦ 上架</span>')+'</div>';
+  h+= S.gtab==='bench' ? genBench(tasks) : genLib();
+  return h;
+}
+function genBench(tasks){
+  const total=tasks.reduce(function(a,s){return a+gimgs(s).length;},0);
+  const okg=tasks.reduce(function(a,s){return a+gimgs(s).filter(function(g){return g.st==='ok';}).length;},0);
+  const waitg=tasks.reduce(function(a,s){return a+gimgs(s).filter(function(g){return g.st==='wait';}).length;},0);
+  let h='<div class="gstats mb10">'+
+    gstat('🎨','今日生成',total+'<small> 张</small>','#eaf0ff')+
+    gstat('✅','已通过',okg+'<small> 张</small>','#e6f6f0')+
+    gstat('⏳','待审核',waitg+'<small> 张</small>','#fdf3e3')+
+    gstat('📦','已入库',okg+'<small> 张</small>','#f1ebfd')+'</div>';
+  if(!tasks.length) return h+'<div class="card"><div class="empty"><div class="e1">暂无生图任务</div><div class="e2">在 ⑤ 图片需求表确认需求后自动创建</div></div></div>';
+  tasks.forEach(function(s){
+    const imgs=gimgs(s), prog=G_STAT[s.id]==='ok'?100:Math.round((G_DOING[s.id]||0)*100);
+    const okn=imgs.filter(function(g){return g.st==='ok';}).length;
+    const langs=[...new Set(imgs.map(function(g){return g.lang;}))];
+    h+='<div class="task"><div class="task-h">'+
+      '<div class="tk-sku"><div class="ph">IMG</div><div><div class="tk-nm ell">'+esc(s.name)+'</div>'+
+      '<div class="tk-cd">'+esc(s.code)+' · '+esc(s.asin)+'</div></div></div>'+
+      '<div class="tk-meta">'+
+      (prog===100?'<span class="pill p-ok">已完成 '+okn+'/'+imgs.length+'</span>':'<span class="pill p-do">生成中 '+prog+'%</span>')+
+      '<span class="pill p-mute">'+langs.join(' / ')+'</span>'+
+      '<button class="btn xs" data-act="gselall" data-id="'+s.id+'">全选</button>'+
+      '</div></div>'+
+      '<div class="task-sub">'+langs.map(function(l){
+        const ci=imgs.filter(function(g){return g.lang===l;}).length;
+        return '<span class="tsub'+(S.glang===l||!S.glang&&l===langs[0]?' on':'')+'" data-act="glang" data-l="'+l+'">'+l+'<span class="tc">'+ci+' 张</span></span>';
+      }).join('')+'<span class="xs dim" style="margin-left:4px">参考图：实拍 9 张（一致性锁定）</span></div>'+
+      '<div class="task-g"><div class="tgrid">'+imgs.map(function(g,i){
+        return genThumb(s,g,i);
+      }).join('')+'</div></div></div>';
+  });
+  return h;
+}
+function genThumb(s,g,i){
+  const sel=S.gsel.has(s.id+'-'+i);
+  const st = g.st==='ok'?'p':(g.st==='todo'?'w':'n');
+  const stlb = g.st==='ok'?'待审':(g.st==='todo'?'待生成':'排队');
+  return '<div class="thumb'+(sel?' sel':'')+'" data-act="gsel" data-id="'+s.id+'-'+i+'">'+
+    (g.st==='wait'?'':'<span class="cat">'+g.type+' · '+g.lang+'</span>')+
+    (sel?'':'<span class="st3 '+st+'">'+stlb+'</span>')+
+    (g.st==='ok'?'<div class="acts2"><button class="btn" data-act="g1regen" data-id="'+s.id+'-'+i+'">重新生成</button>'+
+      '<button class="btn" data-act="g1dl" data-id="'+s.id+'-'+i+'">下载</button>'+
+      '<button class="btn" data-act="g1ok" data-id="'+s.id+'-'+i+'">✓ 通过</button></div>':
+     g.st==='todo'?'<div class="acts2"><button class="btn" data-act="g1gen" data-id="'+s.id+'-'+i+'">生成</button></div>':'')+
+    '<span class="ck"><span class="cbx'+(sel?' on':'')+'"></span></span>'+
+    '<div class="tb2"><span>'+g.type+'</span><span>'+g.lang+'</span></div></div>';
+}
+function gstat(ico,l,v,bg){
+  return '<div class="gstat"><div class="gi" style="background:'+bg+'">'+ico+'</div><div><div class="gl">'+l+'</div><div class="gv">'+v+'</div></div></div>';
+}
+function genLib(){
+  const tasks=SK.filter(function(s){ return gimgs(s).filter(function(g){return g.st==='ok';}).length; });
+  let h='';
+  tasks.forEach(function(s){
+    const imgs=gimgs(s).filter(function(g){return g.st==='ok';});
+    h+='<div class="task"><div class="task-h">'+
+      '<div class="tk-sku"><div class="ph">IMG</div><div><div class="tk-nm ell">'+esc(s.name)+'</div>'+
+      '<div class="tk-cd">'+esc(s.asin)+'</div></div></div>'+
+      '<div class="tk-meta"><span class="pill p-ok">'+imgs.length+' 张已入库</span>'+
+      '<span class="pill p-cy">→ ⑦ 上架已同步</span></div></div>'+
+      '<div class="task-g"><div class="tgrid">'+imgs.map(function(g,i){
+        return '<div class="thumb"><span class="cat">'+g.type+' · '+g.lang+'</span>'+
+        '<div class="acts2"><button class="btn" data-act="g1dl" data-id="'+s.id+'-'+i+'">下载</button></div>'+
+        '<div class="tb2"><span>'+g.type+'</span><span>'+g.lang+'</span></div></div>';
+      }).join('')+'</div></div></div>';
+  });
+  if(!h) h='<div class="card"><div class="empty"><div class="e1">图片库为空</div><div class="e2">生图工作台通过审核的图片自动入库</div></div></div>';
+  return h;
+}
+/* Agent 改图 modal */
+function agentModal(){
+  return {t:'发给 Agent 改图', w:'', b:
+    '<div class="tip b mb10"><span class="ico">AI</span><div>Agent 会根据你的改图指令自动修改提示词，并引用产品实拍参考图二次生图。</div></div>'+
+    '<div class="fld"><label>已选图片</label><div class="xs dim">4 张（工作台勾选）</div></div>'+
+    '<div class="fld"><label>改图指令 <span class="req">* 必填</span></label>'+
+    '<textarea class="inp" rows="4" placeholder="例：把背景换成北欧风客厅，挂钩位置上移 10%，文字水印去掉，保持产品本体与实拍完全一致"></textarea></div>',
+    f:'<button class="btn" data-act="mclose">取消</button><button class="btn p" data-act="agentsub">发送给 Agent</button>'};
+}
+/* =========================================================
+   16. ⑦ 上架（亚马逊新品上架表）
+   ========================================================= */
+function vSipp(){
+  const list=SK.filter(function(s){ return !s.poolOnly && !s.stop && (atOf(s,'copy')||atOf(s,'manual')||atOf(s,'gen')); });
+  const cols='34px 1.7fr 130px 90px 1.7fr 1.5fr 100px 90px 84px 150px';
+  let rows=list.map(function(s){
+    const x=S.exp.has(s.id);
+    const miss=[];
+    if(!atOf(s,'copy')) miss.push('标题/五点');
+    if(!atOf(s,'gen')) miss.push('主图');
+    if(!atOf(s,'manual')) miss.push('说明书');
+    const ready=miss.length===0;
+    let r='<div class="tr body amz" style="grid-template-columns:'+cols+'">'+
+      '<div class="expbtn" data-act="exp" data-id="'+s.id+'" style="font-size:10px;color:var(--ink5)">'+(x?'▼':'▶')+'</div>'+
+      '<div><div class="sku"><div class="ph">IMG</div><div style="min-width:0"><div class="nm">'+esc(s.name)+'</div>'+
+      '<div class="cd">SKU: '+esc(s.code)+' · FNSKU: '+(ready?'X0'+s.code.replace('-',''):'—')+'</div></div></div></div>'+
+      '<div class="amzcell ell">'+esc(s.cat.split('›')[1]||'家居')+'</div>'+
+      '<div class="amzcell">XIAOQING</div>'+
+      (atOf(s,'copy')?'<div class="amzcell lk ell" data-act="amzv" data-id="'+s.id+'">'+esc(TITLE_TPL.EN)+'</div>'
+        :'<div class="amzcell miss">缺失</div>')+
+      (atOf(s,'copy')?'<div class="amzcell ell">'+esc(BULLET_TPL.EN[0])+'…</div>':'<div class="amzcell miss">缺失</div>')+
+      (atOf(s,'gen')?'<div class="amzcell lk" data-act="amzv" data-id="'+s.id+'">9 张 ✓</div>':'<div class="amzcell miss">未入库</div>')+
+      (atOf(s,'manual')?'<div class="amzcell">PDF ✓</div>':'<div class="amzcell miss">缺失</div>')+
+      '<div class="amzcell">'+s.price+'</div>'+
+      '<div>'+(ready?'<span class="pill p-ok">可上架</span>':'<span class="pill p-bad">缺 '+miss.length+' 项</span>')+'</div>'+
+      '<div class="rowline"><button class="btn s" data-act="amzv" data-id="'+s.id+'">查看修改</button>'+
+      '<button class="btn s d" data-act="amzdel" data-id="'+s.id+'">删除</button></div></div>';
+    if(x) r+=sippXRow(s);
+    return r;
+  }).join('');
+  return '<div class="rowline mb10"><span class="tip b" style="flex:1"><span class="ico">i</span>'+
+    '<div>按亚马逊「新品上架表」字段展示前序流程输出结果；缺失字段标红。后续接入领星接口后可一键上传店铺。</div></span>'+
+    '<button class="btn p" data-act="exportS">⬇ 导出上架表格 Excel</button>'+
+    '<button class="btn" disabled title="待接入领星 API">🚀 一键上架亚马逊（预留）</button></div>'+
+    '<div class="card"><div class="cb tight">'+
+    '<div class="tr th" style="grid-template-columns:'+cols+'">'+
+    '<div></div><div>SKU / 商品名</div><div>类目</div><div>品牌</div><div>商品标题</div><div>五点描述</div><div>主图</div><div>说明书</div><div>售价</div><div>状态 / 操作</div></div>'+
+    rows+'<div class="trfoot">点击 ▶ 展开该 SKU 的卖点 / Listing / 图片等全部输出内容 · 数据来源 ②③④⑥ 自动流转</div></div></div>';
+}
+function sippXRow(s){
+  let imgw='';
+  const n=atOf(s,'gen')?9:3;
+  for(let i=0;i<n;i++){
+    imgw+='<div style="aspect-ratio:1;border:1px solid var(--line);border-radius:6px;background:linear-gradient(140deg,#e9eff9,#d7e2f2);display:flex;align-items:center;justify-content:center;font-size:9px;color:#8fa3bd">'+['主图','场景','安装','承重','尺寸','细节','配件','包装','对比'][i]+'</div>';
+  }
+  return '<div class="tr" style="display:block;background:#fbfcfe;border-bottom:1px solid var(--line2)">'+
+    '<div style="padding:10px 14px 12px 50px"><div class="grid2">'+
+    '<div class="card"><h3>卖点（② 输出）</h3><div class="cb">'+SP_TPL.EN.map(function(p){
+      return '<div class="prow"><span class="pl2">·</span><div class="pt2">'+esc(p[0])+'<br><span class="dim xs">证据：'+esc(p[1])+'</span></div></div>';}).join('')+'</div></div>'+
+    '<div class="card"><h3>Listing（③ 输出）</h3><div class="cb"><div class="dim xs" style="font-weight:600;margin-bottom:4px">EN 标题</div>'+
+    '<div class="amzcell" style="line-height:1.6">'+(atOf(s,'copy')?esc(TITLE_TPL.EN):'<span class="miss">缺失</span>')+'</div>'+
+    '<div class="dim xs" style="font-weight:600;margin:8px 0 4px">EN 五点</div>'+
+    (atOf(s,'copy')?BULLET_TPL.EN.map(function(x){return '<div class="xs" style="line-height:1.7">• '+esc(x)+'</div>';}).join(''):'<span class="miss">缺失</span>')+'</div></div>'+
+    '</div>'+
+    '<div class="card mt10"><h3>图片（⑥ 输出）'+(atOf(s,'gen')?'':' <span class="req">· 部分缺失</span>')+'</h3><div class="cb">'+
+    '<div style="display:grid;grid-template-columns:repeat(9,1fr);gap:6px">'+imgw+'</div></div></div>'+
+    '</div></div>';
+}
+
+/* =========================================================
+   16. ⑦ 上架（亚马逊新品上架表 · 完整字段 + 可编辑）
+   ========================================================= */
+function vSipp(){
+  const all=SK.filter(function(s){ return !s.poolOnly && !s.stop && (atOf(s,'copy')||atOf(s,'manual')||atOf(s,'gen')); });
+  const list=pgOf('sipp',all);
+  const cols='24px 1.6fr 96px 84px 1.6fr 1.3fr 86px 110px 70px 74px 84px 150px';
+  let rows=list.map(function(s){
+    const miss=[];
+    if(!atOf(s,'copy')) miss.push('Listing');
+    if(!atOf(s,'gen')) miss.push('主图');
+    if(!atOf(s,'manual')) miss.push('说明书');
+    const ready=miss.length===0;
+    const f=fieldsOf(s);
+    const fsize=f[3], fwt=f[4], fnum=f[10];
+    let r='<div class="tr body amz" style="grid-template-columns:'+cols+'">'+
+      '<div class="expbtn" data-act="drw" data-k="sipp" data-id="'+s.id+'" title="展开该 SKU 全部上架信息" style="font-size:10px;color:var(--ink5)">▶</div>'+
+      '<div><div class="sku"><div class="ph">IMG</div><div style="min-width:0"><div class="nm">'+esc(s.name)+'</div>'+
+      '<div class="cd">SKU: '+esc(s.code)+' · ASIN: '+esc(s.asin)+' · FNSKU: '+(ready?'X0'+s.code.replace('-',''):'—')+'</div></div></div></div>'+
+      '<div class="amzcell ell">'+esc(s.cat.split('›')[1]||'家居')+'</div>'+
+      '<div class="amzcell">XIAOQING</div>'+
+      (atOf(s,'copy')?'<div class="amzcell lk ell" data-act="amzv" data-id="'+s.id+'" title="'+esc(TITLE_TPL.EN)+'">'+esc(TITLE_TPL.EN)+'</div>'
+        :'<div class="amzcell miss">缺失</div>')+
+      (atOf(s,'copy')?'<div class="amzcell ell" title="'+esc(BULLET_TPL.EN.join('\n'))+'">'+esc(BULLET_TPL.EN[0])+'…</div>':'<div class="amzcell miss">缺失</div>')+
+      (atOf(s,'gen')?'<div class="amzcell lk" data-act="amzv" data-id="'+s.id+'">9 张 ✓</div>':'<div class="amzcell miss">未入库</div>')+
+      '<div class="amzcell">'+esc(fsize[1]||'—')+'</div>'+
+      '<div class="amzcell">'+esc(fwt[1]||'—')+'</div>'+
+      '<div class="amzcell">'+esc(fnum[1]||'—')+'</div>'+
+      (atOf(s,'manual')?'<div class="amzcell">PDF ✓</div>':'<div class="amzcell miss">缺失</div>')+
+      '<div class="amzcell">'+s.price+'</div>'+
+      '<div class="rowline">'+
+      (ready?'<span class="pill p-ok">可上架</span>':'<span class="pill p-bad">缺 '+miss.length+' 项</span>')+
+      '<button class="btn s" data-act="amzv" data-id="'+s.id+'">查看修改</button>'+
+      '<button class="btn s d" data-act="amzdel" data-id="'+s.id+'">删除</button></div></div>';
+    return r;
+  }).join('');
+  return '<div class="rowline mb10"><span class="tip b" style="flex:1"><span class="ico">i</span>'+
+    '<div>按亚马逊「新品上架表」字段展示前序流程输出结果，缺失标红；列多可左右滚动 · 点击行 ▶ 打开抽屉查看该 SKU 全部上架信息。</div></span>'+
+    '<button class="btn p" data-act="exportS">⬇ 导出上架表格 Excel</button>'+
+    '<button class="btn" disabled title="待接入领星 API">🚀 一键上架亚马逊（预留）</button></div>'+
+    '<div class="card"><div class="cb tight amzscroll">'+
+    '<div class="tr th" style="grid-template-columns:'+cols+'">'+
+    '<div></div><div>SKU / 商品名 / ASIN / FNSKU</div><div>类目</div><div>品牌</div><div>商品标题</div><div>五点描述</div>'+
+    '<div>主图</div><div>尺寸</div><div>重量</div><div>件数</div><div>说明书</div><div>状态 / 操作</div></div>'+
+    rows+pgBar('sipp',all.length)+
+    '<div class="trfoot">价格 / 库存 / 发货方式等完整字段在详情抽屉与「查看修改」中 · 数据来源 ①②③④⑥ 自动流转</div></div></div>';
+}
+/* v13: 上架详情抽屉（汇总 ①—⑥ 全部输出） */
+DRW.sipp={
+  title:function(s){ return esc(s.name); },
+  sub:function(s){ return '上架汇总 · SKU '+esc(s.code)+' · FNSKU '+(atOf(s,'gen')&&atOf(s,'copy')?'X0'+s.code.replace('-',''):'—')+' · 数据自动流转 ①②③④⑥'; },
+  body:function(s){
+    const f=fieldsOf(s);
+    const fk=f.map(function(x){
+      return '<div class="xf"><b>'+x[0]+'</b><span class="'+(x[3]==='miss'?'miss':'')+'">'+(x[1]||'未提供')+'</span></div>';
+    }).join('');
+    let imgw='';
+    const n=atOf(s,'gen')?9:3;
+    for(let i=0;i<n;i++){
+      imgw+='<div style="aspect-ratio:1;border:1px solid var(--line);border-radius:6px;background:linear-gradient(140deg,#e9eff9,#d7e2f2);display:flex;align-items:center;justify-content:center;font-size:9px;color:#8fa3bd">'+['主图','场景','安装','承重','尺寸','细节','配件','包装','对比'][i]+'</div>';
+    }
+    return '<div class="card mb10"><h3>Listing（③ 输出）</h3><div class="cb">'+
+    '<div class="xg">'+
+    '<div class="xf"><b>EN 标题</b><span>'+(atOf(s,'copy')?esc(TITLE_TPL.EN):'<span class="miss">缺失</span>')+'</span></div>'+
+    '<div class="xf"><b>DE 标题</b><span>'+(atOf(s,'copy')?esc(TITLE_TPL.DE):'—')+'</span></div>'+
+    '<div class="xf"><b>后台关键词</b><span>picture hanger kit · wall hooks no drill · frame hanging</span></div>'+
+    '<div class="xf"><b>A+ 商品描述</b><span>'+(atOf(s,'copy')?'图文 5 模块 ✓':'缺失')+'</span></div>'+
+    '<div class="xf"><b>售价</b><span>'+s.price+'</span></div>'+
+    '<div class="xf"><b>库存</b><span>300 件</span></div>'+
+    '<div class="xf"><b>发货方式</b><span>FBA · US 主店</span></div>'+
+    '<div class="xf"><b>颜色</b><span>镍色</span></div>'+
+    '</div>'+
+    '<div class="dim xs" style="font-weight:600;margin:10px 0 4px">EN 五点</div>'+
+    (atOf(s,'copy')?BULLET_TPL.EN.map(function(x){return '<div class="xs" style="line-height:1.7">• '+esc(x)+'</div>';}).join(''):'<span class="miss">缺失</span>')+
+    '</div></div>'+
+    '<div class="card mb10"><h3>卖点（② 输出）</h3><div class="cb">'+SP_TPL.EN.map(function(p){
+      return '<div class="prow"><span class="pl2">·</span><div class="pt2">'+esc(p[0])+'<br><span class="dim xs">证据：'+esc(p[1])+'</span></div></div>';}).join('')+'</div></div>'+
+    '<div class="card mb10"><h3>商品资料（① 输出 · 12 项字段）</h3><div class="cb"><div class="xg">'+fk+'</div></div></div>'+
+    '<div class="card mb10"><h3>图片（⑥ 输出）'+(atOf(s,'gen')?'':' <span class="req">· 部分缺失</span>')+'</h3><div class="cb">'+
+    '<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px">'+imgw+'</div></div></div>'+
+    '<div class="card"><h3>说明书（④ 输出）</h3><div class="cb">'+
+    (atOf(s,'manual')?'<div class="pgwrap"><div class="pg" data-act="pgv" data-id="'+s.id+'"><div class="pl"></div><div class="pl w"></div><div class="pim"></div><span class="pn2">P1</span></div><div class="pg"><div class="pl"></div><div class="pl s"></div><div class="pim"></div><span class="pn2">P2</span></div></div>'
+    :'<span class="miss">说明书缺失</span>')+'</div></div>';
+  },
+  foot:function(s){
+    return '<button class="btn p" data-act="amzv" data-id="'+s.id+'">编辑该 SKU 全部上架信息</button>'+
+    '<button class="btn d" data-act="amzdel" data-id="'+s.id+'">删除</button>'+
+    '<button class="btn" data-act="drwclose">关闭</button>';
+  }
+};
+/* 上架编辑 modal：SKU 所有信息 + AI 生成内容 全部可改 */
+function amzModal(id){
+  const s=sk(id), f=fieldsOf(s);
+  const ls=S.langs.copy[id]||DEF_LANGS.slice();
+  let titles='', bullets='';
+  ls.forEach(function(l){
+    const tt=TITLE_TPL[l]||TITLE_TPL.EN, bb=BULLET_TPL[l]||BULLET_TPL.EN;
+    titles+='<div class="fld"><label>'+l+' 商品标题</label><textarea class="inp" rows="2">'+esc(tt)+'</textarea></div>';
+    bullets+='<div class="fld"><label>'+l+' 五点描述</label><textarea class="inp" rows="5">'+
+      bb.map(function(x){return '• '+x;}).join('\n')+'</textarea></div>';
+  });
+  let fk=f.map(function(x){
+    return '<div class="fld"><label>'+x[0]+(x[3]==='miss'?' <span class="req">* 缺失</span>':'')+'</label>'+
+      '<input class="inp" value="'+esc(x[1])+'"></div>';
+  }).join('');
+  let imgs='';
+  IMGTYPES.forEach(function(t){
+    imgs+='<div class="thumb" style="min-height:0"><span class="cat">'+t[1]+'</span>'+
+    '<div class="tb2"><span>'+(atOf(s,'gen')?'✓ 已入库':'<span style="color:#f2627d">未入库</span>')+'</span><span>替换</span></div></div>';
+  });
+  return {t:'编辑上架信息 · '+s.name, w:'w', b:
+    '<div class="tip b mb10"><span class="ico">i</span><div>可修改 SKU 所有信息与 AI 生成内容，保存后同步导出表格与后续一键上架。</div></div>'+
+    '<div class="card mb10"><h3>① 基础信息（SKU / 规格 / 价格）</h3><div class="cb"><div class="grid2">'+
+    '<div class="fld"><label>SKU</label><input class="inp" value="'+esc(s.code)+'"></div>'+
+    '<div class="fld"><label>ASIN</label><input class="inp" value="'+esc(s.asin)+'"></div>'+
+    '<div class="fld"><label>类目</label><input class="inp" value="'+esc(s.cat)+'"></div>'+
+    '<div class="fld"><label>品牌</label><input class="inp" value="XIAOQING"></div>'+
+    '<div class="fld"><label>售价</label><input class="inp" value="'+s.price+'"></div>'+
+    '<div class="fld"><label>库存（件）</label><input class="inp" value="300"></div>'+
+    '<div class="fld"><label>发货方式</label><select class="inp"><option>FBA</option><option>FBM 自发货</option></select></div>'+
+    '<div class="fld"><label>颜色</label><input class="inp" value="镍色"></div>'+
+    '</div><div class="grid2">'+fk+'</div></div></div>'+
+    '<div class="card mb10"><h3>② Listing 文案（AI 生成 · 可修改）</h3><div class="cb grid2">'+titles+bullets+
+    '<div class="fld"><label>后台 Search Terms</label><textarea class="inp" rows="2">picture hanger kit · wall hooks no drill · frame hanging</textarea></div>'+
+    '<div class="fld"><label>A+ 商品描述要点</label><textarea class="inp" rows="3">5 模块图文：品牌故事 / 安装 4 步 / 承重实测 / 场景矩阵 / 售后卡</textarea></div>'+
+    '</div></div>'+
+    '<div class="card"><h3>③ 图片与说明书</h3><div class="cb">'+
+    '<div class="tgrid mb10">'+imgs+'</div>'+
+    '<div class="fld"><label>说明书（PDF）</label><div class="rowline">'+
+    (atOf(s,'manual')?'<span class="pill p-ok">已生成 6 页</span><button class="btn xs" data-act="pgv" data-id="'+s.id+'">查看</button>':'<span class="pill p-bad">缺失</span><button class="btn xs" data-act="mngen" data-id="'+s.id+'">生成</button>')+
+    '</div></div></div></div>',
+    f:'<button class="btn" data-act="mclose">取消</button><button class="btn g" data-act="amzsave" data-id="'+id+'">保存全部修改</button>'};
+}
+
+/* =========================================================
+   17. 设置（管理员 / 员工）
+   ========================================================= */
+function vSet(){
+  return S.role==='admin' ? setAdmin() : setStaff();
+}
+function setAdmin(){
+  return '<div class="setnav"><span class="pill p-do">管理员视图</span><span class="xs dim">账号 / AI / 接口全局面面，员工自动继承配置</span></div>'+
+  '<div class="grid2">'+
+  '<div><div class="scard"><div class="sh"><span class="no">1</span>账号管理</div><div class="sb tight">'+
+    '<div class="tr th" style="grid-template-columns:1.4fr 90px 110px 90px 130px"><div>账号</div><div>角色</div><div>本月用量</div><div>状态</div><div>操作</div></div>'+
+    [['ellon@xiaoqing.cn','管理员','12.4K 图','正常'],['xiaolin@xiaoqing.cn','员工','8.2K 图','正常'],['may@xiaoqing.cn','员工','6.9K 图','已停用']].map(function(a){
+      return '<div class="tr body" style="grid-template-columns:1.4fr 90px 110px 90px 130px"><div class="xs">'+a[0]+'</div><div class="xs">'+a[1]+'</div>'+
+      '<div class="xs">'+a[2]+'</div><div>'+(a[3]==='正常'?'<span class="pill p-ok">正常</span>':'<span class="pill p-mute">停用</span>')+'</div>'+
+      '<div class="rowline"><button class="btn xs" data-act="toast" data-t="权限已更新">权限</button><button class="btn xs" data-act="toast" data-t="已重置密码">重置密码</button></div></div>';
+    }).join('')+
+    '<div class="trfoot"><button class="btn xs" data-act="toast" data-t="新建账号（演示）">+ 新建账号</button></div></div></div>'+
+  '<div class="scard"><div class="sh"><span class="no">2</span>AI 配置<span class="acts"><button class="btn xs" data-act="toast" data-t="已保存（演示）">保存</button></span></div><div class="sb">'+
+    '<div class="fld"><label>默认模型 API Key（GPT-4o / Imagen 2）</label><input class="inp" value="sk-••••••••••••••••3d7f" type="password"></div>'+
+    '<div class="fld"><label>Skills 管理<span>（上传 .skill 包即全员可用）</span></label>'+
+    '<div class="rowline">'+['sp-gen','listing-wf','img-batch','manual-6lang'].map(function(x){return '<span class="pill p-pur">⚡ '+x+'</span>';}).join('')+
+    '<button class="btn xs" data-act="toast" data-t="上传 Skill（演示）">+ 上传</button></div></div>'+
+    '<div class="fld"><label>各环节默认提示词</label><select class="inp"><option>卖点生成 · v3（当前）</option><option>Listing 埋词 · v2</option><option>生图 · 结构化四字段 v7</option></select></div>'+
+  '</div></div></div>'+
+  '<div><div class="scard"><div class="sh"><span class="no">3</span>第三方接口</div><div class="sb">'+
+    '<div class="fld"><label>飞书机器人</label><div class="rowline"><span class="pill p-ok">已连接 · xiaoqing-bot</span><button class="btn xs" data-act="toast" data-t="已重新授权">重新授权</button></div></div>'+
+    '<div class="fld"><label>飞书通知联系人（缺资料 7 天自动提醒）</label><select class="inp"><option>SKU 负责人（自动匹配）</option><option>Ellen（主管）</option></select></div>'+
+    '<div class="fld"><label>MCP 接口</label><div class="rowline">'+['卖家精灵 ✓','SIF ✓','EchoTik ✓','领星 ⏳ 待接入'].map(function(x){return '<span class="pill '+(x.indexOf('✓')>=0?'p-ok':'p-wait')+'">'+x+'</span>';}).join('')+'</div></div>'+
+  '</div></div>'+
+  '<div class="scard"><div class="sh"><span class="no">4</span>全员使用情况</div><div class="sb"><div class="grid3">'+
+    '<div class="kpi"><div class="l">本月生图</div><div class="v">27.5K<small>张</small></div></div>'+
+    '<div class="kpi"><div class="l">本月 Listing</div><div class="v">128<small>条</small></div></div>'+
+    '<div class="kpi"><div class="l">Token 消耗</div><div class="v">4.2<small>M</small></div></div>'+
+  '</div></div></div></div>';
+}
+function setStaff(){
+  return '<div class="setnav"><span class="pill p-ok">员工视图</span><span class="xs dim">仅可管理自己的配置，模型 / Skills 由管理员统一绑定</span></div>'+
+  '<div class="grid2">'+
+  '<div><div class="scard"><div class="sh"><span class="no">1</span>我的使用情况</div><div class="sb"><div class="grid3">'+
+    '<div class="kpi"><div class="l">本月生图</div><div class="v">8.2K<small>张</small></div></div>'+
+    '<div class="kpi"><div class="l">本月 Listing</div><div class="v">42<small>条</small></div></div>'+
+    '<div class="kpi"><div class="l">待我处理</div><div class="v">6<small>个 SKU</small></div></div>'+
+  '</div></div></div>'+
+  '<div class="scard"><div class="sh"><span class="no">2</span>我的飞书配置</div><div class="sb">'+
+    '<div class="fld"><label>飞书接收提醒</label><div class="rowline"><span class="pill p-ok">已连接 · 小林</span><button class="btn xs" data-act="toast" data-t="已重新授权">重新授权</button></div></div>'+
+    '<div class="fld"><label>缺资料提醒联系人</label><select class="inp"><option>我自己</option><option>SKU 负责人（自动）</option></select></div>'+
+  '</div></div></div>'+
+  '<div><div class="scard"><div class="sh"><span class="no">3</span>账号安全</div><div class="sb">'+
+    '<div class="fld"><label>修改密码</label><input class="inp" type="password" placeholder="新密码"></div>'+
+    '<div class="fld"><label>确认新密码</label><input class="inp" type="password"></div>'+
+    '<button class="btn p" data-act="toast" data-t="密码已修改（演示）">保存密码</button>'+
+  '</div></div></div></div>';
+}
+
+/* =========================================================
+   18. 问题反馈（飞书通知 · 前端模拟）
+   ========================================================= */
+function feedbackModal(){
+  return {t:'问题反馈 / 联系我', w:'', b:
+    '<div class="tip b mb10"><span class="ico">i</span><div>提交后将通过飞书机器人通知 Ellen（后续接入真实飞书表单，当前为前端模拟）。</div></div>'+
+    '<div class="fld"><label>反馈类型</label><select class="inp"><option>功能建议</option><option>界面问题</option><option>数据 / 流程疑问</option><option>其他</option></select></div>'+
+    '<div class="fld"><label>反馈内容 <span class="req">* 必填</span></label><textarea class="inp" rows="5" id="fbTxt" placeholder="简单描述你遇到的问题或建议…"></textarea></div>'+
+    '<div class="fld"><label>截图 <span>（可多张）</span></label>'+
+    '<div class="fbshot" data-act="upshot">📷 点击上传截图</div>'+
+    '<div class="shotlist">'+(S.fshots.map(function(x){return '<span class="sc">📎 '+x+' <span class="dim" data-act="delshot" data-f="'+x+'">✕</span></span>';}).join('')||'<span class="xs dim">未上传</span>')+'</div></div>',
+    f:'<button class="btn" data-act="mclose">取消</button><button class="btn p" data-act="fbsub">提交（飞书通知 Ellen）</button>'};
+}
+
+/* =========================================================
+   19. Modal / 批量操作条
+   ========================================================= */
+function openModal(md){
+  $('#mbox').innerHTML='<h4>'+md.t+'</h4><div class="mbody">'+md.b+'</div>'+
+    (md.f?'<div class="mfoot">'+md.f+'</div>':'');
+  $('#mask').classList.add('on');
+  $('#mbox').className='mbox'+(md.w?' '+md.w:'');
+}
+function closeModal(){ $('#mask').classList.remove('on'); }
+function renderGbar(){
+  const g=$('#gbar'), k=MODS[S.m].k;
+  let h='';
+  if(k==='gen' && S.gsel.size>0){
+    h='<b>已选 '+S.gsel.size+' 张图片</b><span class="dim">可批量操作</span>'+
+      '<button class="btn" data-act="gbRegen">批量重新生成</button>'+
+      '<button class="btn" data-act="gbDl">批量下载</button>'+
+      '<button class="btn g" data-act="gbOk">批量通过入库</button>'+
+      '<button class="btn p" data-act="gbAgent">发给 Agent 改图</button>';
+  } else if(k==='pick' && S.sel.size>0){
+    h='<b>已选 '+S.sel.size+' 个商品</b><button class="btn p" data-act="impSel">批量导入商品池</button>';
+  } else if(S.sel.size>0){
+    const n=S.sel.size;
+    if(k==='pool') h='<b>已选 '+n+' 个 SKU</b><button class="btn p" data-act="confirmSel">确认选品 → 流转 ①</button>';
+    else if(k==='accept') h='<b>已选 '+n+' 个 SKU</b>'+
+      '<button class="btn" data-act="feishuSel">飞书提醒负责人</button><button class="btn g" data-act="passSel">批量审核通过</button>';
+    else if(k==='sp') h='<b>已选 '+n+' 个 SKU</b><button class="btn p" data-act="spbatch">批量生成卖点</button>';
+    else if(k==='copy') h='<b>已选 '+n+' 个 SKU</b><button class="btn p" data-act="cpybatch">批量重新生成</button>';
+    else if(k==='manual') h='<b>已选 '+n+' 个 SKU</b><button class="btn p" data-act="mnbatch">批量重新生成</button>';
+    else if(k==='sipp') h='<b>已选 '+n+' 个 SKU</b><button class="btn p" data-act="exportS">导出所选 Excel</button>';
+  }
+  if(h){ g.innerHTML=h; g.classList.add('on'); }
+  else { g.classList.remove('on'); g.innerHTML=''; }
+}
+
+/* =========================================================
+   20. 交互事件
+   ========================================================= */
+document.addEventListener('click',function(ev){
+  const el=ev.target.closest('[data-act]');
+  if(!el) { if(ev.target.id==='mask'){ closeModal(); } return; }
+  const a=el.dataset.act, id=el.dataset.id;
+  const go=function(k){ S.m=MI(k); S.step=0; S.sel.clear(); S.gsel.clear(); S.drw=null; S.lpop=null; render(); };
+  const s=id?sk(id):null;
+  /* v13: 点击下拉多选外部 → 收起 */
+  if(S.lpop!==null && !ev.target.closest('.lsel')){ S.lpop=null; render(); }
+
+  if(a==='goto'){ go(el.dataset.k); return; }
+  if(a==='role'){ S.role=el.dataset.r; render(); return; }
+  if(a==='reset'){ location.reload(); return; }
+  if(a==='step'){ S.step=+el.dataset.i; S.lpop=null; render(); return; }
+  if(a==='stepnext'){ S.step=Math.min(S.step+1,(M(MODS[S.m].k).steps.length-1)); S.lpop=null; render(); return; }
+  if(a==='stepprev'){ S.step=Math.max(0,S.step-1); S.lpop=null; render(); return; }
+  if(a==='exp'){ if(S.exp.has(id)) S.exp.delete(id); else S.exp.add(id); render(); return; }
+  if(a==='sel'){ if(S.sel.has(id)) S.sel.delete(id); else S.sel.add(id); render(); return; }
+  if(a==='selR'){ if(S.sel.has(id)) S.sel.delete(id); else S.sel.add(id); render(); return; }
+
+  /* v13: 详情抽屉 */
+  if(a==='drw'){ openDrw(el.dataset.k, id); return; }
+  if(a==='drwclose'){ S.drw=null; render(); return; }
+  /* v13: 语种 / 类型 下拉多选 */
+  if(a==='lpop'){ const key=(el.dataset.mod||'lang')+':'+id;
+    S.lpop = S.lpop===key ? null : key; render(); return; }
+  if(a==='lset'){ const m=S.langs[el.dataset.mod]; m[id]=m[id]||DEF_LANGS.slice();
+    const i=m[id].indexOf(el.dataset.l); i>=0?m[id].splice(i,1):m[id].push(el.dataset.l);
+    if(!m[id].length) m[id]=['EN']; render(); return; }
+  if(a==='tset'){ S.types[id]=S.types[id]||IMGTYPES.filter(function(t){return t[2];}).map(function(t){return t[0];});
+    const i=S.types[id].indexOf(el.dataset.t); i>=0?S.types[id].splice(i,1):S.types[id].push(el.dataset.t);
+    if(!S.types[id].length) S.types[id]=IMGTYPES.filter(function(t){return t[2];}).map(function(t){return t[0];});
+    render(); return; }
+  if(a==='lclose'){ S.lpop=null; render(); return; }
+  /* v13: 分页 */
+  if(a==='pgp'){ const k=el.dataset.k; S.pg[k]=Math.max(1,(S.pg[k]||1)-1); render(); return; }
+  if(a==='pgn2'){ const k=el.dataset.k; S.pg[k]=(S.pg[k]||1)+1; render(); return; }
+  /* v13: 抽屉 → 完整报告直达 */
+  if(a==='cview2report'){ S.cview='report'; S.csel=id; S.drw=null; render(); return; }
+  if(a==='lang'){ const m=S.langs[el.dataset.mod]; m[id]=m[id]||DEF_LANGS.slice();
+    const i=m[id].indexOf(el.dataset.l); i>=0?m[id].splice(i,1):m[id].push(el.dataset.l);
+    if(!m[id].length) m[id]=['EN']; render(); return; }
+  if(a==='type'){ S.types[id]=S.types[id]||IMGTYPES.filter(function(t){return t[2];}).map(function(t){return t[0];});
+    const i=S.types[id].indexOf(el.dataset.t); i>=0?S.types[id].splice(i,1):S.types[id].push(el.dataset.t); render(); return; }
+  if(a==='mclose'||a==='mcloseok'){ if(a==='mcloseok') toast('已保存','ok'); closeModal(); return; }
+  if(a==='toast'){ toast(el.dataset.t); return; }
+
+  /* 商品池 */
+  if(a==='confirmS'){ s.at.accept=1; toast('已确认选品 → 自动流转 ① 样品验收','ok'); render(); return; }
+  if(a==='confirmSel'){ S.sel.forEach(function(x){ sk(x).at.accept=sk(x).at.accept||1; }); const n=S.sel.size;
+    S.sel.clear(); toast('批量确认 '+n+' 个 SKU → 流转 ① 样品验收','ok'); render(); return; }
+  if(a==='goto1'){ go('accept'); return; }
+  if(a==='newSku'){ toast('新建商品（演示）：必填 = 名称 / ASIN / 类目 / 站点 / 售价 / 负责人'); return; }
+
+  /* 选品调研 */
+  if(a==='impR'||a==='impSel'){ const ids=a==='impR'?[id]:Array.from(S.sel);
+    ids.forEach(function(x){ const r=RESEARCH.find(function(y){return y.asin===x;});
+      if(r && !sk(r.asin)){ SK.push({id:'N'+SK.length,code:'2410-0'+(60+SK.length),name:r.name,asin:r.asin,
+        cat:'家居 › 挂钩',market:'US',price:r.price,sales:r.sales,score:r.score,owner:'Ellen',at:{},poolOnly:true,size:'—',wt:'—'}); } });
+    S.sel.clear(); toast('已导入商品池，请在商品池「确认选品」','ok'); render(); return; }
+  if(a==='holdR'){ toast('已标记暂不考虑'); return; }
+  if(a==='editR'){ toast('修改调研建议（演示）'); return; }
+
+  /* ① 验收 */
+  if(a==='fillD'){ S.fshots=[]; S.fillId=id; openModal(fillModal(id)); return; }
+  if(a==='fillSave'){ s.filled=true; s.at.accept=Math.max(s.at.accept,2); s.rej=null;
+    closeModal(); toast('资料已保存，必备字段标签已转绿 → 可审核通过','ok'); render(); return; }
+  if(a==='upshot'){ S.fshots.push('截图-'+(S.fshots.length+1)+'.png');
+    openModal(S.fbopen?feedbackModal():fillModal(S.fillId)); return; }
+  if(a==='delshot'){ S.fshots=S.fshots.filter(function(x){return x!==el.dataset.f;});
+    openModal(S.fbopen?feedbackModal():fillModal(S.fillId)); return; }
+  if(a==='passA'||a==='passSel'){ const ids=a==='passA'?[id]:Array.from(S.sel);
+    ids.forEach(function(x){ const t=sk(x); if(missCount(t)===0&&!t.stop&&!t.rej){ t.at.accept=3; t.at.sp=1; } });
+    if(a==='passSel') S.sel.clear();
+    toast('审核通过 ✓ AI 已开始生成卖点 / Listing / 说明书 / 图片素材（流转 ②③④⑤）','ok'); render(); return; }
+  if(a==='feishu1'||a==='feishuSel'){ toast('已通过飞书机器人通知负责人：缺 XX 项资料，需 7 天内补齐','ok'); return; }
+
+  /* ② 卖点 */
+  if(a==='spgen'||a==='spbatch'){ const ids=a==='spgen'?[id]:Array.from(S.sel);
+    ids.forEach(function(x){ sk(x).at.sp=1; });
+    if(a==='spbatch') S.sel.clear();
+    toast('已调用绑定模型生成多语种卖点（GPT-4o · Skill: sp-gen）','ok'); render(); return; }
+  if(a==='spv'){ openModal(spModal(id)); return; }
+  if(a==='pedit'){ openModal(spModal(id)); return; }
+  if(a==='spsave'||a==='sppass'){ if(a==='sppass'){ s.at.sp=1; }
+    closeModal(); toast(a==='sppass'?'卖点已确认 ✓ SKU 与卖点流转 ③ Listing / ④ 说明书 / ⑤ 图片需求表':'卖点修改已保存','ok'); render(); return; }
+
+  /* ③ Listing */
+  if(a==='cpygen'||a==='cpybatch'){ openModal({t:'重新生成 Listing',w:'',b:
+    '<div class="fld"><label>修改指令 <span>（可选：AI 根据指令二次生成）</span></label>'+
+    '<textarea class="inp" rows="3" placeholder="例：标题更短促有力，五点第一条放承重数据"></textarea></div>',
+    f:'<button class="btn" data-act="mclose">取消</button><button class="btn p" data-act="cpyrun" data-id="'+(id||'')+'">后台重新生成</button>'}); return; }
+  if(a==='cpyrun'){ const ids=id?sk(id)&&[id]:Array.from(S.sel);
+    (ids||[]).forEach(function(x){ sk(x).at.copy=1; }); S.sel.clear(); closeModal();
+    toast('AI 已在后台重跑 Listing 工作流（埋词分析 → 策略 → 文案），结果覆盖原内容','ok'); render(); return; }
+  if(a==='cpyv'||a==='cpyv2'){ openModal(cpyModal(id)); return; }
+  if(a==='cpysave'){ closeModal(); toast('Listing 修改已保存','ok'); render(); return; }
+  if(a==='cpypass'){ s.at.copy=1; toast('Listing 审核通过 ✓ 流转 ⑦ 上架','ok'); render(); return; }
+
+  /* ④ 说明书 */
+  if(a==='mnv'||a==='mnv2'){ S.pg=1; openModal(mnModal(id)); return; }
+  if(a==='pgv'){ S.pg=+el.dataset.p; openModal(mnModal(id)); return; }
+  if(a==='dlpg'){ toast('说明书 PDF 已开始下载','ok'); return; }
+  if(a==='mngen'||a==='mnbatch'){ const ids=a==='mngen'?[id]:Array.from(S.sel);
+    ids.forEach(function(x){ sk(x).at.manual=1; }); if(a==='mnbatch') S.sel.clear();
+    toast('AI 已重新生成说明书（图文排版 + 多语种）','ok'); render(); return; }
+  if(a==='mnpass'){ s.at.manual=1; toast('说明书已确认入库 ✓ 流转 ⑦ 上架','ok'); render(); return; }
+
+  /* ⑤ 图片需求表 */
+  if(a==='briefe'){ toast('修改需求（演示）：可调整语种与图片类型后保存'); return; }
+  if(a==='briefok'){ s.at.brief=1; toast('需求已确认 ✓ 产品信息与图片要求流转 ⑥ AI 批量生图','ok'); render(); return; }
+
+  /* ⑥ 生图 */
+  if(a==='gtab'){ S.gtab=el.dataset.t; S.gsel.clear(); render(); return; }
+  if(a==='glang'){ S.glang=el.dataset.l; render(); return; }
+  if(a==='gsel'){ if(S.gsel.has(id)) S.gsel.delete(id); else S.gsel.add(id); render(); return; }
+  if(a==='gselall'){ const sid=id; const imgs=gimgs(sk(sid));
+    const all=imgs.every(function(g,i){ return S.gsel.has(sid+'-'+i); });
+    imgs.forEach(function(g,i){ all?S.gsel.delete(sid+'-'+i):S.gsel.add(sid+'-'+i); }); render(); return; }
+  if(a==='g1regen'){ toast('该图已加入重新生成队列','ok'); return; }
+  if(a==='g1gen'){ toast('已开始生成','ok'); return; }
+  if(a==='g1dl'){ toast('图片已开始下载','ok'); return; }
+  if(a==='g1ok'){ toast('已通过并入库图片库，同步 ⑦ 上架','ok'); render(); return; }
+  if(a==='gbRegen'){ toast('已批量重新生成 '+S.gsel.size+' 张（引用实拍参考图）','ok'); return; }
+  if(a==='gbDl'){ toast('已批量下载 '+S.gsel.size+' 张至本地','ok'); return; }
+  if(a==='gbOk'){ toast('批量通过 '+S.gsel.size+' 张 → 入库图片库并流转 ⑦ 上架','ok'); S.gsel.clear(); render(); return; }
+  if(a==='gbAgent'){ openModal(agentModal()); return; }
+  if(a==='agentsub'){ closeModal(); toast('已发送给 Agent：按指令修改提示词并引用产品图二次生图','ok'); return; }
+
+  /* ⑦ 上架 */
+  if(a==='cview'){ S.cview=el.dataset.v; render(); return; }
+  if(a==='csel'){ S.csel=id; render(); return; }
+  if(a==='amzv'||a==='amzEdit'){ openModal(amzModal(id)); return; }
+  if(a==='amzsave'){ closeModal(); toast('上架信息已保存（基础信息 + Listing + 图片 + 说明书）','ok'); render(); return; }
+  if(a==='amzdel'){ s.at={}; s.poolOnly=true; toast('已删除该 SKU 的上架数据','ok'); render(); return; }
+  if(a==='exportS'){ toast('已导出上架表格 Excel（含全部字段：Listing / 图片 / 说明书 / 规格 / 价格）','ok'); return; }
+
+  /* 反馈 */
+  if(a==='feedback'){ S.fbopen=true; S.fshots=[]; openModal(feedbackModal()); return; }
+  if(a==='fbsub'){ const t=$('#fbTxt'); closeModal();
+    toast('反馈已提交 ✓ 飞书机器人已通知 Ellen'+(S.fshots.length?'（含 '+S.fshots.length+' 张截图）':''),'ok'); S.fbopen=false; return; }
+});
+$('#mask').addEventListener('click',function(ev){ if(ev.target===ev.currentTarget) closeModal(); });
+$('#drwmask').addEventListener('click',function(){ S.drw=null; render(); });
+
+render();
+</script>
+</body>
+</html>
