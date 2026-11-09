@@ -1,0 +1,94 @@
+{
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "module": {
+      "const": "image-suite"
+    },
+    "sku_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "input_sha256": {
+      "type": "string",
+      "minLength": 1
+    },
+    "images": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "visual_review": {
+            "type": "object",
+            "properties": {
+              "state": {
+                "enum": [
+                  "pass",
+                  "revise",
+                  "pending"
+                ]
+              },
+              "reviewer": {
+                "type": "string",
+                "minLength": 1
+              },
+              "notes": {
+                "type": "string",
+                "minLength": 1
+              },
+              "issues": {
+                "type": "array",
+                "items": {
+                  "type": "object"
+                },
+                "minItems": 0
+              }
+            },
+            "required": [
+              "state"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "path",
+          "revision"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0
+    },
+    "gaps": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  },
+  "required": [
+    "schema_version",
+    "module",
+    "sku_id",
+    "input_sha256",
+    "images",
+    "gaps"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

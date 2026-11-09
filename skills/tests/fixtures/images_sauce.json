@@ -1,0 +1,215 @@
+{
+  "schema_version": "1.0",
+  "product": {
+    "sku_id": "JZJ600W-25",
+    "name": "Electric Sauce Warmer",
+    "category": "commercial sauce warmer",
+    "sample_kind": "real",
+    "sources": [
+      {
+        "id": "manual-p2",
+        "type": "manual",
+        "ref": "酱汁机产品说明书.pdf page 2"
+      },
+      {
+        "id": "manual-p3",
+        "type": "manual",
+        "ref": "酱汁机产品说明书.pdf page 3"
+      },
+      {
+        "id": "manual-p4",
+        "type": "manual",
+        "ref": "酱汁机产品说明书.pdf page 4"
+      },
+      {
+        "id": "manual-cover",
+        "type": "manual",
+        "ref": "酱汁机产品说明书.pdf page 1 image; visual reference, capacity marking"
+      }
+    ],
+    "facts": [
+      {
+        "id": "s-voltage",
+        "key": "voltage",
+        "value": 110,
+        "unit": "V",
+        "status": "confirmed",
+        "source_ids": [
+          "manual-p2"
+        ],
+        "allowed_claims": []
+      },
+      {
+        "id": "s-power",
+        "key": "power",
+        "value": 600,
+        "unit": "W",
+        "status": "confirmed",
+        "source_ids": [
+          "manual-p2"
+        ],
+        "allowed_claims": []
+      },
+      {
+        "id": "s-material",
+        "key": "material",
+        "value": "stainless steel",
+        "unit": "",
+        "status": "confirmed",
+        "source_ids": [
+          "manual-p2"
+        ],
+        "allowed_claims": []
+      },
+      {
+        "id": "s-temp",
+        "key": "temperature_settings",
+        "value": [
+          35,
+          60,
+          85
+        ],
+        "unit": "°C",
+        "status": "needs_review",
+        "source_ids": [
+          "manual-p2"
+        ],
+        "allowed_claims": []
+      },
+      {
+        "id": "s-heat",
+        "key": "heating",
+        "value": "water bath warming",
+        "unit": "",
+        "status": "confirmed",
+        "source_ids": [
+          "manual-p2"
+        ],
+        "allowed_claims": [
+          "Water bath warming"
+        ]
+      },
+      {
+        "id": "s-pump",
+        "key": "dispensing",
+        "value": "manual pump",
+        "unit": "",
+        "status": "confirmed",
+        "source_ids": [
+          "manual-p3"
+        ],
+        "allowed_claims": [
+          "Manual pump dispensing"
+        ]
+      },
+      {
+        "id": "s-clean",
+        "key": "cleaning",
+        "value": "pump parts can be disassembled and washed with mild soap and warm water",
+        "unit": "",
+        "status": "confirmed",
+        "source_ids": [
+          "manual-p3"
+        ],
+        "allowed_claims": []
+      },
+      {
+        "id": "s-use",
+        "key": "use",
+        "value": "indoor commercial countertop use by trained personnel",
+        "unit": "",
+        "status": "confirmed",
+        "source_ids": [
+          "manual-p4"
+        ],
+        "allowed_claims": []
+      },
+      {
+        "id": "s-capacity",
+        "key": "capacity",
+        "value": 2.65,
+        "unit": "QT",
+        "status": "needs_review",
+        "source_ids": [
+          "manual-cover"
+        ],
+        "allowed_claims": []
+      },
+      {
+        "id": "s-water",
+        "key": "water_level",
+        "value": "1 inch depth versus 0.5 inch below rim",
+        "unit": "",
+        "status": "conflict",
+        "source_ids": [
+          "manual-p2"
+        ],
+        "allowed_claims": []
+      },
+      {
+        "id": "s-dim",
+        "key": "dimensions",
+        "value": null,
+        "unit": "",
+        "status": "missing",
+        "source_ids": [
+          "manual-p2"
+        ],
+        "allowed_claims": []
+      }
+    ],
+    "restrictions": [
+      {
+        "message": "No evidence for household use, timer, automatic dosing or full immersion",
+        "patterns": [
+          "household",
+          "timer",
+          "automatic dosing",
+          "fully submerg"
+        ]
+      }
+    ],
+    "competitor_brands": []
+  },
+  "reference_assets": [
+    {
+      "id": "own-cover",
+      "path": "reference.png",
+      "role": "product"
+    }
+  ],
+  "languages": [
+    "en"
+  ],
+  "image_requirements": [
+    {
+      "id": "main01",
+      "type": "main",
+      "objective": "White background, actual main unit only; preserve controls and pump",
+      "fact_ids": [
+        "s-material",
+        "s-pump"
+      ]
+    },
+    {
+      "id": "detail01",
+      "type": "a_plus_detail",
+      "objective": "Show actual pump connection and stainless surface; no added text",
+      "fact_ids": [
+        "s-material",
+        "s-pump"
+      ],
+      "copy": {
+        "en": ""
+      }
+    },
+    {
+      "id": "size01",
+      "type": "size",
+      "objective": "Dimensions require measurement before generation",
+      "fact_ids": [
+        "s-dim"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,461 @@
+{
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "product": {
+      "type": "object",
+      "properties": {
+        "sku_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "category": {
+          "type": "string",
+          "minLength": 1
+        },
+        "facts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "key": {
+                "type": "string",
+                "minLength": 1
+              },
+              "value": {},
+              "unit": {
+                "type": "string"
+              },
+              "status": {
+                "enum": [
+                  "confirmed",
+                  "needs_review",
+                  "conflict",
+                  "missing",
+                  "not_applicable"
+                ]
+              },
+              "source_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "allowed_claims": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "required": [
+              "id",
+              "key",
+              "value",
+              "status",
+              "source_ids"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "type": {
+                "enum": [
+                  "user",
+                  "manual",
+                  "measurement",
+                  "manufacturer",
+                  "test_fixture"
+                ]
+              },
+              "ref": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "id",
+              "type",
+              "ref"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1
+        },
+        "restrictions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string",
+                "minLength": 1
+              },
+              "patterns": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "required": [
+              "message",
+              "patterns"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0
+        },
+        "competitor_brands": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "sample_kind": {
+          "enum": [
+            "real",
+            "synthetic"
+          ]
+        }
+      },
+      "required": [
+        "sku_id",
+        "name",
+        "category",
+        "facts",
+        "sources"
+      ],
+      "additionalProperties": false
+    },
+    "instruction": {
+      "type": "string"
+    },
+    "selling_points": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "theme": {
+            "type": "string",
+            "minLength": 1
+          },
+          "dimension": {
+            "enum": [
+              "pain_point",
+              "function",
+              "material",
+              "operation",
+              "accessory",
+              "extra"
+            ]
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1
+          },
+          "pain_point": {
+            "type": "string",
+            "minLength": 1
+          },
+          "feature": {
+            "type": "string",
+            "minLength": 1
+          },
+          "benefit": {
+            "type": "string",
+            "minLength": 1
+          },
+          "fact_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1
+          },
+          "status": {
+            "enum": [
+              "draft",
+              "confirmed"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "theme",
+          "dimension",
+          "text",
+          "pain_point",
+          "feature",
+          "benefit",
+          "fact_ids"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "targets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "marketplace": {
+            "type": "string",
+            "minLength": 1
+          },
+          "language": {
+            "enum": [
+              "en",
+              "de",
+              "fr",
+              "es",
+              "it",
+              "ja"
+            ]
+          }
+        },
+        "required": [
+          "marketplace",
+          "language"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "strategies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "focus": {
+            "type": "string",
+            "minLength": 1
+          },
+          "primary_keywords": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "focus"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "research": {
+      "type": "object",
+      "properties": {
+        "mode": {
+          "enum": [
+            "live",
+            "export",
+            "missing",
+            "test_fixture"
+          ]
+        },
+        "synthetic": {
+          "type": "boolean"
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "provider": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "id",
+              "provider"
+            ],
+            "additionalProperties": true
+          },
+          "minItems": 0
+        },
+        "keywords": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "term": {
+                "type": "string",
+                "minLength": 1
+              },
+              "marketplace": {
+                "type": "string",
+                "minLength": 1
+              },
+              "language": {
+                "type": "string",
+                "minLength": 1
+              },
+              "relevance": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "volume": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "minimum": 0
+              },
+              "purchase_rate": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "minimum": 0,
+                "maximum": 1
+              },
+              "spr": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "minimum": 0
+              },
+              "cpc": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "minimum": 0
+              },
+              "source_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "required": [
+              "term",
+              "marketplace",
+              "language",
+              "relevance",
+              "source_ids"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0
+        },
+        "competitors": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          },
+          "minItems": 0
+        },
+        "gaps": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "required": [
+        "mode",
+        "sources",
+        "keywords"
+      ],
+      "additionalProperties": false
+    },
+    "field_limits": {
+      "type": "object"
+    },
+    "keyword_weights": {
+      "type": "object",
+      "properties": {
+        "volume": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "relevance": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "purchase_rate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "spr": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "cpc": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "schema_version",
+    "product",
+    "selling_points",
+    "targets",
+    "strategies",
+    "research"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

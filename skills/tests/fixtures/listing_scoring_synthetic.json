@@ -1,0 +1,269 @@
+{
+  "schema_version": "1.0",
+  "product": {
+    "sku_id": "NFTEST-BOX-01",
+    "name": "Lidded Storage Box",
+    "category": "storage",
+    "sample_kind": "synthetic",
+    "sources": [
+      {
+        "id": "fixture",
+        "type": "test_fixture",
+        "ref": "Synthetic complete product for workflow testing; not a real item or market dataset"
+      }
+    ],
+    "facts": [
+      {
+        "id": "f-material",
+        "key": "material",
+        "value": "polypropylene",
+        "unit": "",
+        "status": "confirmed",
+        "source_ids": [
+          "fixture"
+        ],
+        "allowed_claims": [
+          "Polypropylene box body"
+        ]
+      },
+      {
+        "id": "f-lid",
+        "key": "lid",
+        "value": "removable lid",
+        "unit": "",
+        "status": "confirmed",
+        "source_ids": [
+          "fixture"
+        ],
+        "allowed_claims": [
+          "Removable lid provides access to the contents"
+        ]
+      },
+      {
+        "id": "f-stack",
+        "key": "stacking",
+        "value": "stackable when closed",
+        "unit": "",
+        "status": "confirmed",
+        "source_ids": [
+          "fixture"
+        ],
+        "allowed_claims": [
+          "Closed boxes can be stacked"
+        ]
+      },
+      {
+        "id": "f-clean",
+        "key": "cleaning",
+        "value": "wipe with a damp cloth",
+        "unit": "",
+        "status": "confirmed",
+        "source_ids": [
+          "fixture"
+        ],
+        "allowed_claims": [
+          "Wipe the surface with a damp cloth"
+        ]
+      },
+      {
+        "id": "f-use",
+        "key": "use",
+        "value": "indoor shelf storage",
+        "unit": "",
+        "status": "confirmed",
+        "source_ids": [
+          "fixture"
+        ],
+        "allowed_claims": [
+          "Organize small items on indoor shelves"
+        ]
+      },
+      {
+        "id": "f-volume",
+        "key": "capacity",
+        "value": 3,
+        "unit": "L",
+        "status": "confirmed",
+        "source_ids": [
+          "fixture"
+        ],
+        "allowed_claims": []
+      },
+      {
+        "id": "f-size",
+        "key": "dimensions",
+        "value": "25 x 18 x 10",
+        "unit": "cm",
+        "status": "confirmed",
+        "source_ids": [
+          "fixture"
+        ],
+        "allowed_claims": []
+      }
+    ],
+    "restrictions": [
+      {
+        "message": "Not certified food-contact or waterproof",
+        "patterns": [
+          "food[ -]grade",
+          "waterproof"
+        ]
+      }
+    ],
+    "competitor_brands": [
+      "CompetitorExample"
+    ]
+  },
+  "selling_points": [
+    {
+      "id": "sp-lid",
+      "theme": "Accessible contents",
+      "dimension": "operation",
+      "text": "Keep small items together under a removable lid that lifts away for access.",
+      "pain_point": "Small items need a defined place.",
+      "feature": "Removable lid",
+      "benefit": "Access stored items",
+      "fact_ids": [
+        "f-lid",
+        "f-use"
+      ],
+      "status": "confirmed"
+    },
+    {
+      "id": "sp-stack",
+      "theme": "Stacking layout",
+      "dimension": "extra",
+      "text": "Stack closed boxes to organize shelf space vertically.",
+      "pain_point": "Shelf layouts need organization.",
+      "feature": "Stackable closed boxes",
+      "benefit": "Arrange boxes vertically",
+      "fact_ids": [
+        "f-stack",
+        "f-use"
+      ],
+      "status": "confirmed"
+    },
+    {
+      "id": "sp-body",
+      "theme": "Box material",
+      "dimension": "material",
+      "text": "A polypropylene body provides a dedicated container for indoor organization.",
+      "pain_point": "Loose items need a container.",
+      "feature": "Polypropylene body",
+      "benefit": "Dedicated storage",
+      "fact_ids": [
+        "f-material",
+        "f-use"
+      ],
+      "status": "confirmed"
+    },
+    {
+      "id": "sp-care",
+      "theme": "Surface care",
+      "dimension": "operation",
+      "text": "Wipe the surface with a damp cloth as part of routine care.",
+      "pain_point": "Storage surfaces need cleaning.",
+      "feature": "Damp-cloth surface care",
+      "benefit": "Defined cleaning method",
+      "fact_ids": [
+        "f-clean"
+      ],
+      "status": "confirmed"
+    },
+    {
+      "id": "sp-placement",
+      "theme": "Shelf placement",
+      "dimension": "function",
+      "text": "Group small items in a box intended for indoor shelves.",
+      "pain_point": "Small objects can become scattered.",
+      "feature": "Indoor shelf storage",
+      "benefit": "Group belongings",
+      "fact_ids": [
+        "f-use"
+      ],
+      "status": "confirmed"
+    }
+  ],
+  "targets": [
+    {
+      "marketplace": "US",
+      "language": "en"
+    },
+    {
+      "marketplace": "DE",
+      "language": "de"
+    }
+  ],
+  "strategies": [
+    {
+      "id": "organization",
+      "name": "Shelf organization",
+      "focus": "Lead with grouping small items",
+      "primary_keywords": [
+        "storage box"
+      ]
+    },
+    {
+      "id": "access",
+      "name": "Accessible storage",
+      "focus": "Lead with removable lid and access",
+      "primary_keywords": [
+        "box with lid"
+      ]
+    }
+  ],
+  "research": {
+    "mode": "test_fixture",
+    "synthetic": true,
+    "sources": [
+      {
+        "id": "kw-fixture",
+        "provider": "test_fixture",
+        "note": "Invented values for tests only"
+      }
+    ],
+    "keywords": [
+      {
+        "term": "storage box",
+        "marketplace": "US",
+        "language": "en",
+        "volume": 100,
+        "relevance": 0.95,
+        "purchase_rate": null,
+        "cpc": 1,
+        "spr": null,
+        "source_ids": [
+          "kw-fixture"
+        ]
+      },
+      {
+        "term": "box with lid",
+        "marketplace": "US",
+        "language": "en",
+        "volume": 80,
+        "relevance": 0.9,
+        "source_ids": [
+          "kw-fixture"
+        ]
+      },
+      {
+        "term": "wireless headphones",
+        "marketplace": "US",
+        "language": "en",
+        "volume": 999999,
+        "relevance": 0.1,
+        "source_ids": [
+          "kw-fixture"
+        ]
+      }
+    ]
+  },
+  "field_limits": {
+    "US": {
+      "search_terms_bytes": 249
+    },
+    "DE": {
+      "search_terms_bytes": 249
+    }
+  }
+}

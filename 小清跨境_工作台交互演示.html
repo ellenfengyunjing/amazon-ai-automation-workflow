@@ -290,10 +290,13 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xm
 /* v11: 上架亚马逊表格 */
 .amz .tr{min-height:40px}
 .miss{color:var(--red);font-weight:700}
+.clamp3{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;cursor:help}
 .amzcell{font-size:11px;color:var(--ink2);line-height:1.5;min-width:0}
 .amzcell .aell{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .amzcell.lk{cursor:pointer;color:#1a3fd0;font-weight:600}
 .amzcell.lk:hover{text-decoration:underline}
+.amzcell.miss.lk{cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px}
+.amzcell.miss.lk:hover{background:rgba(229,72,77,.07);text-decoration:underline solid}
 
 /* v11: 设置 */
 .setnav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:11px}
@@ -677,24 +680,52 @@ function gimgs(s){
   return out;
 }
 
-/* 选品调研数据 */
-const RESEARCH = [
-  {asin:'B0CQ7H4M2K', name:'金属画框挂钩套件 11 件装', price:'$14.9', sales:'3,200', score:78, verdict:'建议做', vk:'ok',
-   diff:'11 件全配件 + 单钩 50 Lbs，正面补「少件」和「挂不住」两个差评主因',
-   why:'月销 3,200 · 评论增速 +180/月 · $14.9 落在 $12–16 空档带 · 毛利率 34.8%'},
-  {asin:'B0CR9T6L3N', name:'免钉无痕挂钩 8 件装', price:'$9.9', sales:'2,860', score:71, verdict:'建议做', vk:'ok',
-   diff:'主打「撕下无痕」，把退货率最高的留胶问题做成第一卖点',
-   why:'月销 2,860 · 留胶 22% 是全类目第一差评 → 双安装方式正面解决 · $9.9 档仍保 24% 毛利'},
-  {asin:'B0CS2P8V5B', name:'免打孔钥匙挂钩 6 件装', price:'$10.9', sales:'1,760', score:73, verdict:'建议做', vk:'ok',
-   diff:'6 件装改 8 件装，同价位多给 2 个，直接吃掉「数量不够」差评',
-   why:'4.7 分本批最高 · 成本仅 +¥1.1 · 门后 / 柜内场景图竞品普遍缺失'},
-  {asin:'B0CV8N4J6A', name:'浴室吸盘挂钩 5 件装', price:'$12.5', sales:'1,430', score:70, verdict:'建议做', vk:'ok',
-   diff:'真空旋钮式替代按压式，掉落是最大差评词，解决它就是差异点',
-   why:'浴室场景与画框钩人群互补 · 0.41kg 轻小件 FBA 费低'},
-  {asin:'B0CT5K3R9W', name:'折叠式挂衣钩 4 件装', price:'$15.9', sales:'1,120', score:67, verdict:'谨慎', vk:'warn',
-   diff:'结构件，折叠阻尼是核心；外观专利 1 件近似，需要先做规避设计',
-   why:'仅 6 家在售折叠款 · 锌合金合页良率是关键 · US D981,234 专利相关度中'}
+/* 选品调研数据（v14：多任务批量调研） */
+const MARKETS=[['US','美国'],['CA','加拿大'],['UK','英国'],['DE','德国'],['FR','法国'],['IT','意大利'],['ES','西班牙'],['JP','日本'],['MX','墨西哥'],['AU','澳大利亚']];
+const PICK_TASKS=[
+  { kw:'metal picture hanger hook', market:'US', time:'11-08 10:12', cats:'家居 › 画框挂钩',
+    kpi:[['类目月销量','48.1<small>K</small>','近 12 月 ↑ 12%'],['均价 / 空档带','$12.6','$12–16 占 31%'],['头部品牌占比','38<small>%</small>','无绝对垄断'],['目标毛利率','34.8<small>%</small>','$14.9 定价档']],
+    rec:[
+    {asin:'B0CQ7H4M2K', name:'金属画框挂钩套件 11 件装', price:'$14.9', sales:'3,200', score:78, verdict:'建议做', vk:'ok', profit:'34.8%',
+     diff:'11 件全配件 + 单钩 50 Lbs，正面补「少件」和「挂不住」两个差评主因',
+     tags:['月销 3,200 ↑','毛利 34.8%','$12–16 空档带','评论增速 +180/月'],
+     analysis:'综合 6 维度：需求端类目 12 个月 ↑12%、10 月创 48.1K 新高；竞争端头部品牌仅 38% 无垄断、$12–16 价格空档带占 31%；毛利端 $14.9 定价下净毛利 34.8% 达标；差评端「少件 14% / 挂不住 24%」可用全配件 + 实测承重低成本解决；专利端无近似外观冲突；供应链 1688 现货 ¥8.2/套千套起订。综合评分 78/100 → 建议做。'},
+    {asin:'B0CR9T6L3N', name:'免钉无痕挂钩 8 件装', price:'$9.9', sales:'2,860', score:71, verdict:'建议做', vk:'ok', profit:'24.0%',
+     diff:'主打「撕下无痕」，把退货率最高的留胶问题做成第一卖点',
+     tags:['月销 2,860','毛利 24%','留胶痛点 22% 双安装解决','轻小件 FBA 费低'],
+     analysis:'综合 5 维度：需求端免钉类目月销稳定 26K+；竞争端 $9.9 低价段竞争中等但「无痕」卖点差异化明确；差评端留胶 22% 为全类目第一痛点 → 双安装方式（免钉胶/螺丝）正面解决；毛利端 24% 在低价段属健康水平；供应链同源工厂。综合评分 71/100 → 建议做。'},
+    {asin:'B0CS2P8V5B', name:'免打孔钥匙挂钩 6 件装', price:'$10.9', sales:'1,760', score:73, verdict:'建议做', vk:'ok', profit:'28.5%',
+     diff:'6 件装改 8 件装，同价位多给 2 个，直接吃掉「数量不够」差评',
+     tags:['4.7 分同类最高','成本仅 +¥1.1','门后/柜内场景图竞品缺失'],
+     analysis:'综合 4 维度：竞争端同类 4.7 分为最高口碑；差评端「数量不够」诉求明确 → 同价多给 2 件直接转化；视觉端门后/柜内场景图竞品普遍缺失（图片差异化机会）；成本端 8 件装成本仅 +¥1.1，毛利仍保 28.5%。综合评分 73/100 → 建议做。'},
+    {asin:'B0CV8N4J6A', name:'浴室吸盘挂钩 5 件装', price:'$12.5', sales:'1,430', score:70, verdict:'建议做', vk:'ok', profit:'26.2%',
+     diff:'真空旋钮式替代按压式，掉落是最大差评词，解决它就是差异点',
+     tags:['月销 1,430','毛利 26.2%','人群互补','0.41kg 轻小件'],
+     analysis:'综合 4 维度：需求端浴室场景与画框钩人群互补（租房上班族 34% 重叠）；差评端按压式吸盘掉落为最大槽点 → 真空旋钮式结构性解决；物流端 0.41kg 轻小件 FBA 费用低；竞争端 $12.5 段竞品评论数少于 500。综合评分 70/100 → 建议做。'},
+    {asin:'B0CT5K3R9W', name:'折叠式挂衣钩 4 件装', price:'$15.9', sales:'1,120', score:67, verdict:'谨慎', vk:'warn', profit:'31.0%',
+     diff:'结构件，折叠阻尼是核心；外观专利 1 件近似，需要先做规避设计',
+     tags:['仅 6 家在售','专利 US D981,234 中相关','锌合金良率风险'],
+     analysis:'综合 5 维度：竞争端仅 6 家在售折叠款、供给稀缺；风险端 US D981,234 外观专利相关度中 → 需先做规避设计再投产；供应链端锌合金合页良率是成本关键；需求端 $15.9 高价段月销 1,120 偏弱；毛利 31% 达标但被良率风险侵蚀。综合评分 67/100 → 谨慎（建议先专利规避评估）。'}
+    ]},
+  { kw:'adhesive wall hooks heavy duty', market:'DE', time:'11-09 09:40', cats:'家居 › 强力贴墙钩',
+    kpi:[['类目月销量','26.4<small>K</small>','近 12 月 ↑ 9%'],['均价 / 空档带','€11.2','€9–14 占 34%'],['头部品牌占比','31<small>%</small>','无绝对垄断'],['目标毛利率','32.6<small>%</small>','€12.9 定价档']],
+    rec:[
+    {asin:'B0D4K8N2P', name:'强力无痕贴墙钩 10 件装（DE）', price:'€12.9', sales:'2,240', score:75, verdict:'建议做', vk:'ok', profit:'32.6%',
+     diff:'德区租房率高，「无痕 + 承重 5kg」双卖点直击租金扣押痛点',
+     tags:['月销 2,240 ↑','毛利 32.6%','DE 租房人群 61%','竞争度低'],
+     analysis:'综合 5 维度：需求端 DE 站租房人群占 61%，退租恢复原状刚需；竞争端德语关键词 wetkräftig ohne bohren 月搜 8.2K 且头部竞品少；差评端承重虚标为第一痛点 → 实测 5kg + 视频留证；毛利端 €12.9 定价毛利 32.6%；物流端轻小件跨 DE 仓履约稳定。综合评分 75/100 → 建议做。'},
+    {asin:'B0D5M3R7T', name:'浴室防水贴墙钩 6 件装（DE）', price:'€9.9', sales:'1,680', score:69, verdict:'建议做', vk:'ok', profit:'22.8%',
+     diff:'IPX7 级胶贴 + 承重演示视频，直击浴室潮湿脱落差评',
+     tags:['月销 1,680','毛利 22.8%','潮湿脱落痛点 19%','低价引流款'],
+     analysis:'综合 4 维度：差评端浴室潮湿脱落占 19% → IPX7 级胶贴结构性解决；定位端 €9.9 可作引流款带客单；竞争端德区浴室钩竞品评论中位数仅 310；毛利 22.8% 低价段健康。综合评分 69/100 → 建议做。'},
+    {asin:'B0D6J9W4L', name:'金属贴墙钩 4 件装（DE）', price:'€16.9', sales:'860', score:62, verdict:'谨慎', vk:'warn', profit:'36.5%',
+     diff:'金属件物流重、单公斤运费高，需重新测算 FBA 分档',
+     tags:['月销 860 偏弱','毛利 36.5%','重量运费风险'],
+     analysis:'综合 4 维度：需求端 €16.9 高价段月销仅 860 偏弱；毛利 36.5% 名义达标但金属件重量推高 FBA 费用存在实际侵蚀；竞争端金属款头部品牌 Command 占 44% 较高；差评端金属边缘划伤投诉 8%。综合评分 62/100 → 谨慎（需先算清运费再决策）。'}
+    ]}
 ];
+const RESEARCH = PICK_TASKS[0].rec;   /* 兼容旧引用 */
+function curTask(){ return PICK_TASKS[S.ptask||0]; }
 
 /* 深度调研报告数据（可视化） */
 const PICK_TREND = [['11月',62400],['12月',58900],['1月',31200],['2月',29800],['3月',34500],['4月',36100],
@@ -746,7 +777,7 @@ const PICK_ACT = [
 const S = { m:1, step:0, role:'admin', open:null, sel:new Set(), exp:new Set(),
   langs:{sp:{},copy:{},manual:{},brief:{}}, gsel:new Set(), gtab:'bench',
   types:{}, fshots:[], running:null, cview:'list', csel:null,
-  drw:null, lpop:null, pg:{} };
+  drw:null, lpop:null, pg:{}, ptask:0, plog:true };
 
 function $(q){ return document.querySelector(q); }
 function sk(id){ return SK.find(function(x){ return x.id===id; }); }
@@ -895,7 +926,7 @@ function renderNav(){
   MODS.forEach(function(m,i){
     if(m.grp!==grp){ grp=m.grp; h+='<div class="nlab">'+grp+'</div>'; }
     const cnt = (m.k==='pool') ? SK.length :
-      (m.k==='pick' ? RESEARCH.length : modsk(m.k).filter(function(s){return mstat(s,m.k)!=='done'&&mstat(s,m.k)!=='wait';}).length);
+      (m.k==='pick' ? PICK_TASKS.reduce(function(n,t){return n+t.rec.length;},0) : modsk(m.k).filter(function(s){return mstat(s,m.k)!=='done'&&mstat(s,m.k)!=='wait';}).length);
     const hot = m.k!=='pool'&&m.k!=='pick'&&cnt>0;
     h+='<div class="nitem'+(S.m===i?' on':'')+'" data-act="goto" data-k="'+m.k+'">'+
       (m.no?'<span class="no">'+m.no+'</span>':'<span class="no"></span>')+
@@ -915,7 +946,7 @@ function renderTop(){
 function footGuidance(){
   const m=MODS[S.m], k=m.k;
   let txt='', next=null;
-  if(k==='pick'){ txt=S.step===0?'设置调研条件，圈出目标类目与价格带':(S.step===1?'查看 AI 深度调研报告（趋势 / 痛点 / 竞品 / 毛利 / 专利）':'勾选建议商品，导入商品池开始流程'); next=S.step<2?S.step+1:null; }
+  if(k==='pick'){ txt=S.step===0?'输入关键词 / ASIN / 竞品链接 + 目标市场（每行一个可批量），点击开始调研':(S.step===1?'查看深度调研报告（趋势 / 痛点 / 竞品 / 毛利 / 专利）与 AI 分析过程':'查看推荐理由与综合分析，可修改 / 重新生成后导入商品池'); next=S.step<2?S.step+1:null; }
   else if(k==='pool') txt='勾选 SKU 后点击「确认选品」，确认后自动流转 ① 样品验收';
   else if(k==='accept') txt='已验收但资料未补齐的 SKU 默认 7 天内补齐；补齐后勾选或单个「审核通过」，流转 ② 卖点生成（AI 自动生成卖点 / Listing / 说明书 / 图片素材）';
   else if(k==='sp') txt='编辑提示词后点击「生成卖点」；人工确认后 SKU 与卖点流转 ③ Listing / ④ 说明书 / ⑤ 图片需求表';
@@ -964,7 +995,7 @@ function stepbar(m){
 }
 /* v13: 每步数据副标题（竞品式：当前步骤带实时数据） */
 function stepSub(m){
-  if(m.k==='pick') return ['类目 + 价格带 + 数据源','10 组可视化图表 · 4 KPI',RESEARCH.length+' 条建议 · 待导入'];
+  if(m.k==='pick') return [PICK_TASKS.length+' 个调研任务 · 必填 2 项','10 组图表 · 4 KPI · 分析过程',curTask().rec.length+' 条建议 · 待导入'];
   return m.steps.map(function(){ return ''; });
 }
 
@@ -988,55 +1019,82 @@ function openDrw(k,id){ S.lpop=null; S.drw={k:k,id:id}; render(); }
 
 /* =========================================================
    8. 选品调研（3 步：条件 → 深度报告 → 建议清单）
+   v14：必填仅 2 项 · 支持批量多行输入 · 多任务 tab 切换
    ========================================================= */
+function taskTabs(step){
+  let h='<div class="rowline mb10" style="align-items:center"><div class="gtabs" style="flex-wrap:wrap">';
+  PICK_TASKS.forEach(function(t,i){
+    h+='<div class="gtab2'+(S.ptask===i?' on':'')+'" data-act="ptask" data-i="'+i+'" title="'+esc(t.kw)+'">'+
+      (i+1)+'. '+esc(t.kw.length>26?t.kw.slice(0,26)+'…':t.kw)+'（'+t.market+'）<span class="xs dim">'+t.rec.length+' 条建议</span></div>';
+  });
+  h+='</div><span class="xs dim" style="margin-left:auto">共 '+PICK_TASKS.length+' 个调研任务 · 点击切换</span></div>';
+  return h;
+}
 function vPick(){
   if(S.step===0){
-    return '<div class="flowwrap">'+
-    '<div class="vflow"><h4>这个功能怎么用</h4>'+
-      '<div class="vf-sub">设置调研条件后，AI 自动抓取竞品 / 差评 / 关键词数据，产出深度调研报告与建议清单，确认后一键导入商品池。</div>'+
-      '<div class="vstep"><div class="vno">1</div><div><b>设置调研条件</b><span>圈定目标类目、价格带与数据源</span></div></div>'+
-      '<div class="vstep"><div class="vno">2</div><div><b>AI 自动调研</b><span>抓取 TOP 60 竞品 · 3,214 条差评 · 关键词与专利风险</span></div></div>'+
-      '<div class="vstep"><div class="vno">3</div><div><b>查看深度报告</b><span>趋势 / 痛点 / 毛利 / 人群 · 10 组可视化图表</span></div></div>'+
-      '<div class="vstep"><div class="vno">4</div><div><b>勾选导入商品池</b><span>'+RESEARCH.length+' 条建议，确认后进入新品流程</span></div></div>'+
-      '<div class="vf-tip">ⓘ 全程约 30–60 秒 · 调用 MCP 接口（卖家精灵 / EchoTik / VOC 差评库）· 开始前会先确认本次分析范围</div></div>'+
-    '<div><div class="card"><h3>调研条件<span class="n">STEP 1 · 必填</span></h3><div class="cb grid2">'+
-      fld('调研关键词<span class="req">* 必填</span>','metal picture hanger hook')+
-      fld('目标市场','select',[['US','US'],['US + DE','US + DE'],['UK','UK'],['JP','JP']])+
-      fld('价格带','$9 – 16')+
-      fld('数据源','卖家精灵 + EchoTik + VOC 差评库（MCP 已连接）')+
-      '</div>'+
-      '<div class="cb" style="border-top:1px solid var(--line2)"><div class="rowline">'+
-      '<button class="btn p" style="height:34px;padding:0 22px;font-size:13px" data-act="stepnext">开始调研 → 查看深度调研报告</button>'+
-      '<span class="xs dim">预计消耗 0 点（演示）· 约 30–60 秒出结果</span></div></div></div>'+
-      '<div class="card"><h3>AI 调研进度<span class="n">MCP</span></h3><div class="cb">'+
-      '<div class="runlogs"><b>01</b> 抓取类目 TOP 60 竞品（卖家精灵）<span class="ok"> ✓ 60 条</span><br>'+
-      '<b>02</b> 差评 VOC 聚类分析（共 3,214 条）<span class="ok"> ✓ 7 类痛点</span><br>'+
+    const trs=PICK_TASKS.map(function(t,i){
+      return '<div class="tr body" style="grid-template-columns:30px 2.2fr 90px 130px 1.1fr 220px">'+
+        '<div><span class="pill p-cy">'+(i+1)+'</span></div>'+
+        '<div><div class="nm">'+esc(t.kw)+'</div><div class="cd">'+esc(t.cats)+' · '+t.time+' 创建</div></div>'+
+        '<div><span class="pill p-mute">'+t.market+'</span></div>'+
+        '<div><span class="pill p-ok">已完成 ✓</span></div>'+
+        '<div class="xs dim">'+t.rec.length+' 条建议 · '+t.rec.filter(function(r){return r.vk==='ok';}).length+' 条「建议做」</div>'+
+        '<div class="rowline"><button class="btn s p" data-act="ptaskGo" data-i="'+i+'">查看报告</button>'+
+        '<button class="btn s" data-act="ptaskRegen" data-i="'+i+'">重新生成</button></div></div>';
+    }).join('');
+    return '<div class="card"><h3>发起调研<span class="n">必填 2 项 · 支持批量</span></h3><div class="cb">'+
+      '<div class="fld"><label>类目关键词 / ASIN / 竞品链接<span class="req">* 必填（每行一个，可批量输入多个）</span></label>'+
+      '<textarea class="inp" rows="3" placeholder="例：metal picture hanger hook&#10;B0CQ7H4M2K&#10;https://www.amazon.com/dp/B0CQ7H4M2K">metal picture hanger hook</textarea></div>'+
+      '<div class="fld"><label>目标市场<span class="req">* 必填</span></label>'+
+      '<select class="inp">'+MARKETS.map(function(m,i){return '<option'+(i===0?' selected':'')+'>'+m[0]+'（'+m[1]+'）'+'</option>';}).join('')+'</select>'+
+      '<div class="xs dim" style="margin-top:4px">默认美国站 · 覆盖 10 个主流跨境市场</div></div>'+
+      '<div style="display:flex;align-items:center;gap:10px;border-top:1px solid var(--line2);padding-top:12px">'+
+      '<button class="btn p" style="height:34px;padding:0 22px;font-size:13px" data-act="stepnext">开始调研 →</button>'+
+      '<span class="xs dim">每行一个关键词/ASIN 自动创建一个调研任务 · 约 30–60 秒/任务出报告</span></div>'+
+      '</div></div>'+
+      '<div class="card"><h3>AI 调研过程<span class="n">MCP · 最近任务</span></h3><div class="cb">'+
+      '<div class="runlogs"><b>01</b> 抓取类目 TOP 60 竞品（卖家精灵 MCP）<span class="ok"> ✓ 60 条</span><br>'+
+      '<b>02</b> 差评 VOC 聚类分析<span class="ok"> ✓ 3,214 条 · 7 类痛点</span><br>'+
       '<b>03</b> 价格带 / 毛利 / 专利风险计算 <span class="ok"> ✓ 完成</span><br>'+
-      '<b>04</b> 输出深度调研报告 + 5 条建议清单 <span class="ai">→ 人工确认</span></div></div></div>'+
-    '</div></div>';
+      '<b>04</b> 输出深度调研报告 + 建议清单 <span class="ai">→ 人工审核</span></div></div></div>'+
+      '<div class="card"><h3>我的调研任务<span class="n">'+PICK_TASKS.length+' 个</span></h3><div class="cb tight">'+
+      '<div class="tr th" style="grid-template-columns:30px 2.2fr 90px 130px 1.1fr 220px">'+
+      '<div></div><div>调研关键词 / 类目</div><div>市场</div><div>状态</div><div>建议数</div><div>操作</div></div>'+
+      trs+'<div class="trfoot">点击「查看报告」进入该任务的深度调研报告 → 建议清单</div></div></div>';
   }
   if(S.step===1){ return pickReport(); }
-  const rows=RESEARCH.map(function(r,i){
-    return '<div class="tr body" style="grid-template-columns:40px 2.4fr 90px 110px 1.2fr 110px 150px 132px">'+
+  /* STEP 3：建议清单（推荐理由 + 综合分析 + 修改/重新生成） */
+  const t=curTask();
+  const cols='34px 1.9fr 78px 82px 78px 160px 2.6fr 74px 178px';
+  const rows=t.rec.map(function(r){
+    return '<div class="tr body" style="grid-template-columns:'+cols+'">'+
       cbxCell(S.sel.has(r.asin),'selR',r.asin)+
-      '<div><div class="sku"><div class="ph">IMG</div><div style="min-width:0"><div class="nm">'+esc(r.name)+'</div>'+
-      '<div class="cd">'+r.asin+' · 差评对策：'+esc(r.diff)+'</div></div></div></div>'+
+      '<div style="min-width:0"><div class="sku"><div class="ph">IMG</div><div style="min-width:0"><div class="nm ell">'+esc(r.name)+'</div>'+
+      '<div class="cd ell">'+r.asin+' · 差评对策：'+esc(r.diff)+'</div></div></div></div>'+
       '<div><span class="pill p-mute">'+r.price+'</span></div>'+
       '<div class="sm">月销 '+r.sales+'</div>'+
-      '<div class="xs dim ell">'+esc(r.why)+'</div>'+
+      '<div><span class="pill '+(r.vk==='ok'?'p-ok':'p-mute')+'">'+r.profit+'</span></div>'+
+      '<div class="xs" style="line-height:1.9;min-width:0">'+r.tags.map(function(g){return '<span class="pill p-cy" style="margin:1px 0;display:inline-block">'+esc(g)+'</span>';}).join(' ')+'</div>'+
+      '<div class="xs dim clamp3" style="line-height:1.65;min-width:0" title="'+esc(r.analysis)+'">'+esc(r.analysis)+'</div>'+
       '<div><span class="pill '+(r.vk==='ok'?'p-ok':r.vk==='warn'?'p-wait':'p-bad')+'">'+r.verdict+'</span></div>'+
-      '<div><span class="pill p-cy">评分 '+r.score+'</span></div>'+
-      '<div class="rowline"><button class="btn s p" data-act="impR" data-id="'+r.asin+'">导入商品池</button>'+
-      '<button class="btn s" data-act="holdR" data-id="'+r.asin+'">暂不考虑</button>'+
-      '<button class="btn s" data-act="editR" data-id="'+r.asin+'">修改</button></div></div>';
+      '<div class="rowline" style="flex-wrap:wrap;gap:4px;min-width:0">'+
+      '<button class="btn xs p" data-act="impR" data-id="'+r.asin+'" title="导入商品池">导入</button>'+
+      '<button class="btn xs" data-act="editR" data-id="'+r.asin+'" title="人工修改该建议并保存">修改</button>'+
+      '<button class="btn xs" data-act="regenR" data-id="'+r.asin+'" title="重跑该 SKU 的选品调研 Skill">重新生成</button>'+
+      '<button class="btn xs d" data-act="holdR" data-id="'+r.asin+'" title="暂不考虑">暂不</button></div></div>';
   }).join('');
-  return '<div class="card"><h3>建议清单与导入<span class="n">STEP 3</span><span class="acts">'+
+  return taskTabs()+
+    '<div class="rowline mb10"><span class="tip b" style="flex:1"><span class="ico">i</span><div>'+
+    '推荐理由列出关键数据（销量 / 毛利 / 差评对策）；「综合分析」解释 AI 从需求 / 竞争 / 毛利 / 差评 / 专利 / 供应链等维度得出的结论。可先人工修改再导入。</div></span>'+
     '<button class="btn s" data-act="stepprev">← 返回报告</button>'+
-    '<button class="btn s p" data-act="impSel">批量导入商品池 ('+S.sel.size+')</button></span></h3><div class="cb tight">'+
-    '<div class="tr th" style="grid-template-columns:40px 2.4fr 90px 110px 1.2fr 110px 150px 132px">'+
-    '<div></div><div>商品</div><div>价格</div><div>月销</div><div>推荐理由</div><div>结论</div><div>选品评分</div><div>操作</div></div>'+
+    '<button class="btn s" data-act="ptaskRegenAll" title="重新跑一遍当前任务的调研 Skill，输出新的建议清单供人工审核">↻ 重新生成建议清单</button>'+
+    '<button class="btn p" data-act="impSel">批量导入商品池 ('+S.sel.size+')</button></div>'+
+    '<div class="card"><h3>建议清单 · '+esc(t.kw)+'（'+t.market+'）<span class="n">'+t.rec.length+' 条</span></h3><div class="cb tight">'+
+    '<div class="tr th" style="grid-template-columns:'+cols+'">'+
+    '<div></div><div>商品（名称 / ASIN / 差评对策）</div><div>价格</div><div>月销</div><div>毛利</div>'+
+    '<div>推荐理由（关键数据）</div><div>综合分析（AI 结论 + 维度）</div><div>结论</div><div>操作</div></div>'+
     rows+
-    '<div class="trfoot">共 '+RESEARCH.length+' 条建议 · 导入后在商品池确认选品，流转 ① 样品验收</div></div></div>';
+    '<div class="trfoot">导入后在商品池「确认选品」流转 ① 样品验收 · 「修改」可人工调整后保存导入 · 「重新生成」重跑该 SKU 调研</div></div></div>';
 }
 /* 深度调研报告（可视化） */
 function pickReport(){
@@ -1092,15 +1150,25 @@ function pickReport(){
     return '<div class="dimrow"><div class="dn xs" style="max-width:130px"><span class="pill p-bad">'+pp[1]+'</span><br>'+pp[0]+'</div>'+
     '<div class="dd xs dim">'+pp[2]+'</div><div class="dd xs" style="max-width:220px"><b>'+pp[3]+'</b></div></div>';
   }).join('');
-  return '<div class="rowline mb10"><span class="tip b" style="flex:1"><span class="ico">AI</span><div>'+
-    '类目：家居 › 画框挂钩（US）· 60 竞品 · 3,214 条差评 · 数据源：卖家精灵 / EchoTik / VOC（MCP）</div></span>'+
+  const t=curTask();
+  const logOpen=S.plog;
+  const kpis=t.kpi.map(function(k){
+    return '<div class="kpi"><div class="l">'+k[0]+'</div><div class="v">'+k[1]+'</div><div class="m">'+k[2]+'</div></div>';
+  }).join('');
+  return taskTabs()+
+    '<div class="rowline mb10"><span class="tip b" style="flex:1"><span class="ico">AI</span><div>'+
+    '类目：'+esc(t.cats)+'（'+t.market+'）· 60 竞品 · 3,214 条差评 · 数据源：卖家精灵 / EchoTik / VOC（MCP）</div></span>'+
     '<button class="btn s" data-act="stepprev">← 调研条件</button><button class="btn p" data-act="stepnext">进入建议清单 →</button></div>'+
-    '<div class="kpis mb10">'+
-    '<div class="kpi"><div class="l">类目月销量</div><div class="v">48.1<small>K</small></div><div class="m">近 12 月 ↑ 12%</div></div>'+
-    '<div class="kpi"><div class="l">均价 / 空档带</div><div class="v">$12.6</div><div class="m">$12–16 占 31%</div></div>'+
-    '<div class="kpi"><div class="l">头部品牌占比</div><div class="v">38<small>%</small></div><div class="m">无绝对垄断</div></div>'+
-    '<div class="kpi"><div class="l">目标毛利率</div><div class="v">34.8<small>%</small></div><div class="m">$14.9 定价档</div></div>'+
-    '</div>'+
+    '<div class="card mb10"><div class="cb"><div class="rowline" style="cursor:pointer" data-act="plog">'+
+    '<b style="font-size:13px">AI 分析过程（4 步工作流）</b>'+
+    '<span class="pill p-mute">'+(logOpen?'点击收起':'点击展开')+'</span>'+
+    '<span class="xs dim" style="margin-left:auto">模型：GPT-4o · Skill：pick-research · MCP：卖家精灵 + EchoTik</span></div>'+
+    (logOpen?'<div class="runlogs mt10"><b>01</b> 抓取类目 TOP 60 竞品 Listing 与销量（卖家精灵 MCP）<span class="ok"> ✓ 60 条 · 119 列字段</span><br>'+
+    '<b>02</b> 差评 VOC 聚类（3,214 条评论）<span class="ok"> ✓ 7 类痛点 · 前 4 类占 70%</span><br>'+
+    '<b>03</b> 价格带 / 成本 / 毛利 / 专利风险计算 <span class="ok"> ✓ $12–16 空档 · 3 件专利比对</span><br>'+
+    '<b>04</b> 综合评分与建议清单生成（需求/竞争/毛利/差评/专利/供应链 六维加权）<span class="ai">→ 人工审核</span></div>':'')+
+    '</div></div>'+
+    '<div class="kpis mb10">'+kpis+'</div>'+
     '<div class="grid2 mb10">'+
     '<div class="card"><h3>类目月销趋势<span class="n">12 个月</span></h3><div class="cb"><div class="spark">'+trend+'</div></div></div>'+
     '<div class="card"><h3>价格带分布<span class="n">$12–16 空档</span></h3><div class="cb"><div class="chart">'+price+'</div>'+
@@ -1161,33 +1229,38 @@ function poolStats(){
     '<span class="xs dim">点击环节卡片直达</span></div></div></div></div>';
 }
 function vPool(){
-  const cols='30px 24px 2.1fr 132px 76px 76px 210px 178px';
+  const cols='30px 24px 2.3fr 84px 70px 60px 1.5fr 190px 150px';
   const all=modsk('pool');
   const list=pgOf('pool',all);
   let rows=list.map(function(s){
     const st=skStat(s);
+    const sp=atOf(s,'sp')?'<span class="xs dim ell" title="'+esc(SP_TPL.EN[0][0])+'">'+esc(SP_TPL.EN[0][0])+'…</span>'
+      :'<span class="xs dim">待生成（确认选品后 AI 自动生成）</span>';
     let r='<div class="tr body" style="grid-template-columns:'+cols+'">'+
       (canStart(s,'accept')?cbxCell(S.sel.has(s.id),'sel',s.id):'<div></div>')+
       '<div class="expbtn" data-act="drw" data-k="pool" data-id="'+s.id+'" title="点击查看 SKU 详情" style="font-size:10px;color:var(--ink5)">▶</div>'+
-      skuCell(s,'<div class="cd">'+esc(s.cat)+' · '+esc(s.owner)+'</div>')+
+      skuCell(s,'<div class="cd">'+esc(s.cat)+' · 规格 '+esc(s.size||'—')+' / '+esc(s.wt||'—')+'</div>')+
       '<div><span class="pill p-mute">'+s.price+'</span></div>'+
       '<div class="sm">月销 '+s.sales+'</div>'+
       '<div><span class="pill p-cy">'+s.score+'</span></div>'+
+      '<div style="min-width:0">'+sp+'</div>'+
       '<div>'+poolDots(s)+'</div>'+
       '<div class="rowline"><span class="pill '+st[1]+'">'+st[0]+'</span>'+
+      '<button class="btn s" data-act="editS" data-id="'+s.id+'">修改</button>'+
       (canStart(s,'accept')?'<button class="btn s p" data-act="confirmS" data-id="'+s.id+'">确认选品</button>':'')+
-      (curNode(s)?'<button class="btn s" data-act="goto1" data-id="'+s.id+'">处理</button>':'')+
       '</div></div>';
     return r;
   }).join('');
   return poolStats()+
     '<div class="card"><h3>商品池 · 全部 SKU<span class="n">'+all.length+'</span><span class="acts">'+
+    '<button class="btn s" data-act="xlsT" title="下载表头 Excel 模板，按列填写后批量导入">⬇ 导入模板</button>'+
+    '<button class="btn s p" data-act="xlsI">⇪ 批量导入 Excel</button>'+
     '<button class="btn s" data-act="newSku">新建商品</button></span></h3><div class="cb tight">'+
     '<div class="tr th" style="grid-template-columns:'+cols+'">'+
-    '<div></div><div></div><div>商品（名称 / ASIN / 类目 / 负责人）</div><div>售价</div><div>月销</div><div>评分</div>'+
-    '<div>7 环节进度（①验收 ②卖点 ③Listing ④说明书 ⑤需求表 ⑥生图 ⑦上架）</div><div>状态 / 操作</div></div>'+
+    '<div></div><div></div><div>商品（名称 / ASIN / 类目 / 规格 / 尺寸）</div><div>售价</div><div>月销</div><div>评分</div>'+
+    '<div>五点描述 / 卖点（AI 生成后自动填充）</div><div>7 环节进度</div><div>状态 / 操作</div></div>'+
     rows+pgBar('pool',all.length)+
-    '<div class="trfoot">勾选后底部浮出批量「确认选品」· 点击行 ▶ 打开 SKU 详情抽屉（12 项字段 + 各环节进度）</div></div></div>';
+    '<div class="trfoot">勾选后底部浮出批量「确认选品」· 点击行 ▶ 打开 SKU 详情抽屉 · 信息确认后流转 ① 样品验收，AI 自动生成卖点 / Listing / 说明书 / 图片</div></div></div>';
 }
 function poolDots(s){
   let h='<div class="rowline" style="gap:3px" title="'+esc((curNode(s)?('当前：'+M(curNode(s)).name):'未开始'))+'">';
@@ -1225,6 +1298,7 @@ DRW.pool={
     '<div class="xf"><b>差评对策</b><span>'+(s.rej?esc(s.rej.n):'11 件全配件 + 50 Lbs 承重')+'</span></div>'+
     '<div class="xf"><b>验收截止</b><span>'+ddate(s)+(overdue(s)?' <span class="req">（已逾期）</span>':'')+'</span></div>'+
     '<div class="xf"><b>生图</b><span>'+(atOf(s,'gen')?'已入库':(gimgs(s).length?'进行中':'—'))+'</span></div>'+
+    '<div class="xf" style="grid-column:span 2"><b>五点描述 / 卖点</b><span class="xs">'+(atOf(s,'sp')?esc(SP_TPL.EN[0][0])+'…':'待生成（确认选品后 AI 自动）')+'</span></div>'+
     '</div>';
     if(s.rej) h+='<div class="tip r mb10 mt10"><span class="ico">!</span><div><b>驳回：</b>'+esc(s.rej.n)+'</div></div>';
     if(s.stop) h+='<div class="tip r mb10 mt10"><span class="ico">!</span><div><b>已终止：</b>'+esc(s.stopr)+'</div></div>';
@@ -1232,11 +1306,68 @@ DRW.pool={
     return h;
   },
   foot:function(s){
-    return (canStart(s,'accept')?'<button class="btn p" data-act="confirmS" data-id="'+s.id+'" data-drw="1">确认选品 → 流转 ①</button>':'')+
+    return '<button class="btn" data-act="editS" data-id="'+s.id+'">修改信息</button>'+
+    (canStart(s,'accept')?'<button class="btn p" data-act="confirmS" data-id="'+s.id+'" data-drw="1">确认选品 → 流转 ①</button>':'')+
     (curNode(s)?'<button class="btn" data-act="goto1" data-id="'+s.id+'">去 '+M(curNode(s)).name+' 处理</button>':'')+
     '<button class="btn" data-act="drwclose">关闭</button>';
   }
 };
+
+/* =========================================================
+   9b. v14: 商品池编辑 / 批量导入 Excel / 调研建议修改
+   ========================================================= */
+function editSModal(id){
+  const s=sk(id); if(!s) return {t:'',b:'',f:''};
+  return {t:'修改 SKU 信息（保存后流转后续流程）',w:'700px',b:
+    '<div class="xg" style="grid-template-columns:repeat(2,1fr)">'+
+    '<div class="xf"><b>商品名称</b><input class="inp" value="'+esc(s.name)+'"></div>'+
+    '<div class="xf"><b>ASIN</b><input class="inp" value="'+esc(s.asin)+'"></div>'+
+    '<div class="xf"><b>售价</b><input class="inp" value="'+esc(s.price)+'"></div>'+
+    '<div class="xf"><b>月销</b><input class="inp" value="'+esc(s.sales)+'"></div>'+
+    '<div class="xf"><b>规格 · 尺寸</b><input class="inp" value="'+esc(s.size||'')+'"></div>'+
+    '<div class="xf"><b>规格 · 重量</b><input class="inp" value="'+esc(s.wt||'')+'"></div>'+
+    '<div class="xf"><b>类目</b><input class="inp" value="'+esc(s.cat)+'"></div>'+
+    '<div class="xf"><b>负责人</b><input class="inp" value="'+esc(s.owner)+'"></div>'+
+    '</div>'+
+    '<div class="fld" style="margin-top:10px"><label>五点描述 / 卖点（可人工填写，留空则由 AI 生成）</label>'+
+    '<textarea class="inp" rows="3" placeholder="确认选品后 AI 自动生成卖点，也可在此人工填写覆盖">'+(atOf(s,'sp')?esc(SP_TPL.EN[0][0])+'…':'')+'</textarea></div>',
+    f:'<button class="btn" data-act="mclose">取消</button><button class="btn p" data-act="editSsave" data-id="'+id+'">保存修改</button>'};
+}
+function xlsModal(){
+  const hd=['商品名称*','ASIN*','目标市场','售价','月销量','类目','规格-尺寸','规格-重量','五点描述/卖点','负责人'];
+  return {t:'批量导入 Excel 创建 SKU',w:'760px',b:
+    '<div class="rowline mb10"><span class="tip b" style="flex:1"><span class="ico">i</span><div>'+
+    '先下载模板 → 按表头填写全部 SKU（* 为必填）→ 上传 Excel → 预览确认后导入商品池。</div></span>'+
+    '<button class="btn s p" data-act="xlsT">⬇ 下载 Excel 模板</button></div>'+
+    '<div class="xg" style="grid-template-columns:repeat(5,1fr)">'+hd.map(function(h){
+      return '<div class="xf"><span class="xs" style="font-weight:600">'+h+'</span></div>';}).join('')+'</div>'+
+    '<div class="fld" style="margin-top:12px"><label>上传 Excel 文件</label>'+
+    '<div style="border:1.5px dashed var(--line2);border-radius:8px;padding:18px;text-align:center;cursor:pointer">'+
+    '<div style="font-size:22px">⇪</div><div class="sm" style="margin-top:4px">点击或拖拽 .xlsx 文件到此处</div>'+
+    '<div class="xs dim" style="margin-top:2px">演示：将模拟导入 3 个 SKU</div></div></div>'+
+    '<div class="fld" style="margin-top:10px"><label>预览（读取到 3 行数据）</label>'+
+    '<div class="cb tight"><div class="tr th" style="grid-template-columns:1.8fr 1.2fr .7fr .7fr .8fr">'+
+    '<div>商品名称</div><div>ASIN</div><div>市场</div><div>售价</div><div>负责人</div></div>'+
+    '<div class="tr body" style="grid-template-columns:1.8fr 1.2fr .7fr .7fr .8fr"><div class="sm">重型门后挂钩 8 件装</div><div class="sm">B0DK3M7X2</div><div class="sm">US</div><div class="sm">$13.9</div><div class="sm">Ellen</div></div>'+
+    '<div class="tr body" style="grid-template-columns:1.8fr 1.2fr .7fr .7fr .8fr"><div class="sm">厨房免打孔挂杆套装</div><div class="sm">B0DK4N8Y3</div><div class="sm">US</div><div class="sm">$16.9</div><div class="sm">Ellen</div></div>'+
+    '<div class="tr body" style="grid-template-columns:1.8fr 1.2fr .7fr .7fr .8fr"><div class="sm">浴室无痕贴墙钩 6 件装</div><div class="sm">B0DK5P9Z4</div><div class="sm">DE</div><div class="sm">€12.9</div><div class="sm">小清</div></div></div></div>',
+    f:'<button class="btn" data-act="mclose">取消</button><button class="btn p" data-act="xlsGo">确认导入 3 个 SKU</button>'};
+}
+function editRModal(asin){
+  const r=curTask().rec.find(function(x){return x.asin===asin;});
+  if(!r) return {t:'',b:'',f:''};
+  return {t:'修改调研建议 · '+esc(r.name),w:'700px',b:
+    '<div class="xg" style="grid-template-columns:repeat(2,1fr)">'+
+    '<div class="xf"><b>商品名称</b><input class="inp" value="'+esc(r.name)+'"></div>'+
+    '<div class="xf"><b>ASIN</b><input class="inp" value="'+esc(r.asin)+'"></div>'+
+    '<div class="xf"><b>价格</b><input class="inp" value="'+esc(r.price)+'"></div>'+
+    '<div class="xf"><b>月销</b><input class="inp" value="'+esc(r.sales)+'"></div>'+
+    '</div>'+
+    '<div class="fld" style="margin-top:10px"><label>差评对策 / 差异化打法</label>'+
+    '<textarea class="inp" rows="2">'+esc(r.diff)+'</textarea></div>',
+    f:'<button class="btn" data-act="mclose">取消</button>'+
+    '<button class="btn p" data-act="editRsave" data-id="'+r.asin+'">保存并导入商品池</button>'};
+}
 /* =========================================================
    10. ① 样品验收（验收 + 补资料合并）
    ========================================================= */
@@ -1778,10 +1909,10 @@ function vSipp(){
       '<div class="amzcell ell">'+esc(s.cat.split('›')[1]||'家居')+'</div>'+
       '<div class="amzcell">XIAOQING</div>'+
       (atOf(s,'copy')?'<div class="amzcell lk ell" data-act="amzv" data-id="'+s.id+'">'+esc(TITLE_TPL.EN)+'</div>'
-        :'<div class="amzcell miss">缺失</div>')+
-      (atOf(s,'copy')?'<div class="amzcell ell">'+esc(BULLET_TPL.EN[0])+'…</div>':'<div class="amzcell miss">缺失</div>')+
-      (atOf(s,'gen')?'<div class="amzcell lk" data-act="amzv" data-id="'+s.id+'">9 张 ✓</div>':'<div class="amzcell miss">未入库</div>')+
-      (atOf(s,'manual')?'<div class="amzcell">PDF ✓</div>':'<div class="amzcell miss">缺失</div>')+
+        :'<div class="amzcell miss lk" data-act="sippFix" data-goto="copy" title="缺失 · 点击跳转 ③ Listing 补充生成">缺失 ↗</div>')+
+      (atOf(s,'copy')?'<div class="amzcell ell">'+esc(BULLET_TPL.EN[0])+'…</div>':'<div class="amzcell miss lk" data-act="sippFix" data-goto="copy" title="缺失 · 点击跳转 ③ Listing 补充生成">缺失 ↗</div>')+
+      (atOf(s,'gen')?'<div class="amzcell lk" data-act="amzv" data-id="'+s.id+'">9 张 ✓</div>':'<div class="amzcell miss lk" data-act="sippFix" data-goto="gen" title="未入库 · 点击跳转 ⑥ AI 批量生图">未入库 ↗</div>')+
+      (atOf(s,'manual')?'<div class="amzcell">PDF ✓</div>':'<div class="amzcell miss lk" data-act="sippFix" data-goto="manual" title="缺失 · 点击跳转 ④ 说明书补充生成">缺失 ↗</div>')+
       '<div class="amzcell">'+s.price+'</div>'+
       '<div>'+(ready?'<span class="pill p-ok">可上架</span>':'<span class="pill p-bad">缺 '+miss.length+' 项</span>')+'</div>'+
       '<div class="rowline"><button class="btn s" data-act="amzv" data-id="'+s.id+'">查看修改</button>'+
@@ -1840,13 +1971,13 @@ function vSipp(){
       '<div class="amzcell ell">'+esc(s.cat.split('›')[1]||'家居')+'</div>'+
       '<div class="amzcell">XIAOQING</div>'+
       (atOf(s,'copy')?'<div class="amzcell lk ell" data-act="amzv" data-id="'+s.id+'" title="'+esc(TITLE_TPL.EN)+'">'+esc(TITLE_TPL.EN)+'</div>'
-        :'<div class="amzcell miss">缺失</div>')+
-      (atOf(s,'copy')?'<div class="amzcell ell" title="'+esc(BULLET_TPL.EN.join('\n'))+'">'+esc(BULLET_TPL.EN[0])+'…</div>':'<div class="amzcell miss">缺失</div>')+
-      (atOf(s,'gen')?'<div class="amzcell lk" data-act="amzv" data-id="'+s.id+'">9 张 ✓</div>':'<div class="amzcell miss">未入库</div>')+
+        :'<div class="amzcell miss lk" data-act="sippFix" data-goto="copy" title="缺失 · 点击跳转 ③ Listing 补充生成">缺失 ↗</div>')+
+      (atOf(s,'copy')?'<div class="amzcell ell" title="'+esc(BULLET_TPL.EN.join('\n'))+'">'+esc(BULLET_TPL.EN[0])+'…</div>':'<div class="amzcell miss lk" data-act="sippFix" data-goto="copy" title="缺失 · 点击跳转 ③ Listing 补充生成">缺失 ↗</div>')+
+      (atOf(s,'gen')?'<div class="amzcell lk" data-act="amzv" data-id="'+s.id+'">9 张 ✓</div>':'<div class="amzcell miss lk" data-act="sippFix" data-goto="gen" title="未入库 · 点击跳转 ⑥ AI 批量生图">未入库 ↗</div>')+
       '<div class="amzcell">'+esc(fsize[1]||'—')+'</div>'+
       '<div class="amzcell">'+esc(fwt[1]||'—')+'</div>'+
       '<div class="amzcell">'+esc(fnum[1]||'—')+'</div>'+
-      (atOf(s,'manual')?'<div class="amzcell">PDF ✓</div>':'<div class="amzcell miss">缺失</div>')+
+      (atOf(s,'manual')?'<div class="amzcell">PDF ✓</div>':'<div class="amzcell miss lk" data-act="sippFix" data-goto="manual" title="缺失 · 点击跳转 ④ 说明书补充生成">缺失 ↗</div>')+
       '<div class="amzcell">'+s.price+'</div>'+
       '<div class="rowline">'+
       (ready?'<span class="pill p-ok">可上架</span>':'<span class="pill p-bad">缺 '+miss.length+' 项</span>')+
@@ -2111,14 +2242,42 @@ document.addEventListener('click',function(ev){
   if(a==='goto1'){ go('accept'); return; }
   if(a==='newSku'){ toast('新建商品（演示）：必填 = 名称 / ASIN / 类目 / 站点 / 售价 / 负责人'); return; }
 
-  /* 选品调研 */
+  /* 选品调研（v14：多任务 + 修改 + 重新生成） */
+  if(a==='ptask'){ S.ptask=+el.dataset.i; S.sel.clear(); render(); return; }
+  if(a==='ptaskGo'){ S.ptask=+el.dataset.i; S.step=1; S.sel.clear(); render(); return; }
+  if(a==='plog'){ S.plog=!S.plog; render(); return; }
+  if(a==='ptaskRegen'||a==='ptaskRegenAll'){ if(el.dataset.i!==undefined) S.ptask=+el.dataset.i;
+    toast('已重新跑一遍「'+curTask().kw+'」的选品调研 Skill，新的建议清单已生成 → 请人工审核','ok'); render(); return; }
+  if(a==='regenR'){ const r=curTask().rec.find(function(x){return x.asin===id;});
+    toast('已重跑该 SKU 的选品调研（'+(r?r.asin:id)+'）· 新建议覆盖原条目，请重新审核','ok'); return; }
   if(a==='impR'||a==='impSel'){ const ids=a==='impR'?[id]:Array.from(S.sel);
-    ids.forEach(function(x){ const r=RESEARCH.find(function(y){return y.asin===x;});
+    let n=0;
+    ids.forEach(function(x){ let r=null;
+      PICK_TASKS.forEach(function(t){ if(!r) r=t.rec.find(function(y){return y.asin===x;}); });
       if(r && !sk(r.asin)){ SK.push({id:'N'+SK.length,code:'2410-0'+(60+SK.length),name:r.name,asin:r.asin,
-        cat:'家居 › 挂钩',market:'US',price:r.price,sales:r.sales,score:r.score,owner:'Ellen',at:{},poolOnly:true,size:'—',wt:'—'}); } });
-    S.sel.clear(); toast('已导入商品池，请在商品池「确认选品」','ok'); render(); return; }
+        cat:'家居 › 挂钩',market:curTask().market,price:r.price,sales:r.sales,score:r.score,owner:'Ellen',at:{},poolOnly:true,size:'—',wt:'—'}); n++; } });
+    S.sel.clear(); toast('已导入 '+n+' 个 SKU 到商品池，请在商品池「确认选品」','ok'); render(); return; }
   if(a==='holdR'){ toast('已标记暂不考虑'); return; }
-  if(a==='editR'){ toast('修改调研建议（演示）'); return; }
+  if(a==='editR'){ openModal(editRModal(id)); return; }
+  if(a==='editRsave'){ let r=null;
+    PICK_TASKS.forEach(function(t){ if(!r) r=t.rec.find(function(y){return y.asin===id;}); });
+    if(r && !sk(r.asin)){ SK.push({id:'N'+SK.length,code:'2410-0'+(60+SK.length),name:r.name,asin:r.asin,
+      cat:'家居 › 挂钩',market:curTask().market,price:r.price,sales:r.sales,score:r.score,owner:'Ellen',at:{},poolOnly:true,size:'—',wt:'—'}); }
+    closeModal(); toast('建议已人工修改并保存 → 已导入商品池','ok'); render(); return; }
+
+  /* 商品池（v14：修改 + 批量导入 Excel） */
+  if(a==='editS'){ S.drw=null; openModal(editSModal(id)); return; }
+  if(a==='editSsave'){ closeModal(); toast('SKU 信息已保存（名称 / ASIN / 价格 / 规格 / 卖点）','ok'); render(); return; }
+  if(a==='xlsT'){ toast('Excel 导入模板已开始下载（10 列表头：名称* / ASIN* / 市场 / 售价 / 月销 / 类目 / 尺寸 / 重量 / 卖点 / 负责人）','ok'); return; }
+  if(a==='xlsI'){ openModal(xlsModal()); return; }
+  if(a==='xlsGo'){
+    [{name:'重型门后挂钩 8 件装',asin:'B0DK3M7X2',market:'US',price:'$13.9',sales:'2,100',owner:'Ellen'},
+     {name:'厨房免打孔挂杆套装',asin:'B0DK4N8Y3',market:'US',price:'$16.9',sales:'1,540',owner:'Ellen'},
+     {name:'浴室无痕贴墙钩 6 件装',asin:'B0DK5P9Z4',market:'DE',price:'€12.9',sales:'1,180',owner:'小清'}].forEach(function(x){
+      if(!sk(x.asin)) SK.push({id:'N'+SK.length,code:'2411-0'+(SK.length-14),name:x.name,asin:x.asin,
+        cat:'家居 › 挂钩',market:x.market,price:x.price,sales:x.sales,score:70,owner:x.owner,at:{},poolOnly:true,size:'—',wt:'—'});
+    });
+    closeModal(); S.pg.pool=1; toast('批量导入成功：3 个 SKU 已加入商品池（待确认选品）','ok'); render(); return; }
 
   /* ① 验收 */
   if(a==='fillD'){ S.fshots=[]; S.fillId=id; openModal(fillModal(id)); return; }
@@ -2187,6 +2346,8 @@ document.addEventListener('click',function(ev){
   if(a==='agentsub'){ closeModal(); toast('已发送给 Agent：按指令修改提示词并引用产品图二次生图','ok'); return; }
 
   /* ⑦ 上架 */
+  if(a==='sippFix'){ const g=el.dataset.goto; go(g); S.sel.add(id);
+    const nm=M(g)?M(g).name:g; render(); toast('已跳转 '+nm+' · 该 SKU 已勾选，完成后回 ⑦ 上架','ok'); return; }
   if(a==='cview'){ S.cview=el.dataset.v; render(); return; }
   if(a==='csel'){ S.csel=id; render(); return; }
   if(a==='amzv'||a==='amzEdit'){ openModal(amzModal(id)); return; }

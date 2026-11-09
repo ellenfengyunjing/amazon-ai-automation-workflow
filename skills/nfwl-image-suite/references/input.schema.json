@@ -1,0 +1,284 @@
+{
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "product": {
+      "type": "object",
+      "properties": {
+        "sku_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "category": {
+          "type": "string",
+          "minLength": 1
+        },
+        "facts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "key": {
+                "type": "string",
+                "minLength": 1
+              },
+              "value": {},
+              "unit": {
+                "type": "string"
+              },
+              "status": {
+                "enum": [
+                  "confirmed",
+                  "needs_review",
+                  "conflict",
+                  "missing",
+                  "not_applicable"
+                ]
+              },
+              "source_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "allowed_claims": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "required": [
+              "id",
+              "key",
+              "value",
+              "status",
+              "source_ids"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "type": {
+                "enum": [
+                  "user",
+                  "manual",
+                  "measurement",
+                  "manufacturer",
+                  "test_fixture"
+                ]
+              },
+              "ref": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "id",
+              "type",
+              "ref"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1
+        },
+        "restrictions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string",
+                "minLength": 1
+              },
+              "patterns": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "required": [
+              "message",
+              "patterns"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0
+        },
+        "competitor_brands": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "sample_kind": {
+          "enum": [
+            "real",
+            "synthetic"
+          ]
+        }
+      },
+      "required": [
+        "sku_id",
+        "name",
+        "category",
+        "facts",
+        "sources"
+      ],
+      "additionalProperties": false
+    },
+    "instruction": {
+      "type": "string"
+    },
+    "reference_assets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "role": {
+            "enum": [
+              "product",
+              "style",
+              "competitor",
+              "dimension",
+              "usage"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "path",
+          "role"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "languages": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "image_requirements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "type": {
+            "enum": [
+              "main",
+              "size",
+              "detail",
+              "feature",
+              "comparison",
+              "lifestyle",
+              "a_plus_hero",
+              "a_plus_size",
+              "a_plus_detail",
+              "a_plus_steps",
+              "a_plus_comparison",
+              "a_plus_scene"
+            ]
+          },
+          "objective": {
+            "type": "string",
+            "minLength": 1
+          },
+          "fact_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "copy": {
+            "type": "object"
+          },
+          "steps": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "comparison_scope": {
+            "enum": [
+              "same_brand",
+              "alternative"
+            ]
+          },
+          "comparison_evidence_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "objective",
+          "fact_ids"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "visual_identity": {
+      "type": "string"
+    },
+    "style": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "product",
+    "reference_assets",
+    "languages",
+    "image_requirements"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

@@ -1,0 +1,22 @@
+{
+  "version": "1.0.0",
+  "skills": [
+    "nfwl-selling-points",
+    "nfwl-listing",
+    "nfwl-listing-research",
+    "nfwl-listing-strategy",
+    "nfwl-listing-write",
+    "nfwl-listing-review",
+    "nfwl-image-suite",
+    "nfwl-image-plan",
+    "nfwl-image-render",
+    "nfwl-image-review"
+  ],
+  "entrypoints": [
+    "nfwl-selling-points",
+    "nfwl-listing",
+    "nfwl-image-suite"
+  ],
+  "backend_changes": false,
+  "external_credentials_required": false
+}

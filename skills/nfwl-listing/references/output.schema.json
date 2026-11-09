@@ -1,0 +1,130 @@
+{
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "module": {
+      "const": "listing"
+    },
+    "sku_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "input_sha256": {
+      "type": "string",
+      "minLength": 1
+    },
+    "listing_variants": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "marketplace": {
+            "type": "string",
+            "minLength": 1
+          },
+          "language": {
+            "type": "string",
+            "minLength": 1
+          },
+          "strategy_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "bullets": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "theme": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "text": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "selling_point_ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "minItems": 1
+                }
+              },
+              "required": [
+                "theme",
+                "text",
+                "selling_point_ids"
+              ],
+              "additionalProperties": false
+            },
+            "minItems": 0
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1
+          },
+          "search_terms": {
+            "type": "string"
+          },
+          "evidence_map": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "strategy_rationale": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "id",
+          "marketplace",
+          "language",
+          "strategy_id",
+          "title",
+          "bullets",
+          "description",
+          "search_terms",
+          "evidence_map",
+          "strategy_rationale"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "gaps": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  },
+  "required": [
+    "schema_version",
+    "module",
+    "sku_id",
+    "input_sha256",
+    "listing_variants",
+    "gaps"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

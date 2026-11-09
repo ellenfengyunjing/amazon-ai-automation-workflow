@@ -1,0 +1,6 @@
+# 抽取清单  2026-11-09 10:15
+# 输出目录: D:\Ellen工作资料\AI项目\小清跨境自动化工作台项目\_extract
+OK   D:/Ellen工作资料/AI项目/小清跨境自动化工作台项目/Listing 怎么生成.docx  | 440 chars | 0 imgs
+OK   D:/Ellen工作资料/AI项目/小清跨境自动化工作台项目/卖点怎么生成.docx  | 548 chars | 0 imgs
+OK   D:/Ellen工作资料/AI项目/小清跨境自动化工作台项目/酱汁机说明书需求提炼.docx  | 5948 chars | 0 imgs
+OK   D:/Ellen工作资料/AI项目/小清跨境自动化工作台项目/图片的基础要求.docx  | 1383 chars | 0 imgs

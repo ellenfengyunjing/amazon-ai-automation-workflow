@@ -1,0 +1,119 @@
+{
+  "schema_version": "1.0",
+  "product": {
+    "sku_id": "NFTEST-BOX-01",
+    "name": "Lidded Storage Box",
+    "category": "storage",
+    "sample_kind": "synthetic",
+    "sources": [
+      {
+        "id": "fixture",
+        "type": "test_fixture",
+        "ref": "Synthetic complete product for workflow testing; not a real item or market dataset"
+      }
+    ],
+    "facts": [
+      {
+        "id": "f-material",
+        "key": "material",
+        "value": "polypropylene",
+        "unit": "",
+        "status": "confirmed",
+        "source_ids": [
+          "fixture"
+        ],
+        "allowed_claims": [
+          "Polypropylene box body"
+        ]
+      },
+      {
+        "id": "f-lid",
+        "key": "lid",
+        "value": "removable lid",
+        "unit": "",
+        "status": "confirmed",
+        "source_ids": [
+          "fixture"
+        ],
+        "allowed_claims": [
+          "Removable lid provides access to the contents"
+        ]
+      },
+      {
+        "id": "f-stack",
+        "key": "stacking",
+        "value": "stackable when closed",
+        "unit": "",
+        "status": "confirmed",
+        "source_ids": [
+          "fixture"
+        ],
+        "allowed_claims": [
+          "Closed boxes can be stacked"
+        ]
+      },
+      {
+        "id": "f-clean",
+        "key": "cleaning",
+        "value": "wipe with a damp cloth",
+        "unit": "",
+        "status": "confirmed",
+        "source_ids": [
+          "fixture"
+        ],
+        "allowed_claims": [
+          "Wipe the surface with a damp cloth"
+        ]
+      },
+      {
+        "id": "f-use",
+        "key": "use",
+        "value": "indoor shelf storage",
+        "unit": "",
+        "status": "confirmed",
+        "source_ids": [
+          "fixture"
+        ],
+        "allowed_claims": [
+          "Organize small items on indoor shelves"
+        ]
+      },
+      {
+        "id": "f-volume",
+        "key": "capacity",
+        "value": 3,
+        "unit": "L",
+        "status": "confirmed",
+        "source_ids": [
+          "fixture"
+        ],
+        "allowed_claims": []
+      },
+      {
+        "id": "f-size",
+        "key": "dimensions",
+        "value": "25 x 18 x 10",
+        "unit": "cm",
+        "status": "confirmed",
+        "source_ids": [
+          "fixture"
+        ],
+        "allowed_claims": []
+      }
+    ],
+    "restrictions": [
+      {
+        "message": "Not certified food-contact or waterproof",
+        "patterns": [
+          "food[ -]grade",
+          "waterproof"
+        ]
+      }
+    ],
+    "competitor_brands": [
+      "CompetitorExample"
+    ]
+  },
+  "language": "en",
+  "desired_count": 5
+}
