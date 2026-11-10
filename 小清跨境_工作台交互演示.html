@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>小清跨境 · 新品上架自动化工作台</title>
+<title>AI跨境自动化工作台</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -295,6 +295,32 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xm
 .amzcell .aell{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .thumb .vplay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:26px;color:#fff;background:linear-gradient(140deg,#232c42,#131a2b);border-radius:8px 8px 0 0}
 .thumb .vplay:hover{background:linear-gradient(140deg,#2c3a5e,#1a2440)}
+.tboard{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;align-items:start}
+.tcol{background:#f6f8fc;border:1px solid var(--line);border-radius:10px;min-height:200px}
+.tcol-h{padding:8px 12px;font-size:12px;font-weight:700;color:var(--ink2);border-bottom:1px solid var(--line2);display:flex;align-items:center;gap:6px}
+.tcol-h .tcn{background:#e2e9f5;color:var(--ink4);border-radius:9px;padding:0 7px;font-size:10px}
+.tcol-b{padding:8px;display:flex;flex-direction:column;gap:8px;max-height:520px;overflow-y:auto}
+.tcard{background:#fff;border:1px solid var(--line);border-radius:9px;padding:9px 10px;box-shadow:0 1px 2px rgba(16,24,40,.06)}
+.tcard.over{border-color:#f3b6b6;background:#fff7f7}
+.tc-h{display:flex;gap:5px;margin-bottom:5px;align-items:center}
+.tc-t{font-size:12px;font-weight:600;line-height:1.4;color:var(--ink2)}
+.tc-sku{font-size:10px;color:var(--pri);margin:3px 0;cursor:pointer}
+.tc-sku:hover{text-decoration:underline}
+.tc-m{display:flex;justify-content:space-between;font-size:10px;color:var(--ink5);margin:4px 0}
+.tc-f{display:flex;gap:5px;align-items:center;border-top:1px dashed var(--line2);padding-top:6px;flex-wrap:wrap}
+.wsteps{display:flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 16px;box-shadow:0 1px 3px rgba(16,24,40,.05)}
+.wst{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:9px;cursor:pointer;min-width:0}
+.wst:hover{background:#f4f7fd}
+.wst .wno{width:26px;height:26px;border-radius:50%;background:#e3e9f2;color:#5b6b84;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex:0 0 26px}
+.wst b{font-size:13px;color:var(--ink3);display:block;line-height:1.3}
+.wst span{font-size:10px;color:var(--ink5)}
+.wst.cur{background:linear-gradient(120deg,#eef3ff,#e3ecff);border:1px solid #c6d6ff}
+.wst.cur .wno{background:var(--pri);color:#fff}
+.wst.cur b{color:var(--pri)}
+.wst.done .wno{background:#12a06a;color:#fff}
+.wst.done b{color:#12a06a}
+.wln{width:26px;height:2px;background:linear-gradient(90deg,#d5dfef,#c6d6ff);flex:0 0 26px}
+.wst-info{margin-left:auto;font-size:12px;color:var(--ink4);white-space:nowrap;padding-left:10px;border-left:1px solid var(--line2)}
 .rvcard{border:1px solid var(--line);border-radius:10px;background:#fff;padding:12px 14px;margin-bottom:10px;box-shadow:0 1px 3px rgba(16,24,40,.05)}
 .rvcard .rvh{display:flex;align-items:center;gap:10px}
 .rvcard .rvh .ph{width:40px;height:40px;border-radius:6px;flex:0 0 40px}
@@ -433,8 +459,8 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xm
 <div class="app">
   <aside class="side">
     <div class="brand">
-      <div class="blogo">小清</div>
-      <div><div class="bname">新品上架工作台</div><div class="bsub">XIAOQING · AMAZON OPS</div></div>
+      <div class="blogo">AI</div>
+      <div><div class="bname">AI跨境自动化工作台</div><div class="bsub">AI CROSS-BORDER OPS</div></div>
     </div>
     <div class="nav" id="navWrap"></div>
     <div class="fbbtn" data-act="feedback">💡 问题反馈<span class="dim" style="font-size:10px;margin-left:auto">飞书通知</span></div>
@@ -967,12 +993,14 @@ const VDATA = {
 };
 /* 任务中心：三类任务 */
 const TASK3 = [
-  {id:'T1', grp:'sys',  sku:'S8',  title:'工作台五步分析 · 金属画框挂钩套件', ddl:'11-11 18:00', st:'todo', from:'系统（选品初筛通过自动派发）'},
-  {id:'T2', grp:'sys',  sku:'S2',  title:'卖点生成 · 免钉无痕挂钩', ddl:'11-12 12:00', st:'doing', from:'系统（三审通过自动派发）'},
-  {id:'T3', grp:'mgr',  sku:'S9',  title:'Listing 分板块复核（主管抽检批次）', ddl:'11-11 20:00', st:'todo', from:'刘洋 主管手动派发'},
-  {id:'T4', grp:'self', sku:'S10', title:'补充竞品 ASIN（遗漏 2 个）', ddl:'11-13 18:00', st:'todo', from:'吴楠 自建'},
-  {id:'T5', grp:'self', sku:'',    title:'整理本周差评 VOC 聚类结果', ddl:'11-14 12:00', st:'done', from:'吴楠 自建'},
-  {id:'T6', grp:'sys',  sku:'S12', title:'图片需求表二次确认 · 浴室吸盘挂钩', ddl:'11-10 18:00', st:'todo', from:'系统（需求表生成自动派发）', at:2}
+  {id:'T1', grp:'sys',  sku:'S8',  title:'工作台五步分析 · 金属画框挂钩套件', ddl:'11-11 18:00', st:'doing',  own:'吴楠', from:'系统（选品初筛通过自动派发）'},
+  {id:'T2', grp:'sys',  sku:'S2',  title:'卖点生成 · 免钉无痕挂钩', ddl:'11-12 12:00', st:'doing', own:'小清运营', from:'系统（三审通过自动派发）'},
+  {id:'T3', grp:'mgr',  sku:'S9',  title:'Listing 分板块复核（主管抽检批次）', ddl:'11-11 20:00', st:'submitted', own:'小清运营', by:'刘洋', from:'刘洋 主管手动派发'},
+  {id:'T4', grp:'self', sku:'S10', title:'补充竞品 ASIN（遗漏 2 个）', ddl:'11-13 18:00', st:'todo', own:'吴楠', from:'吴楠 自建'},
+  {id:'T5', grp:'self', sku:'',    title:'整理本周差评 VOC 聚类结果', ddl:'11-14 12:00', st:'done', own:'吴楠', from:'吴楠 自建'},
+  {id:'T6', grp:'sys',  sku:'S12', title:'图片需求表二次确认 · 浴室吸盘挂钩', ddl:'11-10 18:00', st:'rej', own:'小清运营', by:'刘洋', note:'缺尺寸图/对比图；语种漏 DE', from:'系统（需求表生成自动派发）', at:2},
+  {id:'T7', grp:'sys',  sku:'S16', title:'① 样品验收 · 全套画框挂钉 17 件', ddl:'11-12 18:00', st:'todo', own:'小清运营', from:'系统（老板终审通过自动派发）'},
+  {id:'T8', grp:'mgr',  sku:'S3',  title:'卖点修改重递（按驳回意见）', ddl:'11-11 12:00', st:'doing', own:'吴楠', from:'主管派发（环节驳回自动生成）'}
 ];
 const DAILY = [
   ['S2 免钉无痕挂钩','卖点生成','9 类卖点已生成并确认'],
@@ -1582,7 +1610,17 @@ function vWork(){
   /* 五步视图（v16：顶栏对齐客户截图「返回列表·修改名称·产品已通过·已关联产品池」） */
   const s=sk(S.workSel);
   if(!s){ S.workSel=null; return vWork(); }
-  const bar='<div class="rowline mb10" style="gap:8px;flex-wrap:wrap">'+
+  /* v18: 顶部大步骤条（转化率 → CPC → 广告成本 → 综合决策 → 专利风险） */
+  const stepsBar='<div class="wsteps mb10">'+
+    MODS[S.m].steps.map(function(nm,idx){
+      const cls=S.step===idx?'cur':(S.step>idx?'done':'');
+      return '<div class="wst '+cls+'" data-act="step" data-i="'+idx+'">'+
+        '<span class="wno">'+(S.step>idx?'✓':(idx+1))+'</span>'+
+        '<div><b>'+nm+'</b><span>'+(idx===0?'竞品数据与转化参考':(idx===1?'关键词与竞价':(idx===2?'ACOS 计算':(idx===3?'毛利与供应商':'9 步法报告'))))+'</span></div></div>'+
+        (idx<4?'<span class="wln"></span>':'');
+    }).join('')+
+    '<div class="wst-info">第 '+(S.step+1)+' / 5 步 · '+MODS[S.m].steps[S.step]+'</div></div>';
+  const bar=stepsBar+'<div class="rowline mb10" style="gap:8px;flex-wrap:wrap">'+
     '<button class="btn s" data-act="workBack">← 返回列表</button>'+
     '<button class="btn s" data-act="workRename" data-id="'+s.id+'" title="修改该产品在工作台的显示名称">修改名称</button>'+
     '<span class="pill p-ok" title="产品池初筛通过后自动关联">产品已通过初筛</span>'+
@@ -1816,35 +1854,96 @@ function workStepName(s){
 /* =========================================================
    9d. v15: 任务中心（三类任务 + 完成确认 + 自动日报）
    ========================================================= */
+/* =========================================================
+   任务中心（v18：先梳理逻辑，再看板式展示）
+   —— 任务流转逻辑 ——
+   ① 任务来源三类：
+      A. 系统自动派发（流程节点触发：三审通过→分配运营；环节驳回→修改任务；到期→催办任务）
+      B. 主管手动派发（指派给开发/运营，带截止时间）
+      C. 个人自建（自己的待办）
+   ② 任务生命周期：待领取 → 进行中 → 已递交（等审核）→ 完成（审核通过）/ 驳回重做
+   ③ 分配规则：SKU 进入新品流程时按 opOwn 自动指派对应运营；主管可改派
+   ④ 催办：到期未处理 → 飞书 at 执行人 ×2 → 仍超时升级 at 主管
+   ========================================================= */
 function vTask(){
-  const TABS=[['sys','系统自动派发'],['mgr','主管手动派发'],['self','个人自建']];
-  const tab=S.ttab||'sys';
-  const list=TASK3.filter(function(t){return t.grp===tab;});
-  const rows=list.map(function(t){
+  const TABS=[['board','📋 任务看板（按进度）'],['mine','👤 按人分配'],['log','📜 派发规则']]
+  const tab=S.ttab||'board';
+  const statOf=function(t){ return t.st; };  /* todo/doing/submitted/done */
+  const STAT_LAB={todo:'待领取',doing:'进行中',submitted:'已递交·待审',done:'已完成',rej:'驳回重做'};
+  const STAT_CLS={todo:'p-wait',doing:'p-do',submitted:'p-cy',done:'p-ok',rej:'p-bad'};
+
+  /* 视图一：看板（按状态 4 列） */
+  const tcard=function(t){
     const sku=t.sku?sk(t.sku):null;
-    return '<div class="tr body" style="grid-template-columns:60px 2fr 1.1fr 110px 110px 150px">'+
-    '<div><span class="pill '+(t.grp==='sys'?'p-cy':(t.grp==='mgr'?'p-wait':'p-mute'))+'">'+t.id+'</span></div>'+
-    '<div><div class="sm" style="font-weight:600">'+esc(t.title)+'</div><div class="xs dim" style="margin-top:2px">来源：'+esc(t.from)+'</div></div>'+
-    '<div>'+(sku?'<span class="xs ell" style="min-width:0;display:inline-block;max-width:200px" title="'+esc(sku.name)+'">'+esc(sku.name)+'</span>':'<span class="xs dim">—</span>')+'</div>'+
-    '<div><span class="pill '+(t.st==='done'?'p-ok':(t.at===2?'p-bad':(t.st==='doing'?'p-do':'p-wait')))+'">'+(t.st==='done'?'已完成':(t.at===2?'已 at×2 → 升级主管':(t.st==='doing'?'进行中':'待处理')))+'</span></div>'+
-    '<div class="sm dim">'+t.ddl+'</div>'+
-    '<div class="rowline">'+
-    (t.st!=='done'?'<button class="btn s p" data-act="taskDone" data-id="'+t.id+'">完成并确认</button>':'<span class="xs dim">已进当日汇总 ✓</span>')+
-    (sku?'<button class="btn xs" data-act="goto1" data-id="'+sku.id+'" title="跳转该 SKU 当前环节">去处理</button>':'')+
+    const over=t.at===2;
+    return '<div class="tcard'+(over?' over':'')+'">'+
+    '<div class="tc-h"><span class="pill '+(t.grp==='sys'?'p-cy':(t.grp==='mgr'?'p-wait':'p-mute'))+'">'+t.id+'</span>'+
+    (over?'<span class="pill p-bad" title="已飞书 at×2，升级主管">已催办×2</span>':'')+'</div>'+
+    '<div class="tc-t">'+esc(t.title)+'</div>'+
+    (sku?'<div class="tc-sku" data-act="goto1" data-id="'+sku.id+'" title="跳转该 SKU 当前环节">🔗 '+esc(sku.name.slice(0,18))+'</div>':'')+
+    '<div class="tc-m"><span>👤 '+(t.own||'—')+'</span><span>⏰ '+t.ddl+'</span></div>'+
+    '<div class="tc-f">'+
+    (t.st==='todo'?'<button class="btn xs" data-act="taskClaim" data-id="'+t.id+'">领取</button>':'')+
+    (t.st==='doing'?'<button class="btn xs p" data-act="taskSubmit" data-id="'+t.id+'">完成并递交</button>':'')+
+    (t.st==='submitted'?'<span class="xs dim">等审核（'+(t.by||'主管')+'）</span>':'')+
+    (t.st==='rej'?'<span class="xs" style="color:var(--red)" title="'+esc(t.note||'')+'">驳回：'+esc((t.note||'').slice(0,14))+'…</span><button class="btn xs" data-act="taskSubmit" data-id="'+t.id+'">重做递交</button>':'')+
+    (t.st==='done'?'<span class="pill p-ok">✓ 已完成</span>':'')+
     '</div></div>';
-  }).join('');
-  const tcnt={sys:TASK3.filter(function(t){return t.grp==='sys'&&t.st!=='done';}).length, mgr:TASK3.filter(function(t){return t.grp==='mgr'&&t.st!=='done';}).length, self:TASK3.filter(function(t){return t.grp==='self'&&t.st!=='done';}).length};
+  };
+  const boardView=function(){
+    const cols=[['todo','待领取'],['doing','进行中'],['submitted','已递交·待审'],['done','已完成']];
+    return '<div class="tboard">'+
+    cols.map(function(c){
+      const items=TASK3.filter(function(t){return (t.st==='rej'?'doing':t.st)===c[0]||t.st===c[0];});
+      const n=TASK3.filter(function(t){return c[0]==='doing'?(t.st==='doing'||t.st==='rej'):t.st===c[0];}).length;
+      return '<div class="tcol"><div class="tcol-h">'+c[1]+'<span class="tcn">'+n+'</span></div>'+
+      '<div class="tcol-b">'+ TASK3.filter(function(t){return c[0]==='doing'?(t.st==='doing'||t.st==='rej'):t.st===c[0];}).map(tcard).join('')+'</div></div>';
+    }).join('')+'</div>';
+  };
+
+  /* 视图二：按人分配（谁在做什么，主管/老板看分配负载） */
+  const mineView=function(){
+    const owners=['吴楠（开发）','小清运营','小林'];
+    return '<div class="grid2 mb10">'+
+    owners.map(function(o){
+      const mine=TASK3.filter(function(t){return (t.own||'').indexOf(o.split('（')[0])>=0 && t.st!=='done';});
+      const doneN=TASK3.filter(function(t){return (t.own||'').indexOf(o.split('（')[0])>=0 && t.st==='done';}).length;
+      return '<div class="card"><h3>'+o+'<span class="n">在办 '+mine.length+' · 已完成 '+doneN+'</span></h3><div class="cb tight">'+
+      (mine.length?mine.map(function(t){
+        return '<div class="tr body" style="grid-template-columns:1.6fr 96px 90px 120px">'+
+        '<div><div class="sm">'+esc(t.title)+'</div><div class="xs dim">⏰ '+t.ddl+(t.at===2?' <span style="color:var(--red)">已催×2</span>':'')+'</div></div>'+
+        '<div><span class="pill '+STAT_CLS[t.st]+'">'+(STAT_LAB[t.st]||t.st)+'</span></div>'+
+        '<div class="xs dim">'+(t.grp==='sys'?'系统':(t.grp==='mgr'?'主管':'自建'))+'</div>'+
+        '<div>'+(t.st==='doing'?'<button class="btn xs p" data-act="taskSubmit" data-id="'+t.id+'">完成递交</button>':'')+'</div></div>';
+      }).join(''):'<div class="trfoot">暂无在办任务</div>')+
+      '</div></div>';
+    }).join('')+'</div>'+
+    '<div class="tip b"><span class="ico">i</span><div><b>分配规则：</b>SKU 三审通过进入新品流程时，系统按「运营负责人」自动指派任务给对应运营；主管可在任务卡上改派（点击头像 → 选择成员）；开发任务默认归属提交人。</div></div>';
+  };
+
+  /* 视图三：规则说明 */
+  const logView=function(){
+    return '<div class="grid2">'+
+    '<div class="card"><h3>任务来源（三类）</h3><div class="cb"><div class="runlogs">'+
+    '<b>A · 系统自动派发</b><br>三审通过 → 自动创建「①样品验收」任务指派 opOwn 运营<br>环节驳回 → 自动创建「修改重递」任务返回递交人<br>需求表确认 → 自动创建「⑥生图确认」任务<br>'+
+    '<br><b>B · 主管手动派发</b><br>主管在任意模块点「派发任务」→ 选成员+SKU+截止时间<br>'+
+    '<br><b>C · 个人自建</b><br>成员自己的待办清单（不入审核流）</div></div></div>'+
+    '<div class="card"><h3>任务生命周期</h3><div class="cb"><div class="runlogs">'+
+    '待领取 → 进行中 → 已递交（等审核）→ 完成（审核通过）<br>驳回 → 回到进行中（附意见）→ 修改后重新递交<br><br>'+
+    '<b>催办规则</b><br>到期未处理 → 飞书 at 执行人<br>at ×2 仍超时 → 升级 at 主管（任务卡标红「已催办×2」）<br><br>'+
+    '<b>日报汇总</b><br>点「完成并递交」的任务自动进当日日报，无需手写</div></div></div>'+
+    '</div>';
+  };
+
+  const openN=TASK3.filter(function(t){return t.st!=='done';}).length;
   return '<div class="rowline mb10" style="align-items:center">'+
     '<div class="gtabs">'+TABS.map(function(x){
-      return '<div class="gtab2'+(tab===x[0]?' on':'')+'" data-act="ttab" data-v="'+x[0]+'">'+x[1]+' <span class="xs dim">'+(tcnt[x[0]]||0)+'</span></div>';
+      return '<div class="gtab2'+(tab===x[0]?' on':'')+'" data-act="ttab" data-v="'+x[0]+'">'+x[1]+'</div>';
     }).join('')+'</div>'+
+    '<span class="xs dim" style="margin-left:8px">在办 '+openN+'</span>'+
     '<button class="btn s p" style="margin-left:auto" data-act="dailyGen">📄 生成今日日报</button>'+
-    '<button class="btn s" data-act="taskNew">＋ 自建任务</button></div>'+
-    '<div class="card"><h3>任务中心 · '+TABS.find(function(x){return x[0]===tab;})[1]+'<span class="n">'+list.length+' 条</span></h3><div class="cb tight">'+
-    '<div class="tr th" style="grid-template-columns:60px 2fr 1.1fr 110px 110px 150px">'+
-    '<div>ID</div><div>任务（来源）</div><div>关联 SKU</div><div>状态</div><div>截止时间</div><div>操作</div></div>'+
-    rows+
-    '<div class="trfoot">系统任务由流程节点自动派发（如初筛通过 → 五步分析）· 到期未处理飞书 at 运营 ×2 后升级 at 主管 · 完成点「确认」自动进当日日报</div></div></div>';
+    '<button class="btn s" data-act="taskNew">＋ 派发 / 自建任务</button></div>'+
+    (tab==='board'?boardView():(tab==='mine'?mineView():logView()));
 }
 
 /* v16: 数据看板（老板专属） */
@@ -3250,6 +3349,12 @@ document.addEventListener('click',function(ev){
   if(a==='taskDone'){ const t=TASK3.find(function(x){return x.id===id;});
     if(t){ t.st='done'; }
     toast('任务完成 ✓ 已确认并自动汇总进当日日报（无需手写）','ok'); render(); return; }
+  if(a==='taskClaim'){ const t=TASK3.find(function(x){return x.id===id;});
+    if(t){ t.st='doing'; t.own=ROLES[S.role].who; }
+    toast('已领取任务 → 进行中','ok'); render(); return; }
+  if(a==='taskSubmit'){ const t=TASK3.find(function(x){return x.id===id;});
+    if(t){ t.st = (t.grp==='self') ? 'done' : 'submitted'; }
+    toast(t&&t.grp==='self'?'自建任务完成 ✓ 已进当日日报':'已递交 → 等待审核（通过后自动完成并进日报）','ok'); render(); return; }
   if(a==='taskNew'){ toast('自建任务（演示）：标题 / 关联 SKU / 截止时间'); return; }
   if(a==='dailyGen'){ openModal(dailyModal()); return; }
   if(a==='dailysend'){ closeModal(); toast('日报已发送至飞书群（2026-11-10 · 3 项完成 · 2 项待办）','ok'); return; }
