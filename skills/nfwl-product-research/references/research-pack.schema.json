@@ -1,0 +1,566 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "request": {
+      "type": "object",
+      "properties": {
+        "task_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "revision": {
+          "type": "string",
+          "minLength": 1
+        },
+        "marketplace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "as_of": {
+          "type": "string",
+          "format": "date"
+        },
+        "input": {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "enum": [
+                "category",
+                "keyword",
+                "asin",
+                "url",
+                "sku"
+              ]
+            },
+            "value": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        "budget": {
+          "type": "object",
+          "properties": {
+            "max_tool_calls": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "required": [],
+          "additionalProperties": true
+        },
+        "max_source_age_days": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "failure_rule": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "max_units": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "window_days": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              },
+              "required": [
+                "max_units",
+                "window_days"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "own_listing_source_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "task_id",
+        "revision",
+        "marketplace",
+        "as_of",
+        "input"
+      ],
+      "additionalProperties": false
+    },
+    "mode": {
+      "enum": [
+        "live",
+        "export",
+        "unavailable",
+        "test_fixture"
+      ]
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kind": {
+            "enum": [
+              "sorftime_mcp",
+              "sorftime_export",
+              "user",
+              "fixture"
+            ]
+          },
+          "marketplace": {
+            "type": "string",
+            "minLength": 1
+          },
+          "collected_at": {
+            "type": "string",
+            "minLength": 1
+          },
+          "raw_ref": {
+            "type": "string",
+            "minLength": 1
+          },
+          "tool_name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "period": {},
+          "sha256": {
+            "type": "string",
+            "minLength": 1
+          },
+          "note": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "collected_at",
+          "raw_ref"
+        ],
+        "additionalProperties": true
+      }
+    },
+    "candidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "category_name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "scope_category": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "price_usd": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "price_currency": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "competitors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "asin": {
+                  "type": "string",
+                  "pattern": "^[A-Z0-9]{10}$"
+                },
+                "parent_asin": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "same_function": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "same_shape": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "same_material": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "listing_complete": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "competes_function": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "fulfillment": {
+                  "enum": [
+                    "FBA",
+                    "FBM",
+                    "DOMESTIC_SELF",
+                    "AMAZON",
+                    null
+                  ]
+                },
+                "stars": {
+                  "type": [
+                    "number",
+                    "null"
+                  ],
+                  "minimum": 0,
+                  "maximum": 5
+                },
+                "rating_count": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 0
+                },
+                "review_count": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 0
+                },
+                "price_usd": {
+                  "type": [
+                    "number",
+                    "null"
+                  ],
+                  "minimum": 0
+                },
+                "sales_units": {
+                  "type": [
+                    "number",
+                    "null"
+                  ],
+                  "minimum": 0
+                },
+                "form": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "material": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "evidence": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                }
+              },
+              "required": [
+                "asin",
+                "evidence"
+              ],
+              "additionalProperties": true
+            }
+          },
+          "coverage": {
+            "type": "object",
+            "properties": {
+              "scope_note": {
+                "type": "string",
+                "minLength": 1
+              },
+              "same_type_complete": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "effective_pool_complete": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "forms_complete": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "failure_scan_complete": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "evidence": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            },
+            "required": [
+              "scope_note",
+              "evidence"
+            ],
+            "additionalProperties": true
+          },
+          "advantage": {
+            "type": "object",
+            "properties": {
+              "state": {
+                "enum": [
+                  "verified",
+                  "proposed",
+                  "disproven",
+                  null
+                ]
+              },
+              "claim": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "own_source_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "baseline_source_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "evidence": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            },
+            "required": [
+              "state",
+              "claim",
+              "own_source_ids",
+              "baseline_source_ids",
+              "evidence"
+            ],
+            "additionalProperties": false
+          },
+          "failure_cases": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "comparable_listing": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "observed_units": {
+                  "type": [
+                    "number",
+                    "null"
+                  ],
+                  "minimum": 0
+                },
+                "window_days": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 1
+                },
+                "reason_status": {
+                  "enum": [
+                    "explained",
+                    "unexplained",
+                    null
+                  ]
+                },
+                "reason_text": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "evidence": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                }
+              },
+              "required": [
+                "evidence"
+              ],
+              "additionalProperties": true
+            }
+          },
+          "action_plan": {
+            "type": "object"
+          },
+          "evidence": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "category_name",
+          "competitors",
+          "coverage",
+          "advantage",
+          "failure_cases",
+          "action_plan",
+          "evidence"
+        ],
+        "additionalProperties": true
+      }
+    },
+    "insights": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "section": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10
+          },
+          "kind": {
+            "enum": [
+              "data",
+              "inference",
+              "hypothesis",
+              "proposal"
+            ]
+          },
+          "finding": {
+            "type": "string",
+            "minLength": 1
+          },
+          "meaning": {
+            "type": "string",
+            "minLength": 1
+          },
+          "action": {
+            "type": "string",
+            "minLength": 1
+          },
+          "evidence_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "required": [
+          "section",
+          "kind",
+          "finding",
+          "meaning",
+          "action",
+          "evidence_ids"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "research_data": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "schema_version",
+    "request",
+    "mode",
+    "sources",
+    "candidates",
+    "insights"
+  ],
+  "additionalProperties": false
+}

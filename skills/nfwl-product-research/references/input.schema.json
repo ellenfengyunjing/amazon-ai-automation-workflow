@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "revision": {
+      "type": "string",
+      "minLength": 1
+    },
+    "marketplace": {
+      "type": "string",
+      "minLength": 1
+    },
+    "as_of": {
+      "type": "string",
+      "format": "date"
+    },
+    "input": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "enum": [
+            "category",
+            "keyword",
+            "asin",
+            "url",
+            "sku"
+          ]
+        },
+        "value": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "kind",
+        "value"
+      ],
+      "additionalProperties": false
+    },
+    "budget": {
+      "type": "object",
+      "properties": {
+        "max_tool_calls": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [],
+      "additionalProperties": true
+    },
+    "max_source_age_days": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "failure_rule": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "max_units": {
+              "type": "number",
+              "minimum": 0
+            },
+            "window_days": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "required": [
+            "max_units",
+            "window_days"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "own_listing_source_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "task_id",
+    "revision",
+    "marketplace",
+    "as_of",
+    "input"
+  ],
+  "additionalProperties": false
+}

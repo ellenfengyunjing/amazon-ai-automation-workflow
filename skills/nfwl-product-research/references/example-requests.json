@@ -1,0 +1,41 @@
+[
+  {
+    "task_id": "nfwl-research-demo",
+    "revision": "r001",
+    "marketplace": "US",
+    "as_of": "2026-11-09",
+    "input": {
+      "kind": "category",
+      "value": "Industrial & Scientific"
+    },
+    "budget": {
+      "max_tool_calls": 40
+    }
+  },
+  {
+    "task_id": "nfwl-research-demo",
+    "revision": "r001",
+    "marketplace": "US",
+    "as_of": "2026-11-09",
+    "input": {
+      "kind": "keyword",
+      "value": "industrial mounting fixture"
+    },
+    "budget": {
+      "max_tool_calls": 40
+    }
+  },
+  {
+    "task_id": "nfwl-research-demo",
+    "revision": "r001",
+    "marketplace": "US",
+    "as_of": "2026-11-09",
+    "input": {
+      "kind": "asin",
+      "value": "B0DGX2DKFV"
+    },
+    "budget": {
+      "max_tool_calls": 40
+    }
+  }
+]

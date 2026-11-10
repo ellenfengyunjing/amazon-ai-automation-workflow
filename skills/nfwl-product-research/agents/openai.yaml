@@ -1,0 +1,6 @@
+interface:
+  display_name: "nfwl 选品调研"
+  short_description: "基于Sorftime核验客户选品条件并输出证据报告和可选择方案清单"
+  default_prompt: "使用 $nfwl-product-research 调研类目、关键词或ASIN，按客户条件输出选品报告和候选清单。"
+policy:
+  allow_implicit_invocation: true

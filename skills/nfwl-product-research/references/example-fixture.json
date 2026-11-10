@@ -1,0 +1,774 @@
+{
+  "schema_version": "1.0",
+  "request": {
+    "task_id": "nfwl-research-demo",
+    "revision": "r001",
+    "marketplace": "US",
+    "as_of": "2026-11-09",
+    "input": {
+      "kind": "keyword",
+      "value": "TEST ONLY industrial mounting fixture"
+    },
+    "budget": {
+      "max_tool_calls": 40
+    },
+    "failure_rule": {
+      "max_units": 10,
+      "window_days": 90
+    },
+    "own_listing_source_id": "own"
+  },
+  "mode": "test_fixture",
+  "sources": [
+    {
+      "id": "sf",
+      "kind": "fixture",
+      "marketplace": "US",
+      "collected_at": "2026-11-09T00:00:00Z",
+      "raw_ref": "synthetic fixture, not real Sorftime output",
+      "note": "TEST ONLY; no market values are real"
+    },
+    {
+      "id": "own",
+      "role": "own_product",
+      "kind": "fixture",
+      "marketplace": "US",
+      "collected_at": "2026-11-09T00:00:00Z",
+      "raw_ref": "synthetic own listing and test records"
+    }
+  ],
+  "candidates": [
+    {
+      "id": "demo-pass",
+      "name": "TEST ONLY mounting fixture concept",
+      "category_name": "TEST ONLY industrial parts",
+      "scope_category": "industrial",
+      "price_usd": 79,
+      "price_currency": "USD",
+      "competitors": [
+        {
+          "asin": "B0NF000001",
+          "same_function": true,
+          "same_shape": true,
+          "same_material": true,
+          "listing_complete": true,
+          "competes_function": true,
+          "fulfillment": "FBA",
+          "stars": 4.0,
+          "rating_count": 20,
+          "form": "bracket",
+          "material": "steel",
+          "price_usd": 79,
+          "evidence": {
+            "same_function": [
+              "sf"
+            ],
+            "same_shape": [
+              "sf"
+            ],
+            "same_material": [
+              "sf"
+            ],
+            "listing_complete": [
+              "sf"
+            ],
+            "competes_function": [
+              "sf"
+            ],
+            "fulfillment": [
+              "sf"
+            ],
+            "stars": [
+              "sf"
+            ],
+            "rating_count": [
+              "sf"
+            ],
+            "form": [
+              "sf"
+            ],
+            "material": [
+              "sf"
+            ],
+            "price_usd": [
+              "sf"
+            ]
+          }
+        },
+        {
+          "asin": "B0NF000002",
+          "same_function": true,
+          "same_shape": true,
+          "same_material": true,
+          "listing_complete": true,
+          "competes_function": true,
+          "fulfillment": "FBA",
+          "stars": 4.2,
+          "rating_count": 30,
+          "form": "bracket",
+          "material": "steel",
+          "price_usd": 79,
+          "evidence": {
+            "same_function": [
+              "sf"
+            ],
+            "same_shape": [
+              "sf"
+            ],
+            "same_material": [
+              "sf"
+            ],
+            "listing_complete": [
+              "sf"
+            ],
+            "competes_function": [
+              "sf"
+            ],
+            "fulfillment": [
+              "sf"
+            ],
+            "stars": [
+              "sf"
+            ],
+            "rating_count": [
+              "sf"
+            ],
+            "form": [
+              "sf"
+            ],
+            "material": [
+              "sf"
+            ],
+            "price_usd": [
+              "sf"
+            ]
+          }
+        },
+        {
+          "asin": "B0NF000003",
+          "same_function": true,
+          "same_shape": false,
+          "same_material": false,
+          "listing_complete": true,
+          "competes_function": true,
+          "fulfillment": "FBM",
+          "stars": 4.0,
+          "rating_count": 200,
+          "form": "clamp",
+          "material": "aluminum",
+          "price_usd": 79,
+          "evidence": {
+            "same_function": [
+              "sf"
+            ],
+            "same_shape": [
+              "sf"
+            ],
+            "same_material": [
+              "sf"
+            ],
+            "listing_complete": [
+              "sf"
+            ],
+            "competes_function": [
+              "sf"
+            ],
+            "fulfillment": [
+              "sf"
+            ],
+            "stars": [
+              "sf"
+            ],
+            "rating_count": [
+              "sf"
+            ],
+            "form": [
+              "sf"
+            ],
+            "material": [
+              "sf"
+            ],
+            "price_usd": [
+              "sf"
+            ]
+          }
+        }
+      ],
+      "evidence": {
+        "scope_category": [
+          "sf"
+        ],
+        "price_usd": [
+          "sf"
+        ]
+      },
+      "coverage": {
+        "scope_note": "SYNTHETIC COMPLETE SAMPLE ONLY; no real market collection",
+        "same_type_complete": true,
+        "effective_pool_complete": true,
+        "forms_complete": true,
+        "failure_scan_complete": true,
+        "evidence": {
+          "same_type_complete": [
+            "sf"
+          ],
+          "effective_pool_complete": [
+            "sf"
+          ],
+          "forms_complete": [
+            "sf"
+          ],
+          "failure_scan_complete": [
+            "sf"
+          ]
+        }
+      },
+      "advantage": {
+        "state": "verified",
+        "claim": "SYNTHETIC advantage for rule testing, not a real product promise",
+        "own_source_ids": [
+          "own"
+        ],
+        "baseline_source_ids": [
+          "sf"
+        ],
+        "evidence": {
+          "state": [
+            "own",
+            "sf"
+          ]
+        }
+      },
+      "failure_cases": [],
+      "action_plan": {
+        "purpose": "TEST ONLY example of structure",
+        "proposed_specification": "Must be replaced with evidence-led actual design",
+        "next_steps": [
+          "Obtain real Sorftime pack",
+          "Confirm own product capability",
+          "Check supplier sample and actual cost"
+        ]
+      }
+    },
+    {
+      "id": "demo-fail",
+      "name": "TEST ONLY ratings threshold failure",
+      "category_name": "TEST ONLY industrial parts",
+      "scope_category": "industrial",
+      "price_usd": 79,
+      "price_currency": "USD",
+      "competitors": [
+        {
+          "asin": "B0NF000001",
+          "same_function": true,
+          "same_shape": true,
+          "same_material": true,
+          "listing_complete": true,
+          "competes_function": true,
+          "fulfillment": "FBA",
+          "stars": 4.0,
+          "rating_count": 50,
+          "form": "bracket",
+          "material": "steel",
+          "price_usd": 79,
+          "evidence": {
+            "same_function": [
+              "sf"
+            ],
+            "same_shape": [
+              "sf"
+            ],
+            "same_material": [
+              "sf"
+            ],
+            "listing_complete": [
+              "sf"
+            ],
+            "competes_function": [
+              "sf"
+            ],
+            "fulfillment": [
+              "sf"
+            ],
+            "stars": [
+              "sf"
+            ],
+            "rating_count": [
+              "sf"
+            ],
+            "form": [
+              "sf"
+            ],
+            "material": [
+              "sf"
+            ],
+            "price_usd": [
+              "sf"
+            ]
+          }
+        },
+        {
+          "asin": "B0NF000002",
+          "same_function": true,
+          "same_shape": true,
+          "same_material": true,
+          "listing_complete": true,
+          "competes_function": true,
+          "fulfillment": "FBA",
+          "stars": 4.2,
+          "rating_count": 30,
+          "form": "bracket",
+          "material": "steel",
+          "price_usd": 79,
+          "evidence": {
+            "same_function": [
+              "sf"
+            ],
+            "same_shape": [
+              "sf"
+            ],
+            "same_material": [
+              "sf"
+            ],
+            "listing_complete": [
+              "sf"
+            ],
+            "competes_function": [
+              "sf"
+            ],
+            "fulfillment": [
+              "sf"
+            ],
+            "stars": [
+              "sf"
+            ],
+            "rating_count": [
+              "sf"
+            ],
+            "form": [
+              "sf"
+            ],
+            "material": [
+              "sf"
+            ],
+            "price_usd": [
+              "sf"
+            ]
+          }
+        },
+        {
+          "asin": "B0NF000003",
+          "same_function": true,
+          "same_shape": false,
+          "same_material": false,
+          "listing_complete": true,
+          "competes_function": true,
+          "fulfillment": "FBM",
+          "stars": 4.0,
+          "rating_count": 200,
+          "form": "clamp",
+          "material": "aluminum",
+          "price_usd": 79,
+          "evidence": {
+            "same_function": [
+              "sf"
+            ],
+            "same_shape": [
+              "sf"
+            ],
+            "same_material": [
+              "sf"
+            ],
+            "listing_complete": [
+              "sf"
+            ],
+            "competes_function": [
+              "sf"
+            ],
+            "fulfillment": [
+              "sf"
+            ],
+            "stars": [
+              "sf"
+            ],
+            "rating_count": [
+              "sf"
+            ],
+            "form": [
+              "sf"
+            ],
+            "material": [
+              "sf"
+            ],
+            "price_usd": [
+              "sf"
+            ]
+          }
+        }
+      ],
+      "evidence": {
+        "scope_category": [
+          "sf"
+        ],
+        "price_usd": [
+          "sf"
+        ]
+      },
+      "coverage": {
+        "scope_note": "SYNTHETIC COMPLETE SAMPLE ONLY; no real market collection",
+        "same_type_complete": true,
+        "effective_pool_complete": true,
+        "forms_complete": true,
+        "failure_scan_complete": true,
+        "evidence": {
+          "same_type_complete": [
+            "sf"
+          ],
+          "effective_pool_complete": [
+            "sf"
+          ],
+          "forms_complete": [
+            "sf"
+          ],
+          "failure_scan_complete": [
+            "sf"
+          ]
+        }
+      },
+      "advantage": {
+        "state": "verified",
+        "claim": "SYNTHETIC advantage for rule testing, not a real product promise",
+        "own_source_ids": [
+          "own"
+        ],
+        "baseline_source_ids": [
+          "sf"
+        ],
+        "evidence": {
+          "state": [
+            "own",
+            "sf"
+          ]
+        }
+      },
+      "failure_cases": [],
+      "action_plan": {
+        "purpose": "TEST ONLY example of structure",
+        "proposed_specification": "Must be replaced with evidence-led actual design",
+        "next_steps": [
+          "Obtain real Sorftime pack",
+          "Confirm own product capability",
+          "Check supplier sample and actual cost"
+        ]
+      }
+    },
+    {
+      "id": "demo-hold",
+      "name": "TEST ONLY insufficient coverage",
+      "category_name": "TEST ONLY industrial parts",
+      "scope_category": "industrial",
+      "price_usd": 79,
+      "price_currency": "USD",
+      "competitors": [
+        {
+          "asin": "B0NF000001",
+          "same_function": true,
+          "same_shape": true,
+          "same_material": true,
+          "listing_complete": true,
+          "competes_function": true,
+          "fulfillment": "FBA",
+          "stars": 4.0,
+          "rating_count": 20,
+          "form": "bracket",
+          "material": "steel",
+          "price_usd": 79,
+          "evidence": {
+            "same_function": [
+              "sf"
+            ],
+            "same_shape": [
+              "sf"
+            ],
+            "same_material": [
+              "sf"
+            ],
+            "listing_complete": [
+              "sf"
+            ],
+            "competes_function": [
+              "sf"
+            ],
+            "fulfillment": [
+              "sf"
+            ],
+            "stars": [
+              "sf"
+            ],
+            "rating_count": [
+              "sf"
+            ],
+            "form": [
+              "sf"
+            ],
+            "material": [
+              "sf"
+            ],
+            "price_usd": [
+              "sf"
+            ]
+          }
+        },
+        {
+          "asin": "B0NF000002",
+          "same_function": true,
+          "same_shape": true,
+          "same_material": true,
+          "listing_complete": true,
+          "competes_function": true,
+          "fulfillment": "FBA",
+          "stars": 4.2,
+          "rating_count": 30,
+          "form": "bracket",
+          "material": "steel",
+          "price_usd": 79,
+          "evidence": {
+            "same_function": [
+              "sf"
+            ],
+            "same_shape": [
+              "sf"
+            ],
+            "same_material": [
+              "sf"
+            ],
+            "listing_complete": [
+              "sf"
+            ],
+            "competes_function": [
+              "sf"
+            ],
+            "fulfillment": [
+              "sf"
+            ],
+            "stars": [
+              "sf"
+            ],
+            "rating_count": [
+              "sf"
+            ],
+            "form": [
+              "sf"
+            ],
+            "material": [
+              "sf"
+            ],
+            "price_usd": [
+              "sf"
+            ]
+          }
+        },
+        {
+          "asin": "B0NF000003",
+          "same_function": true,
+          "same_shape": false,
+          "same_material": false,
+          "listing_complete": true,
+          "competes_function": true,
+          "fulfillment": "FBM",
+          "stars": 4.0,
+          "rating_count": 200,
+          "form": "clamp",
+          "material": "aluminum",
+          "price_usd": 79,
+          "evidence": {
+            "same_function": [
+              "sf"
+            ],
+            "same_shape": [
+              "sf"
+            ],
+            "same_material": [
+              "sf"
+            ],
+            "listing_complete": [
+              "sf"
+            ],
+            "competes_function": [
+              "sf"
+            ],
+            "fulfillment": [
+              "sf"
+            ],
+            "stars": [
+              "sf"
+            ],
+            "rating_count": [
+              "sf"
+            ],
+            "form": [
+              "sf"
+            ],
+            "material": [
+              "sf"
+            ],
+            "price_usd": [
+              "sf"
+            ]
+          }
+        }
+      ],
+      "evidence": {
+        "scope_category": [
+          "sf"
+        ],
+        "price_usd": [
+          "sf"
+        ]
+      },
+      "coverage": {
+        "scope_note": "SYNTHETIC COMPLETE SAMPLE ONLY; no real market collection",
+        "same_type_complete": true,
+        "effective_pool_complete": false,
+        "forms_complete": true,
+        "failure_scan_complete": true,
+        "evidence": {
+          "same_type_complete": [
+            "sf"
+          ],
+          "effective_pool_complete": [
+            "sf"
+          ],
+          "forms_complete": [
+            "sf"
+          ],
+          "failure_scan_complete": [
+            "sf"
+          ]
+        }
+      },
+      "advantage": {
+        "state": "proposed",
+        "claim": "SYNTHETIC advantage for rule testing, not a real product promise",
+        "own_source_ids": [
+          "own"
+        ],
+        "baseline_source_ids": [
+          "sf"
+        ],
+        "evidence": {
+          "state": [
+            "own",
+            "sf"
+          ]
+        }
+      },
+      "failure_cases": [],
+      "action_plan": {
+        "purpose": "TEST ONLY example of structure",
+        "proposed_specification": "Must be replaced with evidence-led actual design",
+        "next_steps": [
+          "Obtain real Sorftime pack",
+          "Confirm own product capability",
+          "Check supplier sample and actual cost"
+        ]
+      }
+    }
+  ],
+  "insights": [
+    {
+      "section": 1,
+      "kind": "hypothesis",
+      "finding": "Synthetic workflow demonstration only; no real market conclusion.",
+      "meaning": "This checks report structure, not Sorftime account access.",
+      "action": "Replace with real evidence before market decisions.",
+      "evidence_ids": []
+    },
+    {
+      "section": 2,
+      "kind": "hypothesis",
+      "finding": "Synthetic workflow demonstration only; no real market conclusion.",
+      "meaning": "This checks report structure, not Sorftime account access.",
+      "action": "Replace with real evidence before market decisions.",
+      "evidence_ids": []
+    },
+    {
+      "section": 3,
+      "kind": "hypothesis",
+      "finding": "Synthetic workflow demonstration only; no real market conclusion.",
+      "meaning": "This checks report structure, not Sorftime account access.",
+      "action": "Replace with real evidence before market decisions.",
+      "evidence_ids": []
+    },
+    {
+      "section": 4,
+      "kind": "hypothesis",
+      "finding": "Synthetic workflow demonstration only; no real market conclusion.",
+      "meaning": "This checks report structure, not Sorftime account access.",
+      "action": "Replace with real evidence before market decisions.",
+      "evidence_ids": []
+    },
+    {
+      "section": 5,
+      "kind": "hypothesis",
+      "finding": "Synthetic workflow demonstration only; no real market conclusion.",
+      "meaning": "This checks report structure, not Sorftime account access.",
+      "action": "Replace with real evidence before market decisions.",
+      "evidence_ids": []
+    },
+    {
+      "section": 6,
+      "kind": "hypothesis",
+      "finding": "Synthetic workflow demonstration only; no real market conclusion.",
+      "meaning": "This checks report structure, not Sorftime account access.",
+      "action": "Replace with real evidence before market decisions.",
+      "evidence_ids": []
+    },
+    {
+      "section": 7,
+      "kind": "hypothesis",
+      "finding": "Synthetic workflow demonstration only; no real market conclusion.",
+      "meaning": "This checks report structure, not Sorftime account access.",
+      "action": "Replace with real evidence before market decisions.",
+      "evidence_ids": []
+    },
+    {
+      "section": 8,
+      "kind": "hypothesis",
+      "finding": "Synthetic workflow demonstration only; no real market conclusion.",
+      "meaning": "This checks report structure, not Sorftime account access.",
+      "action": "Replace with real evidence before market decisions.",
+      "evidence_ids": []
+    },
+    {
+      "section": 9,
+      "kind": "hypothesis",
+      "finding": "Synthetic workflow demonstration only; no real market conclusion.",
+      "meaning": "This checks report structure, not Sorftime account access.",
+      "action": "Replace with real evidence before market decisions.",
+      "evidence_ids": []
+    },
+    {
+      "section": 10,
+      "kind": "hypothesis",
+      "finding": "Synthetic workflow demonstration only; no real market conclusion.",
+      "meaning": "This checks report structure, not Sorftime account access.",
+      "action": "Replace with real evidence before market decisions.",
+      "evidence_ids": []
+    }
+  ],
+  "research_data": {
+    "market": {
+      "status": "TEST ONLY; no real trend data"
+    },
+    "keywords": {
+      "status": "获取不到真实关键词数据"
+    },
+    "voc_and_failures": {
+      "status": "No actual reviews sampled"
+    },
+    "risks_and_economics": {
+      "status": "Actual costs and profit 获取不到"
+    }
+  }
+}

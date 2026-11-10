@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0",
+  "request": {
+    "task_id": "nfwl-research-demo",
+    "revision": "r001",
+    "marketplace": "US",
+    "as_of": "2026-11-09",
+    "input": {
+      "kind": "keyword",
+      "value": "TEST ONLY industrial mounting fixture"
+    },
+    "budget": {
+      "max_tool_calls": 40
+    }
+  },
+  "mode": "unavailable",
+  "sources": [],
+  "candidates": [],
+  "insights": [
+    {
+      "section": 1,
+      "kind": "hypothesis",
+      "finding": "Sorftime not connected; market data 获取不到.",
+      "meaning": "No verified candidate list can be issued.",
+      "action": "Connect Sorftime or supply a real Sorftime export; no configuration is changed by this Skill.",
+      "evidence_ids": []
+    }
+  ],
+  "research_data": {}
+}
