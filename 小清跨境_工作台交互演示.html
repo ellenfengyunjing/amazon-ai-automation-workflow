@@ -500,8 +500,6 @@ const MODS = [
    sub:'环节 7/8 · 固定板块（安装/使用/时长）+ AI 卖点脚本 · 参考生图界面'},
   {k:'sipp',   no:'⑧', name:'上架',        grp:'新品管理', steps:['上架'], roles:'all',
    sub:'环节 8/8 · 汇总全部输出 · 对接领星一键上架 · 导出 Excel'},
-  {k:'rv',     no:'',  name:'审核中心',    grp:'审核与看板', steps:['待我审核','已处理'], roles:'mgr,boss',
-   sub:'主管 / 老板落地页 · 逐条审核：通过流转下一步 · 驳回返回提交人（可附原因与修改意见）'},
   {k:'dash',   no:'',  name:'数据看板',    grp:'审核与看板', steps:['数据看板'], roles:'boss',
    sub:'老板全局视图 · 全流程进度 + 各环节漏斗 + 全员使用情况'},
   {k:'task',   no:'',  name:'任务中心',    grp:'系统', steps:['任务中心'], roles:'all',
@@ -516,10 +514,10 @@ const NEXT = {accept:'sp', sp:'copy', copy:'sipp', manual:'sipp', brief:'gen', g
 
 /* v16: 账号与权限（角色分工 + 默认落地页 + 数据隔离规则） */
 const ROLES = {
-  boss:  {n:'老板',   who:'周小清', home:'dash', sub:'管理员账号 · 审核终审 + 数据看板（全员/全流程可见）+ 账号与 MCP 配置'},
-  mgr:   {n:'主管',   who:'刘洋',   home:'rv',   sub:'审核中心为主 · 开发/运营递交的内容逐条审核'},
-  dev:   {n:'开发',   who:'吴楠',   home:'pick', sub:'商品中心选品环节 · 竞品集合/产品池/工作台 · 递交选品信息给主管审核'},
-  op:    {n:'运营',   who:'小清运营', home:'accept', sub:'新品管理环节 ①-⑧ · 递交材料给主管审核'}
+  boss:  {n:'老板',   who:'周小清', home:'dash', sub:'管理员+审核账号 · 看全部数据 + 审核需要他审的环节 + 账号与 MCP 配置'},
+  mgr:   {n:'主管',   who:'刘洋',   home:'accept', sub:'只看到各模块需要他审核的环节和数据 · 通过流转 / 驳回附意见'},
+  dev:   {n:'开发',   who:'吴楠',   home:'pick', sub:'与运营同维度 · 全部工作台权限 + 递交审核 + 看审核进度与驳回意见'},
+  op:    {n:'运营',   who:'小清运营', home:'accept', sub:'与开发同维度 · 全部工作台权限 + 递交审核 + 看审核进度与驳回意见'}
 };
 /* 审核链：每个审核环节的递进 */
 const RVCHAIN = ['dev','mgr','boss'];
@@ -626,7 +624,18 @@ const RV0 = {
 SK.forEach(function(s){ s.aiScore=AIS[s.id]||50; s.submitter=SUBM[s.id]||'AI'; s.rv=RV0[s.id]||null;
   if(!s.rv && !s.poolOnly && atOf2(s,'accept')>0) s.rv={dev:'pass',mgr:'pass',boss:'pass'};
   const e=EXT[s.id]; if(e){ s.et=e.et; s.flow=e.flow; s.rc=e.rc; s.star=e.star; s.gm=e.gm; s.inT=e.inT; s.devOwn=e.devOwn; }
-  s.opOwn=OPOWN[s.id]||null; });
+  s.opOwn=OPOWN[s.id]||null; s.aud=s.aud||{}; });
+/* v17: 环节级审核 aud={k:{st:wait|rej|pass, note}} —— 递交→主管/老板审→驳回回递交人改后重递
+   演示数据：S3 卖点待审 / S4 验收待审 / S12 需求表驳回(有意见) / S9 Listing 待审 / S1 全通过样例 */
+const AUD0 = {
+  S3: {sp:{st:'wait', t:'11-10 14:20'}},
+  S4: {accept:{st:'wait', t:'11-10 15:02'}},
+  S12:{brief:{st:'rej', t:'11-09 17:15', by:'刘洋', note:'图片类型缺「尺寸图」与「对比图」；语种漏 DE。请补充后重新递交。'}},
+  S9: {copy:{st:'wait', t:'11-10 11:40'}},
+  S1: {accept:{st:'pass', t:'11-06 10:11', by:'刘洋'}, sp:{st:'pass', t:'11-06 15:30', by:'刘洋'}, copy:{st:'pass', t:'11-07 09:20', by:'周小清'}, brief:{st:'pass', t:'11-07 14:00', by:'刘洋'}, gen:{st:'pass', t:'11-08 10:00', by:'刘洋'}, video:{st:'pass', t:'11-08 16:30', by:'周小清'}}
+};
+Object.keys(AUD0).forEach(function(id){ const s=sk2(id); if(s) s.aud=AUD0[id]; });
+function sk2(id){ return SK.find(function(x){return x.id===id;})||null; }
 function atOf2(s,k){ return (s.at&&s.at[k])||0; }
 
 /* 创建日期 → 处理截止（+7 天） */
@@ -982,13 +991,19 @@ const DAILY = [
    - boss：全部
 */
 function vis(s){
-  if(S.role==='boss') return true;
-  if(S.role==='dev')  return true;   /* 开发共用选品区，demo 保持可见 */
-  if(S.role==='op')   return !s.poolOnly && (s.opOwn===ROLES.op.who);
-  if(S.role==='mgr')  return true;   /* 主管审核所有递交 */
+  if(S.role==='boss'||S.role==='dev') return true;          /* 老板/开发：全部 */
+  if(S.role==='op') return !s.poolOnly && (s.opOwn===ROLES.op.who||s.opOwn==='小林'||!s.opOwn);
+  if(S.role==='mgr'){                                        /* 主管：本模块只看待审的 */
+    const k=VIS_K||'accept';
+    return !!(s.aud && s.aud[k] && s.aud[k].st==='wait');
+  }
   return true;
 }
-function visList(k){ return modsk(k).filter(vis); }
+var VIS_K=null;
+function visList(k){ VIS_K=k; const r=modsk(k).filter(function(s){
+  if(S.role==='mgr') return !!(s.aud && s.aud[k] && s.aud[k].st==='wait');
+  return vis(s);
+}); VIS_K=null; return r; }
 
 /* 全员使用情况（老板看板） */
 const USAGE = [
@@ -1119,7 +1134,7 @@ function renderNav(){
     else if(m.k==='pick') cnt=PICK_TASKS.reduce(function(n,t){return n+t.rec.length;},0);
     else if(m.k==='work') cnt=SK.filter(function(s){return s.rv && !(s.rv.dev==='pass'&&s.rv.mgr==='pass'&&s.rv.boss==='pass');}).length;
     else if(m.k==='task') cnt=TASK3.filter(function(t){return t.st!=='done';}).length;
-    else if(m.k==='rv') cnt=SK.filter(function(s){ return s.rv && !allRvPass(s) && roleCanSee(s) && rvMyTurn(s); }).length;
+    else if(m.k==='accept'||m.k==='sp'||m.k==='copy'||m.k==='brief'||m.k==='video'){ if(S.role==='mgr'){ cnt=SK.filter(function(s){ return s.aud&&s.aud[m.k]&&s.aud[m.k].st==='wait'; }).length; } }
     else cnt=modsk(m.k).filter(function(s){return mstat(s,m.k)!=='done'&&mstat(s,m.k)!=='wait';}).length;
     const hot = m.k!=='pool'&&m.k!=='pick'&&cnt>0;
     h+='<div class="nitem'+(S.m===i?' on':'')+'" data-act="goto" data-k="'+m.k+'">'+
@@ -1152,7 +1167,6 @@ function footGuidance(){
   else if(k==='video') txt='选品审核通过后 AI 自动生成：固定板块（安装/使用/时长）+ 非固定（卖点脚本）；点「重新生成」可附修改意见';
   else if(k==='sipp') txt='缺失字段标红提醒，可点击跳转对应环节补充；确认后对接领星一键上架 · 右上角导出上架表格 Excel';
   else if(k==='task') txt='三类任务统一归集：系统派发 / 主管派发 / 自建；完成点「确认」自动汇总进当日日报';
-  else if(k==='rv') txt='待我审核逐条处理：通过自动流转下一节点并飞书通知；驳回需填原因与修改意见，数据返回提交人';
   else if(k==='dash') txt='老板全局视图：全流程漏斗 / 各负责人在办 / 全员使用情况；需要操作的只有审核与驳回（去审核中心）';
   else if(k==='set') txt=S.role==='boss'?'老板视角：全局数据只读；模型与接口配置对全员开放':'管理员：账号 / AI 配置 / 第三方接口全局面板 · 模型选择对运营同样开放';
   let h='<div class="fi">i</div><div class="ft"><b>下一步：</b>'+txt+'</div>';
@@ -1168,7 +1182,7 @@ function render(){
   renderNav(); renderTop(); footGuidance();
   const m=MODS[S.m];
   const V={pick:vPick,pool:vPool,work:vWork,accept:vAccept,sp:vSp,copy:vCopy,manual:vManual,
-    brief:vBrief,gen:vGen,video:vVideo,sipp:vSipp,rv:vRv,dash:vDash,task:vTask,set:vSet};
+    brief:vBrief,gen:vGen,video:vVideo,sipp:vSipp,dash:vDash,task:vTask,set:vSet};
   let inner=(V[m.k]||vPool)();
   const showSteps = m.steps.length>1 && !(m.k==='work' && !S.workSel);
   $('#main').innerHTML='<div class="mhead"><div class="shead">'+
@@ -1247,44 +1261,45 @@ function vPick(){
     if(!s.poolOnly && atOf2(s,'accept')>0) return ['已完成分析','p-ok'];
     return ['待初筛','p-mute'];
   };
-  const cols='34px 60px 1.1fr 1.7fr 84px 70px 54px 64px 96px 100px 60px 2fr 74px';
+  const cols='34px 54px 1.1fr 1.5fr 1.9fr 90px 70px 54px 56px 70px 86px 96px 100px 110px 96px';
   let rows=list.map(function(s){
     const st=statOf(s);
-    return '<div class="tr body" style="grid-template-columns:'+cols+'">'+
+    return '<div class="tr body" style="grid-template-columns:'+cols+';min-width:1560px">'+
     cbxCell(S.sel.has(s.id),'sel',s.id)+
-    '<div class="ph" style="width:34px;height:34px;border-radius:4px;flex:0 0 34px">IMG</div>'+
-    '<div class="sm" style="font-family:ui-monospace,monospace;min-width:0"><div class="ell" title="'+s.asin+'">'+s.asin+'</div>'+
-    '<div class="xs dim">AI '+(s.aiScore||'—')+' · '+(s.submitter||'AI')+'</div></div>'+
-    '<div style="min-width:0"><div class="sm ell" style="font-weight:600" title="'+esc(s.name)+'">'+esc(s.name)+'</div>'+
-    '<div class="xs dim ell" title="'+esc(s.et||'')+'">'+esc((s.et||'—').slice(0,64))+'</div></div>'+
+    '<div class="ph" style="width:36px;height:36px;border-radius:4px;flex:0 0 36px">IMG</div>'+
+    '<div class="sm" style="font-family:ui-monospace,monospace">'+s.asin+'</div>'+
+    '<div class="sm ell" style="min-width:0" title="'+esc(s.name)+'">'+esc(s.name)+'</div>'+
+    '<div class="xs dim ell" style="min-width:0" title="'+esc(s.et||'')+'">'+esc(s.et||'—')+'</div>'+
     '<div class="sm">'+(s.flow||'—')+'</div>'+
-    '<div class="sm dim">'+(s.rc||'—')+'</div>'+
+    '<div class="sm">'+(s.rc||'—')+'</div>'+
     '<div class="sm">★ '+(s.star||'—')+'</div>'+
-    '<div><span class="pill '+(parseInt(s.gm)>=25?'p-ok':'p-wait')+'" title="毛利率">'+(s.gm||'—')+'</span></div>'+
-    '<div class="xs">'+(s.devOwn||s.submitter||'AI')+'</div>'+
-    '<div class="xs dim">'+(s.inT||'—')+'</div>'+
+    '<div class="sm">'+s.price+'</div>'+
+    '<div><span class="pill '+(parseInt(s.gm)>=25?'p-ok':'p-wait')+'">'+(s.gm||'—')+'</span></div>'+
+    '<div class="sm">'+(s.aiScore||'—')+'</div>'+
+    '<div class="sm">'+(s.devOwn||s.submitter||'AI')+'</div>'+
+    '<div class="xs dim" style="min-width:0">'+(s.inT||'—')+'</div>'+
     '<div><span class="pill '+st[1]+'">'+st[0]+'</span></div>'+
-    '<div class="rowline" style="flex-wrap:wrap;gap:3px;min-width:0">'+
-    '<button class="btn xs" data-act="imgSearch" data-id="'+s.id+'" title="上传图片以图搜同款">以图搜图</button>'+
-    '<button class="btn xs" data-act="w1688" data-id="'+s.id+'" title="1688 找货源">1688</button>'+
-    '<button class="btn xs" data-act="wtao" data-id="'+s.id+'" title="淘宝找货源">淘宝</button>'+
-    ((s.poolOnly&&!s.rv)?'<button class="btn xs p" data-act="confirmS" data-id="'+s.id+'" title="初筛通过 → 流转工作台五步分析">初筛</button>':'')+
-    '<button class="btn xs '+(s.rv?'':'p')+'" data-act="workGo" data-id="'+s.id+'" title="进入工作台五步分析">工作台</button>'+
-    '<button class="btn xs d" data-act="compDel2" data-id="'+s.id+'" title="从竞品集合删除">删</button>'+
-    '</div></div>';
+    '<div class="rowline" style="gap:3px"><button class="btn xs" data-act="drw" data-k="pool" data-id="'+s.id+'" title="查看详情 / 环节进度">详情</button>'+
+    ((s.poolOnly&&!s.rv)?'<button class="btn xs p" data-act="confirmS" data-id="'+s.id+'">初筛</button>':'')+
+    '<button class="btn xs" data-act="workGo" data-id="'+s.id+'">工作台</button>'+
+    '<button class="btn xs" data-act="imgSearch" data-id="'+s.id+'">以图搜图</button>'+
+    '<button class="btn xs" data-act="toast" data-t="1688 找货源（新窗口）">1688</button>'+
+    '<button class="btn xs d" data-act="compDel2" data-id="'+s.id+'">删</button></div>'+
+    '</div>';
   }).join('');
   return '<div class="rowline mb10" style="gap:8px;flex-wrap:wrap;align-items:center">'+
-    '<span class="sm" style="font-weight:700">ASIN:</span><input class="inp" style="width:150px;height:30px" placeholder="输入 ASIN">'+
-    '<span class="sm" style="font-weight:700">品名:</span><input class="inp" style="width:150px;height:30px" placeholder="输入品名关键词">'+
-    '<select class="inp" style="width:110px;height:30px"><option>全部</option><option>待初筛</option><option>已初筛</option><option>已完成分析</option><option>已驳回</option></select>'+
+    '<span class="sm" style="font-weight:700">ASIN:</span><input class="inp" style="width:140px;height:30px" placeholder="输入 ASIN">'+
+    '<span class="sm" style="font-weight:700">品名:</span><input class="inp" style="width:140px;height:30px" placeholder="输入品名关键词">'+
+    '<select class="inp" style="width:100px;height:30px"><option>全部</option><option>待初筛</option><option>已初筛</option><option>已完成分析</option><option>已驳回</option></select>'+
     '<button class="btn s" data-act="pickQ">查询</button>'+
-    '<button class="btn s p" style="margin-left:auto" data-act="pickAdd" title="输入多个 ASIN，逗号/分号/换行分隔，批量加入竞品集合">＋ 手动添加 ASIN</button>'+
-    '<button class="btn s" data-act="stepnext">查看建议清单 →</button></div>'+
-    '<div class="card"><h3>竞品集合<span class="n">'+all.length+' 个 ASIN · AI ' + all.filter(function(s){return s.submitter==='AI';}).length + ' / 手动 ' + all.filter(function(s){return s.submitter!=='AI';}).length + '</span></h3><div class="cb tight">'+
-    '<div class="tr th" style="grid-template-columns:'+cols+'">'+
-    '<div></div><div>主图</div><div>ASIN / AI打分 / 提交人</div><div>中文品名 / 英文标题</div><div>近30天流动</div><div>评论数</div><div>评分</div><div>毛利率</div><div>提交人</div><div>进池时间</div><div>当前状态</div><div>操作</div><div></div></div>'+
-    rows+pgBar('pick',all.length)+
-    '<div class="trfoot">开发手动添加 ASIN 或从 AI 建议清单导入 · 行内：以图搜图 / 1688·淘宝找货源 / 初筛通过 / 进入工作台 / 删除</div></div></div>';
+    '<button class="btn s p" style="margin-left:auto" data-act="pickAdd" title="输入多个 ASIN，逗号/分号/换行分隔">＋ 手动添加 ASIN</button>'+
+    '<button class="btn s" data-act="stepnext">建议清单 →</button></div>'+
+    '<div class="card"><h3>竞品集合<span class="n">'+all.length+' 个 · 列多可左右滚动</span></h3><div class="cb tight amzscroll">'+
+    '<div class="tr th" style="grid-template-columns:'+cols+';min-width:1560px">'+
+    '<div></div><div>主图</div><div>ASIN</div><div>中文品名</div><div>英文标题</div><div>近30天流动</div><div>评论数</div><div>评分</div><div>价格</div><div>毛利率</div><div>AI打分</div><div>提交人</div><div>进池时间</div><div>当前状态</div><div>操作</div></div>'+
+    rows+
+    pgBar('pick',all.length)+
+    '<div class="trfoot">表格横向滚动查看全部列 · 「详情」放大查看环节时间轴并修改</div></div></div>';
 }
 /* 建议清单（v15 保留，入口改为 step1） */
 function pickSuggest(){
@@ -1353,43 +1368,49 @@ function poolStats(){
     '<span class="xs dim">点击环节卡片直达</span></div></div></div></div>';
 }
 function vPool(){
-  const cols='30px 24px 2.3fr 80px 76px 86px 128px 186px 178px';
+  const cols='30px 54px 1.1fr 1.6fr 90px 70px 54px 56px 70px 86px 96px 1.7fr 130px 150px 100px';
   const all=modsk('pool');
   const list=pgOf('pool',all);
   let rows=list.map(function(s){
     const st=skStat(s);
     const ai=s.aiScore||50;
     const aiCls=ai>=75?'p-ok':(ai>=60?'p-cy':(ai>=40?'p-wait':'p-bad'));
-    const rvTag=(s.rv && s.rv.dev==='pass' && s.rv.mgr==='pass' && s.rv.boss==='pass')?'<span class="pill p-ok" title="三道审核全部通过，已进入新品流程">三审通过</span>':
+    const rvTag=(s.rv && s.rv.dev==='pass' && s.rv.mgr==='pass' && s.rv.boss==='pass')?'<span class="pill p-ok">三审通过</span>':
       (s.rv&&s.rv.dev==='rej'?'<span class="pill p-bad" title="'+esc(s.rv.r||'')+'">开发驳回</span>':
-      (s.rv&&s.rv.dev==='pass'?'<span class="pill p-wait" title="工作台三道审核进行中">审核中</span>':''));
-    let r='<div class="tr body" style="grid-template-columns:'+cols+'">'+
+      (s.rv&&s.rv.dev==='pass'?'<span class="pill p-wait">审核中</span>':''));
+    let r='<div class="tr body" style="grid-template-columns:'+cols+';min-width:1500px">'+
       ((s.poolOnly&&!s.rv)?cbxCell(S.sel.has(s.id),'sel',s.id):'<div></div>')+
-      '<div class="expbtn" data-act="drw" data-k="pool" data-id="'+s.id+'" title="点击查看 SKU 详情 / 环节进度" style="font-size:10px;color:var(--ink5)">▶</div>'+
-      skuCell(s,'<div class="cd">'+esc(s.cat)+' · 规格 '+esc(s.size||'—')+' / '+esc(s.wt||'—')+'</div>')+
-      '<div><span class="pill p-mute">'+s.price+'</span></div>'+
-      '<div class="sm">月销 '+s.sales+'</div>'+
-      '<div><span class="pill '+aiCls+'" title="AI 打分：需求 / 竞争 / 毛利 / 差评 / 专利 / 供应链 六维加权">'+ai+'</span></div>'+
-      '<div><div class="sm" title="提交人：人工导入显示名字（手动），AI 调研显示 AI">'+esc(s.submitter||'AI')+'</div>'+
-      (rvTag?'<div style="margin-top:2px">'+rvTag+'</div>':'')+'</div>'+
+      '<div class="ph" style="width:36px;height:36px;border-radius:4px;flex:0 0 36px">IMG</div>'+
+      '<div class="sm" style="font-family:ui-monospace,monospace">'+s.asin+'</div>'+
+      '<div style="min-width:0"><div class="sm ell" style="font-weight:600" title="'+esc(s.name)+'">'+esc(s.name)+'</div>'+
+      '<div class="xs dim ell">'+esc(s.cat)+'</div></div>'+
+      '<div class="sm">'+(s.flow||'—')+'</div>'+
+      '<div class="sm">'+(s.rc||'—')+'</div>'+
+      '<div class="sm">★ '+(s.star||'—')+'</div>'+
+      '<div class="sm">'+s.price+'</div>'+
+      '<div><span class="pill '+aiCls+'" title="AI 六维加权打分">'+ai+'</span></div>'+
+      '<div class="sm">'+(s.devOwn||s.submitter||'AI')+'</div>'+
+      '<div class="xs dim" style="min-width:0">'+(s.inT||'—')+'</div>'+
+      '<div><span class="pill '+st[1]+'">'+st[0]+'</span>'+(rvTag?'<div style="margin-top:2px">'+rvTag+'</div>':'')+'</div>'+
       '<div>'+poolDots(s)+'</div>'+
-      '<div class="rowline"><span class="pill '+st[1]+'">'+st[0]+'</span>'+
-      '<button class="btn s" data-act="editS" data-id="'+s.id+'">修改</button>'+
-      ((s.poolOnly&&!s.rv)?'<button class="btn s p" data-act="confirmS" data-id="'+s.id+'" title="初筛通过 → 流转工作台五步深度分析 + 三道审核">确认选品</button>':'')+
-      (s.rv&&!allRvPass(s)?'<button class="btn xs" data-act="workGo" data-id="'+s.id+'" title="查看审核进度 / 五步分析">审核中</button>':'')+
+      '<div class="rowline" style="gap:3px;flex-wrap:wrap">'+
+      '<button class="btn xs" data-act="drw" data-k="pool" data-id="'+s.id+'">详情</button>'+
+      '<button class="btn xs" data-act="editS" data-id="'+s.id+'">修改</button>'+
+      ((s.poolOnly&&!s.rv)?'<button class="btn xs p" data-act="confirmS" data-id="'+s.id+'" title="初筛通过 → 工作台五步+三审">初筛</button>':'')+
+      (s.rv&&!allRvPass(s)?'<button class="btn xs" data-act="workGo" data-id="'+s.id+'">审核进度</button>':'')+
       '</div></div>';
     return r;
   }).join('');
   return poolStats()+
-    '<div class="card"><h3>产品池 · 全部 SKU<span class="n">'+all.length+'</span><span class="acts">'+
-    '<button class="btn s" data-act="xlsT" title="下载表头 Excel 模板，按列填写后批量导入">⬇ 导入模板</button>'+
+    '<div class="card"><h3>产品池 · 全部 SKU<span class="n">'+all.length+' · 可左右滚动</span><span class="acts">'+
+    '<button class="btn s" data-act="xlsT">⬇ 导入模板</button>'+
     '<button class="btn s p" data-act="xlsI">⇪ 批量导入 Excel</button>'+
-    '<button class="btn s" data-act="newSku">新建商品</button></span></h3><div class="cb tight">'+
-    '<div class="tr th" style="grid-template-columns:'+cols+'">'+
-    '<div></div><div></div><div>商品（名称 / ASIN / 类目 / 规格）</div><div>售价</div><div>月销</div><div>AI 打分</div><div>提交人 · 审核状态</div>'+
-    '<div>8 环节进度</div><div>状态 / 操作</div></div>'+
+    '<button class="btn s" data-act="newSku">新建商品</button></span></h3><div class="cb tight amzscroll">'+
+    '<div class="tr th" style="grid-template-columns:'+cols+';min-width:1500px">'+
+    '<div></div><div>主图</div><div>ASIN</div><div>中文品名·类目</div><div>近30天流动</div><div>评论数</div><div>评分</div><div>售价</div><div>AI打分</div><div>提交人</div><div>进池时间</div>'+
+    '<div>当前状态·审核</div><div>8 环节进度</div><div>操作</div></div>'+
     rows+pgBar('pool',all.length)+
-    '<div class="trfoot">「确认选品」= 开发初筛通过 → 流转工作台（五步深度分析 + 开发/主管/老板三道审核），全部通过才进入新品流程 ① 样品验收</div></div></div>';
+    '<div class="trfoot">「初筛」= 开发通过 → 工作台五步 + 三道审核，全部通过进入 ① 样品验收</div></div></div>';
 }
 function allRvPass(s){ return s.rv && s.rv.dev==='pass' && s.rv.mgr==='pass' && s.rv.boss==='pass'; }
 function poolDots(s){
@@ -1826,70 +1847,6 @@ function vTask(){
     '<div class="trfoot">系统任务由流程节点自动派发（如初筛通过 → 五步分析）· 到期未处理飞书 at 运营 ×2 后升级 at 主管 · 完成点「确认」自动进当日日报</div></div></div>';
 }
 
-/* =========================================================
-   9e. v16: 审核中心（主管/老板落地页）+ 数据看板（老板）
-   ========================================================= */
-function vRv(){
-  const isBoss=S.role==='boss';
-  /* 待我审核：当前角色可审的节点 */
-  const pend=SK.filter(function(s){ return s.rv && !allRvPass(s) && roleCanSee(s) && rvMyTurn(s); });
-  /* 已处理：RVLOG 中我处理的 + 我驳回返回的 */
-  const done=RVLOG.filter(function(r){ return r.by===ROLES[S.role].who; });
-  const tab=S.rvtab||'pend';
-  const rvCard=function(s){
-    const chain=rvChainOf(s);
-    const nodeLab={dev:'开发审核（一审）',mgr:'主管审核（二审）',boss:'老板终审（三审）'};
-    const prevName=chain==='mgr'?'开发 吴楠':(chain==='boss'?'主管 刘洋':'五步分析');
-    return '<div class="rvcard">'+
-    '<div class="rvh"><div class="ph">IMG</div><div style="min-width:0;flex:1">'+
-    '<div class="sm" style="font-weight:700">'+esc(s.name)+'</div>'+
-    '<div class="xs dim">'+esc(s.asin)+' · '+esc(s.code)+' · 提交人 '+(s.devOwn||s.submitter||'AI')+' · 上一步：'+prevName+'</div></div>'+
-    '<span class="pill p-do">'+nodeLab[chain||'dev']+'</span></div>'+
-    '<div class="rvb"><div class="xg" style="grid-template-columns:repeat(6,1fr)">'+
-    '<div class="xf"><b>AI 打分</b><span>'+(s.aiScore||'—')+'</span></div>'+
-    '<div class="xf"><b>毛利率</b><span>40.1%</span></div>'+
-    '<div class="xf"><b>广告毛利率</b><span>18.0%</span></div>'+
-    '<div class="xf"><b>预估月销</b><span>2,500</span></div>'+
-    '<div class="xf"><b>首批订货</b><span>1,000</span></div>'+
-    '<div class="xf"><b>选品评分</b><span>7.8/10</span></div>'+
-    '</div>'+
-    '<div class="runlogs mt6"><b>五步结论</b>：同款 6 · 核心词 3（≥20%）· ACOS 71.4% 新品期 · 专利低风险（承重 50 Lbs + 差异配色可行）</div></div>'+
-    '<div class="rvf">'+
-    '<button class="btn xs" data-act="workGo" data-id="'+s.id+'">查看五步分析</button>'+
-    '<button class="btn xs d" data-act="rvRejOpen" data-id="'+s.id+'">驳回（返回提交人）</button>'+
-    '<button class="btn xs p" data-act="rvPass" data-id="'+s.id+'">通过'+(chain==='boss'?' → 进入新品流程':' → 推送下一节点')+'</button>'+
-    '</div></div>';
-  };
-  const pendHtml=pend.length?pend.map(rvCard).join(''):
-    '<div class="card"><div class="empty"><div class="e1">暂无待审核内容</div><div class="e2">'+ROLES[S.role].n+'视角：递交到您节点的内容会出现在这里</div></div></div>';
-  const doneRows=done.map(function(r){
-    const s=sk(r.sku);
-    return '<div class="tr body" style="grid-template-columns:60px 1.8fr 90px 80px 110px 2.2fr 90px">'+
-    '<div><span class="pill p-mute">'+r.id+'</span></div>'+
-    '<div class="sm ell" style="min-width:0">'+(s?esc(s.name):r.sku)+'</div>'+
-    '<div><span class="pill p-cy">'+RVLAB[r.node]+'</span></div>'+
-    '<div>'+(r.act==='pass'?'<span class="pill p-ok">通过</span>':'<span class="pill p-bad">驳回</span>')+'</div>'+
-    '<div class="xs dim">'+r.time+'</div>'+
-    '<div class="xs dim ell" style="min-width:0" title="'+esc(r.note)+'">'+(r.note?('备注：'+esc(r.note.slice(0,40))):'—')+'</div>'+
-    '<div class="rowline">'+(s?'<button class="btn xs" data-act="workGo" data-id="'+s.id+'">查看</button>':'')+'</div></div>';
-  }).join('');
-  const doneHtml='<div class="card"><h3>我已处理<span class="n">'+done.length+' 条</span></h3><div class="cb tight">'+
-    '<div class="tr th" style="grid-template-columns:60px 1.8fr 90px 80px 110px 2.2fr 90px">'+
-    '<div>ID</div><div>产品</div><div>审核节点</div><div>动作</div><div>时间</div><div>备注/驳回意见</div><div>操作</div></div>'+
-    (doneRows||'<div class="trfoot">暂无记录</div>')+'</div></div>';
-  return '<div class="kpis mb10">'+
-  '<div class="kpi"><div class="l">待我审核</div><div class="v" style="color:'+(pend.length?'#3d6dff':'var(--ink)')+'">'+pend.length+'</div><div class="m">'+ROLES[S.role].n+'（'+ROLES[S.role].who+'）</div></div>'+
-  '<div class="kpi"><div class="l">今日已处理</div><div class="v">'+done.filter(function(r){return r.time.indexOf('11-10')===0||r.time.indexOf('11-09')===0;}).length+'</div><div class="m">通过 '+done.filter(function(r){return r.act==='pass';}).length+' · 驳回 '+done.filter(function(r){return r.act==='rej';}).length+'</div></div>'+
-  '<div class="kpi"><div class="l">审核流转中</div><div class="v">'+SK.filter(function(s){return s.rv&&!allRvPass(s)&&s.rv.dev!=='rej';}).length+'</div><div class="m">全流程</div></div>'+
-  '<div class="kpi"><div class="l">审核规则</div><div class="v sm" style="font-size:13px">'+(isBoss?'开发→主管→老板（终审）':'开发→主管（二审）')+'</div><div class="m">驳回返回提交人 · 后面节点不再推送</div></div>'+
-  '</div>'+
-  '<div class="rowline mb10"><div class="gtabs">'+
-  '<div class="gtab2'+(tab==='pend'?' on':'')+'" data-act="rvtab" data-v="pend">📥 待我审核 <span class="xs dim">'+pend.length+'</span></div>'+
-  '<div class="gtab2'+(tab==='done'?' on':'')+'" data-act="rvtab" data-v="done">📋 已处理 <span class="xs dim">'+done.length+'</span></div>'+
-  '</div><span class="xs dim">审核通过自动流转下一节点并飞书通知 · 驳回需备注原因与修改意见</span></div>'+
-  (tab==='pend'?pendHtml:doneHtml);
-}
-
 /* v16: 数据看板（老板专属） */
 function vDash(){
   const all=SK;
@@ -1937,13 +1894,59 @@ function vDash(){
   urows+
   '<div class="trfoot">老板账号可见全部用户与全部数据 · 数据每小时刷新</div></div></div>';
 }
+
+/* =========================================================
+   9f. v17: 环节内嵌审核（递交 / 审核 / 驳回意见 / 重递）
+   ========================================================= */
+/* 审核状态 pill（dev/op 看进度；mgr/boss 见操作） */
+function audCell(s,k){
+  const a=s.aud&&s.aud[k];
+  if(!a) return '<span class="xs dim">—</span>';
+  if(a.st==='pass') return '<span class="pill p-ok" title="'+(a.by||'')+' '+(a.t||'')+'">已通过 ✓</span>';
+  if(a.st==='wait') return '<span class="pill p-do">待审核</span>';
+  if(a.st==='rej') return '<span class="pill p-bad" title="'+esc(a.note||'')+'">已驳回 ✕</span>';
+  return '<span class="xs dim">—</span>';
+}
+/* 递交按钮（dev/op；环节产出就绪但未递审） */
+function audSubmitBtn(s,k,cond){
+  if(S.role!=='dev'&&S.role!=='op') return '';
+  const a=s.aud&&s.aud[k];
+  if(a&&(a.st==='wait'||a.st==='pass')) return '';
+  if(cond===false) return '';
+  return '<button class="btn xs" data-act="audSubmit" data-id="'+s.id+'" data-k="'+k+'" title="递交主管审核；通过后流转下一环节">递交审核</button>';
+}
+/* 驳回意见条（dev/op 与 boss 可见） */
+function audRejTip(s,k){
+  const a=s.aud&&s.aud[k];
+  if(!a||a.st!=='rej') return '';
+  return '<div class="tip r" style="margin:4px 0"><span class="ico">!</span><div><b>审核驳回（'+(a.by||'主管')+' '+(a.t||'')+'）：</b>'+esc(a.note||'')+'　<button class="btn xs" data-act="audSubmit" data-id="'+s.id+'" data-k="'+k+'">修改后重新递交</button></div></div>';
+}
+/* 审核操作（mgr/boss：通过与驳回） */
+function audReviewBtns(s,k){
+  if(S.role!=='mgr'&&S.role!=='boss') return '';
+  const a=s.aud&&s.aud[k];
+  if(!a||a.st!=='wait') return '';
+  return '<button class="btn xs d" data-act="audRejOpen" data-id="'+s.id+'" data-k="'+k+'">驳回</button>'+
+    '<button class="btn xs p" data-act="audPass" data-id="'+s.id+'" data-k="'+k+'">通过</button>';
+}
+/* 模块头：主管视角提示 */
+function audMgrBanner(k,name){
+  if(S.role!=='mgr') return '';
+  const n=SK.filter(function(s){ return s.aud&&s.aud[k]&&s.aud[k].st==='wait'; }).length;
+  return '<div class="tip b mb10"><span class="ico">👁</span><div><b>主管视角：</b>本页只显示递交到「'+name+'」待您审核的 SKU（'+n+' 个）· 未递交的不可见 · 通过后流转下一环节，驳回附意见返回提交人</div></div>';
+}
+/* 各模块列表数据源：mgr 用 visList */
+function audList(k,fn){
+  const src=(S.role==='mgr')?visList(k):(fn?fn():modsk(k));
+  return src;
+}
 /* =========================================================
    10. ① 样品验收（验收 + 补资料合并）
    ========================================================= */
 function vAccept(){
-  const all=modsk('accept').filter(function(s){ return atOf(s,'accept')>0 || canStart(s,'accept'); });
+  const all=audList('accept',function(){ return modsk('accept').filter(function(s){ return atOf(s,'accept')>0 || canStart(s,'accept'); }); });
   const list=pgOf('accept',all);
-  const cols='30px 24px 2fr 1.35fr 92px 132px 110px 96px 178px';
+  const cols='30px 24px 2fr 1.35fr 92px 132px 110px 96px 96px 178px';
   let rows=list.map(function(s){
     const n=atOf(s,'accept'), miss=missCount(s);
     const sign = s.stop ? '<span class="pill p-bad">样品异常</span>'
@@ -1967,17 +1970,23 @@ function vAccept(){
       '<div>'+(miss===0?'<span class="pill p-ok">已齐全</span>':'<span class="pill p-bad">缺 '+miss+' 项</span>')+'</div>'+
       '<div class="xs '+(overdue(s)&&miss>0?'miss':'dim')+'">'+cdate(s)+' → '+ddate(s)+'</div>'+
       '<div>'+acres+'</div>'+
-      '<div class="rowline"><button class="btn s" data-act="fillD" data-id="'+s.id+'">图片/资料</button>'+
-      (n<3&&miss===0&&!s.rej&&!s.stop?'<button class="btn s g" data-act="passA" data-id="'+s.id+'" title="开发确认 AND 运营确认 → 环节完成">双方确认</button>':'')+
-      (miss>0&&!s.stop?'<button class="btn s" data-act="feishu1" data-id="'+s.id+'">飞书提醒</button>':'')+
-      '</div></div>';
+      '<div>'+audCell(s,'accept')+'</div>'+
+      '<div class="rowline" style="gap:3px;flex-wrap:wrap">'+audReviewBtns(s,'accept')+
+      '<button class="btn xs" data-act="fillD" data-id="'+s.id+'">图片/资料</button>'+
+      (n<3&&miss===0&&!s.rej&&!s.stop&&(S.role==='dev'||S.role==='op')?'<button class="btn xs g" data-act="passA" data-id="'+s.id+'" title="开发确认 AND 运营确认 → 环节完成">双方确认</button>':'')+
+      (miss>0&&!s.stop?'<button class="btn xs" data-act="feishu1" data-id="'+s.id+'">提醒</button>':'')+
+      audSubmitBtn(s,'accept', n>=3) +
+      '</div>'+
+      (s.aud&&s.aud.accept&&s.aud.accept.st==='rej'?'<div style="grid-column:1/-1">'+audRejTip(s,'accept')+'</div>':'')+
+      '</div>';
     return r;
   }).join('');
-  return '<div class="tip b mb10"><span class="ico">AI</span><div><b>验收环节 AI 自动判定：</b>产品差异核对 / 品牌侵权排查 / 发货可行性判断 全部由 AI 自动运行，无需人工操作；人工只做<b>双方确认</b>（开发确认 AND 运营确认）与<b>实拍图 / 配件图采集</b>（图片与 ④ 说明书 / ⑤ 图片需求表共用）。</div></div>'+
+  return audMgrBanner('accept','① 样品验收')+
+    '<div class="tip b mb10"><span class="ico">AI</span><div><b>验收环节 AI 自动判定：</b>产品差异核对 / 品牌侵权排查 / 发货可行性判断 全部由 AI 自动运行，无需人工操作；人工只做<b>双方确认</b>（开发确认 AND 运营确认）与<b>实拍图 / 配件图采集</b>（图片与 ④ 说明书 / ⑤ 图片需求表共用）。</div></div>'+
     '<div class="card"><h3>样品验收 · 三审通过 SKU<span class="n">'+all.length+'</span></h3><div class="cb tight">'+
     '<div class="tr th" style="grid-template-columns:'+cols+'">'+
     '<div></div><div></div><div>商品（名称 / ASIN / 规格 / 价格）</div><div>AI 自动判定</div><div>签收进度</div><div>必备资料</div><div>创建→截止</div>'+
-    '<div>验收结果</div><div>操作</div></div>'+
+    '<div>验收结果</div><div>审核</div><div>操作</div></div>'+
     rows+pgBar('accept',all.length)+
     '<div class="trfoot">点 ▶ 查看 AI 判定证据链与双方确认状态 · 「图片/资料」上传实拍图/配件图（可多张/单张，按需采集）· 勾选后底部浮出批量操作</div></div></div>';
 }
@@ -2045,9 +2054,9 @@ function fillModal(id){
    ========================================================= */
 function spLangs(id){ return S.langs.sp[id]||DEF_LANGS.slice(); }
 function vSp(){
-  const all=modsk('sp').filter(function(s){ return canStart(s,'sp'); });
+  const all=audList('sp',function(){ return modsk('sp').filter(function(s){ return canStart(s,'sp'); }); });
   const list=pgOf('sp',all);
-  const cols='30px 24px 1.8fr 150px 2.6fr 168px';
+  const cols='30px 24px 1.8fr 150px 2.6fr 92px 178px';
   let rows=list.map(function(s){
     const st=mstat(s,'sp');
     const ls=spLangs(s.id);
@@ -2063,16 +2072,23 @@ function vSp(){
         '<div class="mc-body" data-act="spv" data-id="'+s.id+'">'+
         (done?'<div class="mtxt">'+ls.map(function(l){return '<b style="color:var(--pur)">'+l+'</b>：'+esc(SP_TPL[l]?SP_TPL[l][0][0]:SP_TPL.EN[0][0])+'…';}).join('<br>')+'</div><div class="mop">点击查看多语种卖点 · 修改保存</div>'
              :'<span class="dim">默认内置提示词 · 引用商品信息 + 语种生成</span>')+'</div></div>'+
-      '<div class="rowline">'+
-      '<button class="btn s" data-act="spgen" data-id="'+s.id+'">'+(done?'重新生成':'生成卖点')+'</button>'+
-      (done?'<button class="btn s g" data-act="sppass" data-id="'+s.id+'">确认卖点</button>':'')+'</div></div>';
+      '<div>'+audCell(s,'sp')+'</div>'+
+      '<div class="rowline" style="gap:3px;flex-wrap:wrap">'+
+      audReviewBtns(s,'sp')+
+      '<button class="btn xs" data-act="spgen" data-id="'+s.id+'">'+(done?'重新生成':'生成')+'</button>'+
+      (done?'<button class="btn xs" data-act="spv" data-id="'+s.id+'">查看/修改</button>':'')+
+      audSubmitBtn(s,'sp', done)+
+      '</div>'+
+      (s.aud&&s.aud.sp&&s.aud.sp.st==='rej'?'<div style="grid-column:1/-1">'+audRejTip(s,'sp')+'</div>':'')+
+      '</div>';
     return r;
   }).join('');
-  return '<div class="card"><h3>卖点生成 · 基于审核通过的 SKU<span class="n">'+all.length+'</span></h3><div class="cb tight">'+
+  return audMgrBanner('sp','② 卖点生成')+
+    '<div class="card"><h3>卖点生成<span class="n">'+all.length+'</span></h3><div class="cb tight">'+
     '<div class="tr th" style="grid-template-columns:'+cols+'">'+
-    '<div></div><div></div><div>商品信息（名称 / ASIN / 规格 / 价格）</div><div>语种（下拉多选）</div><div>AI 生成卖点（可编辑提示词）</div><div>操作</div></div>'+
+    '<div></div><div></div><div>商品信息</div><div>语种</div><div>AI 生成卖点（可编辑提示词）</div><div>审核</div><div>操作</div></div>'+
     rows+pgBar('sp',all.length)+
-    '<div class="trfoot">勾选后底部浮出「批量生成卖点」· 点击行 ▶ 打开抽屉查看 AI 生成过程与证据链 · 确认卖点后流转 ③④⑤</div></div></div>';
+    '<div class="trfoot">「确认卖点」= 递交主管审核 · 审核通过流转 ③④⑤ · 驳回意见显示在行内，修改后可重新递交</div></div></div>';
 }
 /* v13: 卖点 AI 过程与结果抽屉 */
 DRW.sp={
@@ -2129,9 +2145,9 @@ function spModal(id){
    12. ③ Listing 文案
    ========================================================= */
 function vCopy(){
-  const all=modsk('copy').filter(function(s){ return canStart(s,'copy'); });
+  const all=audList('copy',function(){ return modsk('copy').filter(function(s){ return canStart(s,'copy'); }); });
   const list=pgOf('copy',all);
-  const cols='30px 24px 1.7fr 132px 2.3fr 210px';
+  const cols='30px 24px 1.7fr 132px 2.1fr 88px 168px';
   let rows=list.map(function(s){
     const st=mstat(s,'copy');
     const done=st==='done';
@@ -2158,15 +2174,19 @@ function vCopy(){
       (done?'<div class="mtxt"><b style="color:var(--pur)">EN 标题：</b>'+esc(TITLE_TPL.EN)+'</div><div class="mop">点击查看多语种 Listing + 分板块审核</div>'
            :'<span class="dim xs">工作流：竞品埋词分析 → 埋词策略 → 文案生成（双模型互检出终稿一套）</span>')+'</div></div>'+
       '<div>'+blTag+
-      '<div class="rowline" style="margin-top:3px;gap:4px">'+
+      '<div class="rowline" style="margin-top:3px;gap:4px;flex-wrap:wrap">'+
+      audReviewBtns(s,'copy')+
       '<button class="btn xs" data-act="cpygen" data-id="'+s.id+'" '+(done?'':'disabled')+'>重新生成</button>'+
       '<button class="btn xs" data-act="cpyv2" data-id="'+s.id+'" '+(done?'':'disabled')+'>修改</button>'+
-      (done&&!allBlkPass(s)?'<button class="btn xs p" data-act="cpyv" data-id="'+s.id+'" title="逐板块审核，全部通过才解锁确认">继续分板块审核</button>':'')+
-      (done&&allBlkPass(s)?'<button class="btn xs g" data-act="cpypass" data-id="'+s.id+'">确认文案 → 流转 ⑧</button>':'')+
-      '</div></div></div>';
+      (done&&!allBlkPass(s)?'<button class="btn xs" data-act="cpyv" data-id="'+s.id+'" title="逐板块审核，全部通过才解锁确认">继续分板块审核</button>':'')+
+      audSubmitBtn(s,'copy', done&&allBlkPass(s))+
+      '</div>'+
+      '<div style="grid-column:1/-1">'+audCell(s,'copy')+audRejTip(s,'copy')+'</div>'+
+      '</div></div>';
     return r;
   }).join('');
-  return '<div class="tip b mb10"><span class="ico">i</span><div><b>分板块审核：</b>标题 / 五点描述 / 关键词 / 详情页分别独立审核，避免粗略扫过就整体确认；全部通过才解锁「确认文案」。违禁词规则已投喂 AI 自动规避（前期主管抽检校验，逐步放权给运营）。审核动作自动飞书推送。</div></div>'+
+  return audMgrBanner('copy','③ Listing 文案')+
+    '<div class="tip b mb10"><span class="ico">i</span><div><b>分板块审核：</b>标题 / 五点描述 / 关键词 / 详情页分别独立审核，避免粗略扫过就整体确认；全部通过才解锁「确认文案」。违禁词规则已投喂 AI 自动规避（前期主管抽检校验，逐步放权给运营）。审核动作自动飞书推送。</div></div>'+
     '<div class="rowline mb10"><div class="gtabs">'+
     '<div class="gtab2'+(S.cview!=='report'?' on':'')+'" data-act="cview" data-v="list">📋 文案列表（分板块审核）</div>'+
     '<div class="gtab2'+(S.cview==='report'?' on':'')+'" data-act="cview" data-v="report">📊 深度分析报告（埋词 / 竞争度）</div>'+
@@ -2393,7 +2413,7 @@ function mnModal(id){
    14. ⑤ 图片需求表
    ========================================================= */
 function vBrief(){
-  const all=modsk('brief').filter(function(s){ return canStart(s,'brief'); });
+  const all=audList('brief',function(){ return modsk('brief').filter(function(s){ return canStart(s,'brief'); }); });
   const list=pgOf('brief',all);
   const cols='1.9fr 170px 210px 1.2fr 150px';
   let rows=list.map(function(s){
@@ -2404,10 +2424,15 @@ function vBrief(){
       '<div>'+langSel('brief',s.id)+'</div>'+
       '<div>'+typeSel(s.id)+'</div>'+
       '<div class="sm">将生成 <b>'+types.length*(S.langs.brief[s.id]||['EN']).length+'</b> 张 <span class="dim xs">('+types.length+' 类型 × '+(S.langs.brief[s.id]||['EN']).length+' 语种)</span></div>'+
-      '<div class="rowline"><button class="btn s" data-act="briefe" data-id="'+s.id+'">修改</button>'+
-      (done?'<span class="pill p-ok">已确认 ✓</span>':'<button class="btn s g" data-act="briefok" data-id="'+s.id+'">确认需求</button>')+'</div></div>';
+      '<div class="rowline" style="gap:3px;flex-wrap:wrap">'+audCell(s,'brief')+audReviewBtns(s,'brief')+
+      '<button class="btn xs" data-act="briefe" data-id="'+s.id+'">修改</button>'+
+      (done?'':'<button class="btn xs g" data-act="briefok" data-id="'+s.id+'">确认需求</button>')+
+      audSubmitBtn(s,'brief', done)+'</div>'+
+      (s.aud&&s.aud.brief&&s.aud.brief.st==='rej'?'<div style="grid-column:1/-1">'+audRejTip(s,'brief')+'</div>':'')+
+      '</div>';
   }).join('');
-  return '<div class="tip b mb10"><span class="ico">AI</span><div><b>两步确认省 Token：</b>① 运营审核需求表（本页）→ ② 确认图片提示词（⑥ 生图页顶部）→ 才自动生成图片，避免需求不达标反复重跑。运营审核完成后系统自动飞书提醒主管审核，无需主管主动查找。</div></div>'+
+  return audMgrBanner('brief','⑤ 图片需求表')+
+    '<div class="tip b mb10"><span class="ico">AI</span><div><b>两步确认省 Token：</b>① 运营审核需求表（本页）→ ② 确认图片提示词（⑥ 生图页顶部）→ 才自动生成图片，避免需求不达标反复重跑。运营审核完成后系统自动飞书提醒主管审核，无需主管主动查找。</div></div>'+
     '<div class="card"><h3>图片需求表 · 基于已确认卖点 SKU<span class="n">'+all.length+'</span></h3><div class="cb tight">'+
     '<div class="tr th" style="grid-template-columns:'+cols+'">'+
     '<div>商品信息 + 图片</div><div>语种（下拉多选）</div><div>图片类型（下拉多选 · 默认常规 5 类）</div><div>预计生成</div><div>操作</div></div>'+
@@ -2511,8 +2536,8 @@ function agentModal(){
    15b. v15: ⑦ 视频生成（参考生图界面 · 固定+非固定板块）
    ========================================================= */
 function vVideo(){
-  const tasks=modsk('video').filter(function(s){ return canStart(s,'video'); });
-  let h='<div class="rowline mb10"><div class="gtabs">'+
+  const tasks=audList('video',function(){ return modsk('video').filter(function(s){ return canStart(s,'video'); }); });
+  let h=audMgrBanner('video','⑦ 视频生成')+'<div class="rowline mb10"><div class="gtabs">'+
     '<div class="gtab2 on">🎬 视频生成工作台</div></div>'+
     '<span class="xs dim">选品审核通过后 AI 自动生成 · 调用视频 Skill · 脚本固定 + 卖点变量，无需输入参考链接</span></div>';
   if(!tasks.length) return h+'<div class="card"><div class="empty"><div class="e1">暂无视频任务</div>'+
@@ -2543,9 +2568,13 @@ function vVideo(){
       '<div class="tk-cd">'+esc(s.code)+' · '+esc(s.asin)+'</div></div></div>'+
       '<div class="tk-meta"><span class="pill p-ok">8/9 支已生成</span>'+
       '<span class="pill p-cy" title="同品跨店 <15% · 全平台竞品 <25% · AI 自动执行">重复率规则 ✓</span>'+
+      audCell(s,'video')+
+      audReviewBtns(s,'video')+
+      audSubmitBtn(s,'video', true)+
       '<button class="btn xs p" data-act="vidregen" data-id="'+s.id+'">重新生成</button>'+
       '<button class="btn xs" data-act="vidview" data-id="'+s.id+'">播放预览</button>'+
       '</div></div>'+
+      audRejTip(s,'video')+
       '<div class="task-sub"><span class="tsub on">产品介绍版 <span class="tc">5 支</span></span>'+
       '<span class="tsub" title="后续拓展私域投放">达人带货版 <span class="tc">4 支</span></span>'+
       '<span class="xs dim" style="margin-left:4px">脚本固定（安装/使用/时长）+ AI 卖点变量 · 两种版本</span></div>'+
@@ -3234,17 +3263,35 @@ document.addEventListener('click',function(ev){
   if(a==='vidok'||a==='vidok2'){ if(a==='vidok2') closeModal();
     toast('视频审核通过 ✓ 已入库并同步 ⑧ 上架','ok'); render(); return; }
 
-  /* v16: 审核中心 */
-  if(a==='rvtab'){ S.rvtab=el.dataset.v; render(); return; }
-  if(a==='rvRejOpen'){ openModal(rvRejModal(id)); return; }
-  if(a==='rvRejGo'){ const reason=$('#rvReason')?$('#rvReason').value:'';
-    if(!reason){ toast('请填写驳回原因与修改意见','warn'); return; }
-    const chain=rvChainOf(s);
-    closeModal();
-    if(chain){ s.rv[chain]='rej'; s.rv.r=reason;
-      RVLOG.unshift({id:'R'+(RVLOG.length+1), sku:s.id, node:chain, by:ROLES[S.role].who, act:'rej', time:'11-10 '+(new Date().getHours()+':'+String(new Date().getMinutes()).padStart(2,'0')), note:reason});
-      toast('已驳回 → 返回提交人（'+(s.devOwn||'开发')+'）· 后面节点不再推送 · 飞书已通知并附原因','ok'); }
-    render(); return; }
+  /* v17: 环节内嵌审核（递交 / 通过 / 驳回重递） */
+  if(a==='audSubmit'){ const k=el.dataset.k;
+    if(!s.aud) s.aud={};
+    s.aud[k]={st:'wait', t:'11-10 '+(new Date().getHours())+':'+String(new Date().getMinutes()).padStart(2,'0')};
+    toast('已递交审核（'+M(k).name+'）→ 主管（刘洋）/老板将收到飞书通知','ok'); render(); return; }
+  if(a==='audPass'){ const k=el.dataset.k;
+    if(!s.aud) s.aud={};
+    s.aud[k]={st:'pass', t:'11-10 '+(new Date().getHours())+':'+String(new Date().getMinutes()).padStart(2,'0'), by:ROLES[S.role].who};
+    RVLOG.unshift({id:'R'+(RVLOG.length+1), sku:s.id, node:k, by:ROLES[S.role].who, act:'pass', time:'11-10 '+new Date().getHours()+':'+String(new Date().getMinutes()).padStart(2,'0'), note:''});
+    /* 通过即环节完成，流转下一环节 */
+    if(k==='accept'){ s.at.accept=3; s.at.sp=1; }
+    if(k==='sp'){ s.at.sp=1; }
+    if(k==='copy'){ s.at.copy=1; }
+    if(k==='brief'){ s.at.brief=1; }
+    if(k==='video'){ s.at.video=1; }
+    toast('审核通过 ✓ 流转下一环节 · 已飞书通知递交人','ok'); render(); return; }
+  if(a==='audRejOpen'){ const k=el.dataset.k;
+    openModal({t:'驳回 · '+M(k).name+' · '+esc(s.name), w:'560px', b:
+      '<div class="tip r mb10"><span class="ico">!</span><div>驳回后返回递交人（'+(s.opOwn||s.devOwn||'运营')+'），其可在行内看到意见并修改后重新递交。</div></div>'+
+      '<div class="fld"><label>驳回原因 <span class="req">* 必填</span></label><input class="inp" id="audReason" placeholder="例：图片类型缺尺寸图"></div>'+
+      '<div class="fld"><label>修改意见</label><textarea class="inp" rows="3" placeholder="具体修改指引"></textarea></div>',
+      f:'<button class="btn" data-act="mclose">取消</button><button class="btn d" data-act="audRejGo" data-id="'+s.id+'" data-k="'+k+'">确认驳回</button>'}); return; }
+  if(a==='audRejGo'){ const k=el.dataset.k;
+    const reason=$('#audReason')?$('#audReason').value:'';
+    if(!reason){ toast('请填写驳回原因','warn'); return; }
+    if(!s.aud) s.aud={};
+    s.aud[k]={st:'rej', t:'11-10 '+new Date().getHours()+':'+String(new Date().getMinutes()).padStart(2,'0'), by:ROLES[S.role].who, note:reason};
+    RVLOG.unshift({id:'R'+(RVLOG.length+1), sku:s.id, node:k, by:ROLES[S.role].who, act:'rej', time:'11-10 '+new Date().getHours()+':'+String(new Date().getMinutes()).padStart(2,'0'), note:reason});
+    closeModal(); toast('已驳回 → 返回递交人 · 意见已附 · 飞书已通知','ok'); render(); return; }
 
   /* v16: 竞品集合（对齐截图操作） */
   if(a==='pickQ'){ toast('已按条件筛选（演示：ASIN / 品名 / 状态）'); return; }
