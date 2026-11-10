@@ -295,6 +295,11 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xm
 .amzcell .aell{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .thumb .vplay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:26px;color:#fff;background:linear-gradient(140deg,#232c42,#131a2b);border-radius:8px 8px 0 0}
 .thumb .vplay:hover{background:linear-gradient(140deg,#2c3a5e,#1a2440)}
+.rvcard{border:1px solid var(--line);border-radius:10px;background:#fff;padding:12px 14px;margin-bottom:10px;box-shadow:0 1px 3px rgba(16,24,40,.05)}
+.rvcard .rvh{display:flex;align-items:center;gap:10px}
+.rvcard .rvh .ph{width:40px;height:40px;border-radius:6px;flex:0 0 40px}
+.rvcard .rvb{margin-top:8px}
+.rvcard .rvf{display:flex;justify-content:flex-end;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--line2)}
 .amzcell.lk{cursor:pointer;color:#1a3fd0;font-weight:600}
 .amzcell.lk:hover{text-decoration:underline}
 .amzcell.miss.lk{cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px}
@@ -473,12 +478,12 @@ const DEP = {
 };
 
 const MODS = [
-  {k:'pick',   no:'',  name:'竞品集合',    grp:'商品中心', steps:['调研输入','竞品数据','建议清单'], roles:'all',
-   sub:'选品入口 · 关键词/ASIN/店铺链接 → AI 抓竞品 + 手动补充 → 建议清单'},
+  {k:'pick',   no:'',  name:'竞品集合',    grp:'商品中心', steps:['竞品列表','建议清单'], roles:'all',
+   sub:'开发负责 · 手动添加 ASIN / 查询筛选 · 以图搜图 / 1688·淘宝找货源 / 进入工作台'},
   {k:'pool',   no:'',  name:'产品池',      grp:'商品中心', steps:['产品池'], roles:'all',
-   sub:'AI 打分 + 提交人（手动/AI）· 初筛通过 → 流转工作台'},
-  {k:'work',   no:'',  name:'工作台',      grp:'商品中心', steps:['竞品转化率','CPC 定价','广告成本','综合决策','专利排查'], roles:'all',
-   sub:'五步深度分析 · 转化率 → CPC → ACOS → 毛利 → 专利 · 完成后三道审核'},
+   sub:'初筛通过流转精选 · AI 打分 + 提交人（手动/AI）· 详情看环节进度时间轴'},
+  {k:'work',   no:'',  name:'工作台',      grp:'商品中心', steps:['竞品转化率','CPC 定价','广告成本','综合决策','专利风险'], roles:'all',
+   sub:'五步深度分析 · 转化率 → CPC → 广告成本 → 综合决策 → 专利风险 · 完成后提交审核'},
   {k:'accept', no:'①', name:'样品验收',    grp:'新品管理', steps:['样品验收'], roles:'all',
    sub:'环节 1/8 · AI 自动判定（差异/侵权/发货）+ 实拍图采集 · 双方确认'},
   {k:'sp',     no:'②', name:'卖点生成',    grp:'新品管理', steps:['卖点生成'], roles:'all',
@@ -495,22 +500,26 @@ const MODS = [
    sub:'环节 7/8 · 固定板块（安装/使用/时长）+ AI 卖点脚本 · 参考生图界面'},
   {k:'sipp',   no:'⑧', name:'上架',        grp:'新品管理', steps:['上架'], roles:'all',
    sub:'环节 8/8 · 汇总全部输出 · 对接领星一键上架 · 导出 Excel'},
+  {k:'rv',     no:'',  name:'审核中心',    grp:'审核与看板', steps:['待我审核','已处理'], roles:'mgr,boss',
+   sub:'主管 / 老板落地页 · 逐条审核：通过流转下一步 · 驳回返回提交人（可附原因与修改意见）'},
+  {k:'dash',   no:'',  name:'数据看板',    grp:'审核与看板', steps:['数据看板'], roles:'boss',
+   sub:'老板全局视图 · 全流程进度 + 各环节漏斗 + 全员使用情况'},
   {k:'task',   no:'',  name:'任务中心',    grp:'系统', steps:['任务中心'], roles:'all',
    sub:'系统派发 / 主管派发 / 个人自建 · 完成确认自动生成日报'},
   {k:'set',    no:'',  name:'设置',        grp:'系统', steps:['设置'], roles:'all',
-   sub:'管理员：账号 / AI / 接口全局配置 · 员工：仅自己的配置'}
+   sub:'老板=管理员（账号/权限/MCP 接口）· 其他角色=使用情况/飞书/密码/模型 API Key'}
 ];
 
 const FULL = {accept:3, sp:1, copy:1, manual:1, brief:1, gen:1, video:1, sipp:1};
 const EXEC = ['accept','sp','copy','manual','brief','gen','video','sipp'];
 const NEXT = {accept:'sp', sp:'copy', copy:'sipp', manual:'sipp', brief:'gen', gen:'sipp', video:'sipp', sipp:null};
 
-/* v15: 账号与权限（开发/运营 → 主管 → 老板 三道审核） */
+/* v16: 账号与权限（角色分工 + 默认落地页 + 数据隔离规则） */
 const ROLES = {
-  boss:  {n:'老板',   who:'周小清', sub:'终审 · 看不到主管驳回品'},
-  mgr:   {n:'主管',   who:'刘洋',   sub:'二审 · 看不到开发驳回品'},
-  dev:   {n:'开发',   who:'吴楠',   sub:'初筛+一审 · 可改原始数据'},
-  op:    {n:'运营',   who:'小清运营', sub:'内容生产 · 可改原始数据'}
+  boss:  {n:'老板',   who:'周小清', home:'dash', sub:'管理员账号 · 审核终审 + 数据看板（全员/全流程可见）+ 账号与 MCP 配置'},
+  mgr:   {n:'主管',   who:'刘洋',   home:'rv',   sub:'审核中心为主 · 开发/运营递交的内容逐条审核'},
+  dev:   {n:'开发',   who:'吴楠',   home:'pick', sub:'商品中心选品环节 · 竞品集合/产品池/工作台 · 递交选品信息给主管审核'},
+  op:    {n:'运营',   who:'小清运营', home:'accept', sub:'新品管理环节 ①-⑧ · 递交材料给主管审核'}
 };
 /* 审核链：每个审核环节的递进 */
 const RVCHAIN = ['dev','mgr','boss'];
@@ -586,6 +595,27 @@ SK.forEach(function(s){ const d=DIM[s.id]; if(d){ s.size=d[0]; s.wt=d[1]; } });
 
 /* v15: AI 打分 + 提交人（AI 抓取 或 人工导入）+ 工作台三道审核状态 rv */
 const AIS = {S1:86,S2:81,S3:74,S4:62,S5:58,S6:55,S7:38,S8:78,S9:70,S10:72,S11:60,S12:76,S13:35,S14:68,S15:57,S16:83,S17:59};
+/* v16: 竞品集合/产品池截图字段（英文标题 / 近30天流动 / 评论数 / 星级 / 毛利率 / 进池时间 / 认领人） */
+const EXT = {
+  S1: {et:'11Pcs Heavy Duty Picture Hanger Hooks up to 50 Lbs per Hook, Metal Wall Hooks Kit for Frames', flow:'3,206', rc:2861, star:4.6, gm:'34.8%', inT:'2026-11-03 15:22', devOwn:'吴楠'},
+  S2: {et:'Adhesive Wall Hooks No Trace, 8 Pack Damage Free Hanging Hooks for Rental Home', flow:'2,864', rc:1902, star:4.3, gm:'24.0%', inT:'2026-11-03 15:22', devOwn:'吴楠'},
+  S3: {et:'Magnetic Hooks 4 Pack, Heavy Duty Neodymium Wall Hooks for Tools', flow:'1,252', rc:918, star:4.7, gm:'28.6%', inT:'2026-11-04 09:40', devOwn:'吴楠'},
+  S4: {et:'Over Door Hooks 6 Pack, Stainless Steel Door Hanger No Drill', flow:'986', rc:742, star:4.2, gm:'22.1%', inT:'2026-11-04 09:41', devOwn:'小林'},
+  S5: {et:'Outdoor Stainless Steel Hooks 12 Pack Rustproof Wall Hooks', flow:'764', rc:655, star:4.4, gm:'19.5%', inT:'2026-11-04 09:41', devOwn:'AI'},
+  S6: {et:'Suction Cup Hooks 5 Pack for Bathroom, Vacuum Twist Lock', flow:'1,438', rc:512, star:4.1, gm:'26.3%', inT:'2026-11-05 10:02', devOwn:'AI'},
+  S7: {et:'Folding Coat Hooks 4 Pack Zinc Alloy Wall Mounted', flow:'412', rc:301, star:3.9, gm:'12.4%', inT:'2026-11-05 10:02', devOwn:'AI'},
+  S8: {et:'Picture Frame Hanging Kit 11 Pcs with Level and Hardware', flow:'2,988', rc:2210, star:4.5, gm:'31.2%', inT:'2026-11-06 13:56', devOwn:'吴楠'},
+  S9: {et:'No Drill Wall Hanger Kit Heavy Duty Metal Hanging Hardware', flow:'1,834', rc:1266, star:4.4, gm:'27.8%', inT:'2026-11-06 13:56', devOwn:'吴楠'},
+  S10:{et:'Kitchen Rail Hooks 8 Pack adhesive for Rental Kitchen', flow:'1,102', rc:868, star:4.3, gm:'25.6%', inT:'2026-11-07 16:20', devOwn:'AI'},
+  S11:{et:'Towel Hooks 6 Pack Brushed Stainless Bathroom Hooks', flow:'566', rc:388, star:4.5, gm:'21.9%', inT:'2026-11-07 16:20', devOwn:'小林'},
+  S12:{et:'Suction Hooks 5 Pack for Bathroom, Vacuum Twist Lock', flow:'1,431', rc:264, star:4.6, gm:'26.0%', inT:'2026-11-08 11:31', devOwn:'AI'},
+  S13:{et:'Plastic Light Hooks 20 Pack cheap hangers', flow:'96', rc:158, star:3.8, gm:'6.2%', inT:'2026-11-08 11:31', devOwn:'AI'},
+  S14:{et:'Ceiling Hooks 8 Pack Swivel Heavy Duty for Plants', flow:'906', rc:197, star:4.2, gm:'23.4%', inT:'2026-11-09 09:12', devOwn:'AI'},
+  S15:{et:'Coat Rack Hooks 10 Pack Industrial Pipe Style', flow:'421', rc:121, star:4.8, gm:'18.7%', inT:'2026-11-09 09:12', devOwn:'小林'},
+  S16:{et:'Gallery Wall Hanging Kit 17 Pcs with Positioning Template', flow:'2,504', rc:1520, star:4.6, gm:'32.5%', inT:'2026-11-09 09:12', devOwn:'吴楠'},
+  S17:{et:'Utility Hooks 12 Pack Garage Heavy Duty Wall Hooks', flow:'1,038', rc:918, star:4.3, gm:'27.2%', inT:'2026-11-09 09:12', devOwn:'AI'}
+};
+const OPOWN = {S1:'小清运营',S2:'小清运营',S3:'小林',S4:'小林',S8:'小清运营',S9:'小清运营',S16:'小清运营'};
 const SUBM = {S1:'吴楠（手动）',S2:'AI',S3:'AI',S4:'小林（手动）',S5:'AI',S6:'小林（手动）',S7:'AI',S8:'吴楠（手动）',S9:'吴楠（手动）',S10:'AI',S11:'小林（手动）',S12:'AI',S13:'AI',S14:'AI',S15:'小林（手动）',S16:'吴楠（手动）',S17:'AI'};
 const RV0 = {
   S1:{dev:'pass',mgr:'pass',boss:'pass'},
@@ -594,7 +624,9 @@ const RV0 = {
   S16:{dev:'rej',mgr:'none',boss:'none', r:'差评对策证据不足，补竞品 VOC 后再提'}
 };
 SK.forEach(function(s){ s.aiScore=AIS[s.id]||50; s.submitter=SUBM[s.id]||'AI'; s.rv=RV0[s.id]||null;
-  if(!s.rv && !s.poolOnly && atOf2(s,'accept')>0) s.rv={dev:'pass',mgr:'pass',boss:'pass'}; });
+  if(!s.rv && !s.poolOnly && atOf2(s,'accept')>0) s.rv={dev:'pass',mgr:'pass',boss:'pass'};
+  const e=EXT[s.id]; if(e){ s.et=e.et; s.flow=e.flow; s.rc=e.rc; s.star=e.star; s.gm=e.gm; s.inT=e.inT; s.devOwn=e.devOwn; }
+  s.opOwn=OPOWN[s.id]||null; });
 function atOf2(s,k){ return (s.at&&s.at[k])||0; }
 
 /* 创建日期 → 处理截止（+7 天） */
@@ -834,7 +866,9 @@ function canStart(s,k){
 }
 /* 模块可见 SKU 列表 */
 function modsk(k){
+  if(k==='rv'||k==='dash') return [];
   return SK.filter(function(s){
+    if(s.stop && k==='pick') return false;   /* 竞品集合里删除的不显示 */
     if(s.poolOnly) return k==='pool' || k==='pick' || (k==='work' && !!s.rv);
     if(k==='work') return !!s.rv;
     return true;
@@ -937,6 +971,44 @@ const DAILY = [
   ['T5 差评 VOC 聚类','任务中心','本周 3,214 条差评聚类完成']
 ];
 
+
+/* =========================================================
+   v16: 数据隔离 + 看板数据 + 审核记录
+   ========================================================= */
+/* 数据隔离：除老板外，每个账号只能看到自己生成或审核的内容
+   - dev：devOwn 是自己（吴楠）或提交人是 AI（全员开发可见）
+   - op：opOwn 是自己（小清运营）
+   - mgr：所有进入审核流的（各节点）+ 驳回返回给自己的
+   - boss：全部
+*/
+function vis(s){
+  if(S.role==='boss') return true;
+  if(S.role==='dev')  return true;   /* 开发共用选品区，demo 保持可见 */
+  if(S.role==='op')   return !s.poolOnly && (s.opOwn===ROLES.op.who);
+  if(S.role==='mgr')  return true;   /* 主管审核所有递交 */
+  return true;
+}
+function visList(k){ return modsk(k).filter(vis); }
+
+/* 全员使用情况（老板看板） */
+const USAGE = [
+  {u:'周小清', r:'老板', sku:0,  gen:0,    copy:0,  rv:6,  last:'11-10 15:40', on:true},
+  {u:'刘洋',   r:'主管', sku:0,  gen:0,    copy:0,  rv:11, last:'11-10 15:12', on:true},
+  {u:'吴楠',   r:'开发', sku:17, gen:0,    copy:0,  rv:0,  last:'11-10 14:58', on:true},
+  {u:'小清运营',r:'运营', sku:7,  gen:920,  copy:42, rv:0,  last:'11-10 15:30', on:true},
+  {u:'小林',   r:'运营', sku:5,  gen:386,  copy:18, rv:0,  last:'11-09 18:22', on:false}
+];
+
+/* 审核记录（审核中心 · 已处理） */
+const RVLOG = [
+  {id:'R1', sku:'S8',  node:'mgr', by:'刘洋',   act:'pass', time:'11-10 14:32', note:''},
+  {id:'R2', sku:'S2',  node:'boss',by:'周小清', act:'pass', time:'11-10 11:20', note:''},
+  {id:'R3', sku:'S16', node:'dev', by:'吴楠',   act:'pass', time:'11-09 16:40', note:''},
+  {id:'R4', sku:'S16', node:'mgr', by:'刘洋',   act:'rej',  time:'11-09 17:15', note:'差评对策证据不足：仅引用 3 条差评，请补充竞品 VOC 聚类后再提；毛利率口径需含头程'},
+  {id:'R5', sku:'S1',  node:'boss',by:'周小清', act:'pass', time:'11-08 10:05', note:''},
+  {id:'R6', sku:'S9',  node:'dev', by:'吴楠',   act:'pass', time:'11-08 09:47', note:''},
+  {id:'R7', sku:'S9',  node:'mgr', by:'刘洋',   act:'pass', time:'11-08 15:31', note:'专利部分注意商标词规避'}
+];
 function toast(msg,cls){
   const t=$('#toast'); t.textContent=msg; t.className='toast on '+(cls||'');
   clearTimeout(t._tm); t._tm=setTimeout(function(){ t.className='toast'; },2600);
@@ -1038,13 +1110,16 @@ function typeChips(id){
    ========================================================= */
 function renderNav(){
   let h='',grp='';
-  MODS.forEach(function(m,i){
+  const visMods=MODS.map(function(m,i){ return (m.roles==='all'||m.roles.split(',').indexOf(S.role)>=0)?i:-1; }).filter(function(i){return i>=0;});
+  visMods.forEach(function(i){
+    const m=MODS[i];
     if(m.grp!==grp){ grp=m.grp; h+='<div class="nlab">'+grp+'</div>'; }
     let cnt=0;
     if(m.k==='pool') cnt=SK.length;
     else if(m.k==='pick') cnt=PICK_TASKS.reduce(function(n,t){return n+t.rec.length;},0);
     else if(m.k==='work') cnt=SK.filter(function(s){return s.rv && !(s.rv.dev==='pass'&&s.rv.mgr==='pass'&&s.rv.boss==='pass');}).length;
     else if(m.k==='task') cnt=TASK3.filter(function(t){return t.st!=='done';}).length;
+    else if(m.k==='rv') cnt=SK.filter(function(s){ return s.rv && !allRvPass(s) && roleCanSee(s) && rvMyTurn(s); }).length;
     else cnt=modsk(m.k).filter(function(s){return mstat(s,m.k)!=='done'&&mstat(s,m.k)!=='wait';}).length;
     const hot = m.k!=='pool'&&m.k!=='pick'&&cnt>0;
     h+='<div class="nitem'+(S.m===i?' on':'')+'" data-act="goto" data-k="'+m.k+'">'+
@@ -1077,6 +1152,8 @@ function footGuidance(){
   else if(k==='video') txt='选品审核通过后 AI 自动生成：固定板块（安装/使用/时长）+ 非固定（卖点脚本）；点「重新生成」可附修改意见';
   else if(k==='sipp') txt='缺失字段标红提醒，可点击跳转对应环节补充；确认后对接领星一键上架 · 右上角导出上架表格 Excel';
   else if(k==='task') txt='三类任务统一归集：系统派发 / 主管派发 / 自建；完成点「确认」自动汇总进当日日报';
+  else if(k==='rv') txt='待我审核逐条处理：通过自动流转下一节点并飞书通知；驳回需填原因与修改意见，数据返回提交人';
+  else if(k==='dash') txt='老板全局视图：全流程漏斗 / 各负责人在办 / 全员使用情况；需要操作的只有审核与驳回（去审核中心）';
   else if(k==='set') txt=S.role==='boss'?'老板视角：全局数据只读；模型与接口配置对全员开放':'管理员：账号 / AI 配置 / 第三方接口全局面板 · 模型选择对运营同样开放';
   let h='<div class="fi">i</div><div class="ft"><b>下一步：</b>'+txt+'</div>';
   if(next!==null) h+='<div class="fr"><button class="btn s" data-act="stepprev">上一步</button><button class="btn s p" data-act="stepnext">下一步</button></div>';
@@ -1091,7 +1168,7 @@ function render(){
   renderNav(); renderTop(); footGuidance();
   const m=MODS[S.m];
   const V={pick:vPick,pool:vPool,work:vWork,accept:vAccept,sp:vSp,copy:vCopy,manual:vManual,
-    brief:vBrief,gen:vGen,video:vVideo,sipp:vSipp,task:vTask,set:vSet};
+    brief:vBrief,gen:vGen,video:vVideo,sipp:vSipp,rv:vRv,dash:vDash,task:vTask,set:vSet};
   let inner=(V[m.k]||vPool)();
   const showSteps = m.steps.length>1 && !(m.k==='work' && !S.workSel);
   $('#main').innerHTML='<div class="mhead"><div class="shead">'+
@@ -1154,118 +1231,91 @@ function taskTabs(step){
   h+='</div><span class="xs dim" style="margin-left:auto">共 '+PICK_TASKS.length+' 个调研任务 · 点击切换</span></div>';
   return h;
 }
+/* =========================================================
+   8. 竞品集合（v16：完全对齐客户截图——筛选条 + 手动添加 + 13 列表格）
+   ========================================================= */
 function vPick(){
-  if(S.step===0){
-    const trs=PICK_TASKS.map(function(t,i){
-      return '<div class="tr body" style="grid-template-columns:30px 2.2fr 90px 130px 1.1fr 220px">'+
-        '<div><span class="pill p-cy">'+(i+1)+'</span></div>'+
-        '<div><div class="nm">'+esc(t.kw)+'</div><div class="cd">'+esc(t.cats)+' · '+t.time+' 创建</div></div>'+
-        '<div><span class="pill p-mute">'+t.market+'</span></div>'+
-        '<div><span class="pill p-ok">已完成 ✓</span></div>'+
-        '<div class="xs dim">'+t.rec.length+' 条建议 · '+t.rec.filter(function(r){return r.vk==='ok';}).length+' 条「建议做」</div>'+
-        '<div class="rowline"><button class="btn s p" data-act="ptaskGo" data-i="'+i+'">查看报告</button>'+
-        '<button class="btn s" data-act="ptaskRegen" data-i="'+i+'">重新生成</button></div></div>';
-    }).join('');
-    return '<div class="card"><h3>发起调研<span class="n">必填 2 项 · 支持批量</span></h3><div class="cb">'+
-      '<div class="fld"><label>类目关键词 / ASIN / 竞品链接<span class="req">* 必填（每行一个，可批量输入多个）</span></label>'+
-      '<textarea class="inp" rows="3" placeholder="例：metal picture hanger hook&#10;B0CQ7H4M2K&#10;https://www.amazon.com/dp/B0CQ7H4M2K">metal picture hanger hook</textarea></div>'+
-      '<div class="fld"><label>目标市场<span class="req">* 必填</span></label>'+
-      '<select class="inp">'+MARKETS.map(function(m,i){return '<option'+(i===0?' selected':'')+'>'+m[0]+'（'+m[1]+'）'+'</option>';}).join('')+'</select>'+
-      '<div class="xs dim" style="margin-top:4px">默认美国站 · 覆盖 10 个主流跨境市场</div></div>'+
-      '<div style="display:flex;align-items:center;gap:10px;border-top:1px solid var(--line2);padding-top:12px">'+
-      '<button class="btn p" style="height:34px;padding:0 22px;font-size:13px" data-act="stepnext">开始调研 →</button>'+
-      '<span class="xs dim">每行一个关键词/ASIN 自动创建一个调研任务 · 约 30–60 秒/任务出报告</span></div>'+
-      '</div></div>'+
-      '<div class="card"><h3>AI 调研过程<span class="n">MCP · 最近任务</span></h3><div class="cb">'+
-      '<div class="runlogs"><b>01</b> 抓取类目 TOP 60 竞品（卖家精灵 MCP）<span class="ok"> ✓ 60 条</span><br>'+
-      '<b>02</b> 差评 VOC 聚类分析<span class="ok"> ✓ 3,214 条 · 7 类痛点</span><br>'+
-      '<b>03</b> 价格带 / 毛利 / 专利风险计算 <span class="ok"> ✓ 完成</span><br>'+
-      '<b>04</b> 输出深度调研报告 + 建议清单 <span class="ai">→ 人工审核</span></div></div></div>'+
-      '<div class="card"><h3>我的调研任务<span class="n">'+PICK_TASKS.length+' 个</span></h3><div class="cb tight">'+
-      '<div class="tr th" style="grid-template-columns:30px 2.2fr 90px 130px 1.1fr 220px">'+
-      '<div></div><div>调研关键词 / 类目</div><div>市场</div><div>状态</div><div>建议数</div><div>操作</div></div>'+
-      trs+'<div class="trfoot">点击「查看报告」进入该任务的深度调研报告 → 建议清单</div></div></div>';
-  }
-  if(S.step===1){ return pickReport(); }
-  /* STEP 3：建议清单（推荐理由 + 综合分析 + 修改/重新生成） */
+  if(S.step===1){ return pickSuggest(); }
+  const all=visList('pick');
+  const list=pgOf('pick',all);
+  /* 当前进度标签：与客户截图一致（已完成分析/进入工作台/初筛） */
+  const statOf=function(s){
+    if(s.stop) return ['已终止','p-bad'];
+    if(allRvPass(s)) return ['已完成 · 已进新品流程','p-ok'];
+    if(s.rv&&s.rv.dev==='rej') return ['已驳回 · 待修改重提','p-bad'];
+    if(s.rv) return ['已初筛 · 工作台'+(workStepName(s).indexOf('待')===0?'':'审核中'),'p-wait'];
+    if(!s.poolOnly && atOf2(s,'accept')>0) return ['已完成分析','p-ok'];
+    return ['待初筛','p-mute'];
+  };
+  const cols='34px 60px 1.1fr 1.7fr 84px 70px 54px 64px 96px 100px 60px 2fr 74px';
+  let rows=list.map(function(s){
+    const st=statOf(s);
+    return '<div class="tr body" style="grid-template-columns:'+cols+'">'+
+    cbxCell(S.sel.has(s.id),'sel',s.id)+
+    '<div class="ph" style="width:34px;height:34px;border-radius:4px;flex:0 0 34px">IMG</div>'+
+    '<div class="sm" style="font-family:ui-monospace,monospace;min-width:0"><div class="ell" title="'+s.asin+'">'+s.asin+'</div>'+
+    '<div class="xs dim">AI '+(s.aiScore||'—')+' · '+(s.submitter||'AI')+'</div></div>'+
+    '<div style="min-width:0"><div class="sm ell" style="font-weight:600" title="'+esc(s.name)+'">'+esc(s.name)+'</div>'+
+    '<div class="xs dim ell" title="'+esc(s.et||'')+'">'+esc((s.et||'—').slice(0,64))+'</div></div>'+
+    '<div class="sm">'+(s.flow||'—')+'</div>'+
+    '<div class="sm dim">'+(s.rc||'—')+'</div>'+
+    '<div class="sm">★ '+(s.star||'—')+'</div>'+
+    '<div><span class="pill '+(parseInt(s.gm)>=25?'p-ok':'p-wait')+'" title="毛利率">'+(s.gm||'—')+'</span></div>'+
+    '<div class="xs">'+(s.devOwn||s.submitter||'AI')+'</div>'+
+    '<div class="xs dim">'+(s.inT||'—')+'</div>'+
+    '<div><span class="pill '+st[1]+'">'+st[0]+'</span></div>'+
+    '<div class="rowline" style="flex-wrap:wrap;gap:3px;min-width:0">'+
+    '<button class="btn xs" data-act="imgSearch" data-id="'+s.id+'" title="上传图片以图搜同款">以图搜图</button>'+
+    '<button class="btn xs" data-act="w1688" data-id="'+s.id+'" title="1688 找货源">1688</button>'+
+    '<button class="btn xs" data-act="wtao" data-id="'+s.id+'" title="淘宝找货源">淘宝</button>'+
+    ((s.poolOnly&&!s.rv)?'<button class="btn xs p" data-act="confirmS" data-id="'+s.id+'" title="初筛通过 → 流转工作台五步分析">初筛</button>':'')+
+    '<button class="btn xs '+(s.rv?'':'p')+'" data-act="workGo" data-id="'+s.id+'" title="进入工作台五步分析">工作台</button>'+
+    '<button class="btn xs d" data-act="compDel2" data-id="'+s.id+'" title="从竞品集合删除">删</button>'+
+    '</div></div>';
+  }).join('');
+  return '<div class="rowline mb10" style="gap:8px;flex-wrap:wrap;align-items:center">'+
+    '<span class="sm" style="font-weight:700">ASIN:</span><input class="inp" style="width:150px;height:30px" placeholder="输入 ASIN">'+
+    '<span class="sm" style="font-weight:700">品名:</span><input class="inp" style="width:150px;height:30px" placeholder="输入品名关键词">'+
+    '<select class="inp" style="width:110px;height:30px"><option>全部</option><option>待初筛</option><option>已初筛</option><option>已完成分析</option><option>已驳回</option></select>'+
+    '<button class="btn s" data-act="pickQ">查询</button>'+
+    '<button class="btn s p" style="margin-left:auto" data-act="pickAdd" title="输入多个 ASIN，逗号/分号/换行分隔，批量加入竞品集合">＋ 手动添加 ASIN</button>'+
+    '<button class="btn s" data-act="stepnext">查看建议清单 →</button></div>'+
+    '<div class="card"><h3>竞品集合<span class="n">'+all.length+' 个 ASIN · AI ' + all.filter(function(s){return s.submitter==='AI';}).length + ' / 手动 ' + all.filter(function(s){return s.submitter!=='AI';}).length + '</span></h3><div class="cb tight">'+
+    '<div class="tr th" style="grid-template-columns:'+cols+'">'+
+    '<div></div><div>主图</div><div>ASIN / AI打分 / 提交人</div><div>中文品名 / 英文标题</div><div>近30天流动</div><div>评论数</div><div>评分</div><div>毛利率</div><div>提交人</div><div>进池时间</div><div>当前状态</div><div>操作</div><div></div></div>'+
+    rows+pgBar('pick',all.length)+
+    '<div class="trfoot">开发手动添加 ASIN 或从 AI 建议清单导入 · 行内：以图搜图 / 1688·淘宝找货源 / 初筛通过 / 进入工作台 / 删除</div></div></div>';
+}
+/* 建议清单（v15 保留，入口改为 step1） */
+function pickSuggest(){
   const t=curTask();
   const cols='34px 1.9fr 78px 82px 78px 160px 2.6fr 74px 178px';
   const rows=t.rec.map(function(r){
     return '<div class="tr body" style="grid-template-columns:'+cols+'">'+
-      cbxCell(S.sel.has(r.asin),'selR',r.asin)+
-      '<div style="min-width:0"><div class="sku"><div class="ph">IMG</div><div style="min-width:0"><div class="nm ell">'+esc(r.name)+'</div>'+
-      '<div class="cd ell">'+r.asin+' · 差评对策：'+esc(r.diff)+'</div></div></div></div>'+
-      '<div><span class="pill p-mute">'+r.price+'</span></div>'+
-      '<div class="sm">月销 '+r.sales+'</div>'+
-      '<div><span class="pill '+(r.vk==='ok'?'p-ok':'p-mute')+'">'+r.profit+'</span></div>'+
-      '<div class="xs" style="line-height:1.9;min-width:0">'+r.tags.map(function(g){return '<span class="pill p-cy" style="margin:1px 0;display:inline-block">'+esc(g)+'</span>';}).join(' ')+'</div>'+
-      '<div class="xs dim clamp3" style="line-height:1.65;min-width:0" title="'+esc(r.analysis)+'">'+esc(r.analysis)+'</div>'+
-      '<div><span class="pill '+(r.vk==='ok'?'p-ok':r.vk==='warn'?'p-wait':'p-bad')+'">'+r.verdict+'</span></div>'+
-      '<div class="rowline" style="flex-wrap:wrap;gap:4px;min-width:0">'+
-      '<button class="btn xs p" data-act="impR" data-id="'+r.asin+'" title="导入商品池">导入</button>'+
-      '<button class="btn xs" data-act="editR" data-id="'+r.asin+'" title="人工修改该建议并保存">修改</button>'+
-      '<button class="btn xs" data-act="regenR" data-id="'+r.asin+'" title="重跑该 SKU 的选品调研 Skill">重新生成</button>'+
-      '<button class="btn xs d" data-act="holdR" data-id="'+r.asin+'" title="暂不考虑">暂不</button></div></div>';
+    cbxCell(S.sel.has(r.asin),'selR',r.asin)+
+    '<div style="min-width:0"><div class="sku"><div class="ph">IMG</div><div style="min-width:0"><div class="nm ell">'+esc(r.name)+'</div>'+
+    '<div class="cd ell">'+r.asin+' · 差评对策：'+esc(r.diff)+'</div></div></div></div>'+
+    '<div><span class="pill p-mute">'+r.price+'</span></div>'+
+    '<div class="sm">月销 '+r.sales+'</div>'+
+    '<div><span class="pill '+(r.vk==='ok'?'p-ok':'p-mute')+'">'+r.profit+'</span></div>'+
+    '<div class="xs" style="line-height:1.9;min-width:0">'+r.tags.map(function(g){return '<span class="pill p-cy" style="margin:1px 0;display:inline-block">'+esc(g)+'</span>';}).join(' ')+'</div>'+
+    '<div class="xs dim clamp3" style="line-height:1.65;min-width:0" title="'+esc(r.analysis)+'">'+esc(r.analysis)+'</div>'+
+    '<div><span class="pill '+(r.vk==='ok'?'p-ok':r.vk==='warn'?'p-wait':'p-bad')+'">'+r.verdict+'</span></div>'+
+    '<div class="rowline" style="flex-wrap:wrap;gap:4px;min-width:0">'+
+    '<button class="btn xs p" data-act="impR" data-id="'+r.asin+'" title="导入竞品集合">导入</button>'+
+    '<button class="btn xs" data-act="editR" data-id="'+r.asin+'">修改</button>'+
+    '<button class="btn xs" data-act="regenR" data-id="'+r.asin+'">重新生成</button>'+
+    '<button class="btn xs d" data-act="holdR" data-id="'+r.asin+'">暂不</button></div></div>';
   }).join('');
-  return taskTabs()+
-    '<div class="rowline mb10"><span class="tip b" style="flex:1"><span class="ico">i</span><div>'+
-    '推荐理由列出关键数据（销量 / 毛利 / 差评对策）；「综合分析」解释 AI 从需求 / 竞争 / 毛利 / 差评 / 专利 / 供应链等维度得出的结论。可先人工修改再导入。</div></span>'+
-    '<button class="btn s" data-act="stepprev">← 返回报告</button>'+
-    '<button class="btn s" data-act="ptaskRegenAll" title="重新跑一遍当前任务的调研 Skill，输出新的建议清单供人工审核">↻ 重新生成建议清单</button>'+
-    '<button class="btn p" data-act="impSel">批量导入商品池 ('+S.sel.size+')</button></div>'+
+  return '<div class="rowline mb10"><span class="tip b" style="flex:1"><span class="ico">AI</span><div>'+
+    'AI 选品调研建议清单（Skill + 卖家精灵 MCP）· 导入后进入竞品集合，开发初筛通过流转工作台。</div></span>'+
+    '<button class="btn s" data-act="stepprev">← 返回竞品列表</button>'+
+    '<button class="btn p" data-act="impSel">批量导入 ('+S.sel.size+')</button></div>'+
     '<div class="card"><h3>建议清单 · '+esc(t.kw)+'（'+t.market+'）<span class="n">'+t.rec.length+' 条</span></h3><div class="cb tight">'+
     '<div class="tr th" style="grid-template-columns:'+cols+'">'+
-    '<div></div><div>商品（名称 / ASIN / 差评对策）</div><div>价格</div><div>月销</div><div>毛利</div>'+
-    '<div>推荐理由（关键数据）</div><div>综合分析（AI 结论 + 维度）</div><div>结论</div><div>操作</div></div>'+
+    '<div></div><div>商品</div><div>价格</div><div>月销</div><div>毛利</div><div>推荐理由</div><div>综合分析</div><div>结论</div><div>操作</div></div>'+
     rows+
-    '<div class="trfoot">导入后在商品池「确认选品」流转 ① 样品验收 · 「修改」可人工调整后保存导入 · 「重新生成」重跑该 SKU 调研</div></div></div>';
-}
-/* v15: STEP 2 竞品数据（AI 抓取 + 手动补充 + 同款区分 + 差评分析） */
-function pickReport(){
-  const t=curTask();
-  const onlySame=S.onlySame;
-  const list=COMP.filter(function(c){ return !onlySame || c.same; });
-  const cols='1.1fr 78px 60px 1.9fr 52px 1fr 56px 62px 96px 1.1fr 82px';
-  const rows=list.map(function(c){
-    return '<div class="tr body" style="grid-template-columns:'+cols+'">'+
-    '<div class="sm ell" style="font-family:ui-monospace,monospace;min-width:0" title="'+c.asin+'">'+c.asin+'</div>'+
-    '<div><span class="pill '+(c.src==='AI'?'p-cy':'p-ok')+'" title="'+(c.src==='AI'?'AI 自动抓取':'开发手动补充')+'">'+c.src+'</span></div>'+
-    '<div>'+(c.same?'<span class="pill p-ok" title="完全同款竞品">同款</span>':'<span class="pill p-mute">非同款</span>')+'</div>'+
-    '<div class="sm ell" style="min-width:0">★ '+c.rate+' · '+c.rcnt+' 评论 · '+c.age+' · '+c.ship+'</div>'+
-    '<div class="sm dim" title="转化率数据接口暂缺，已列入待接入">—</div>'+
-    '<div class="sm" title="年购买 / 年点击">'+c.buy+' / '+c.clk+'</div>'+
-    '<div><span class="pill p-mute">'+c.price+'</span></div>'+
-    '<div class="sm dim">'+c.fba+'</div>'+
-    '<div class="sm dim" title="自然占比 / 广告占比">'+c.nat+' / '+c.adv+'</div>'+
-    '<div class="xs dim ell" style="min-width:0">'+c.sp+'</div>'+
-    '<div class="rowline"><button class="btn xs" data-act="compV" data-id="'+c.asin+'" title="在亚马逊查看">查看</button>'+
-    '<button class="btn xs" data-act="compDel" data-id="'+c.asin+'" title="从竞品集合移除">移除</button></div>'+
-    '</div>';
-  }).join('');
-  return taskTabs()+
-    '<div class="rowline mb10"><span class="tip b" style="flex:1"><span class="ico">AI</span><div>'+
-    'AI 已抓取 9 个竞品（卖家精灵 MCP）· 开发手动补充 3 个 · 除转化率暂无数据接口外，其余列均可第三方抓取</div></span>'+
-    '<label class="rowline" style="gap:5px;cursor:pointer;font-size:12px"><input type="checkbox" '+(onlySame?'checked':'')+' data-act="onlySame" style="accent:var(--pri)"> 仅显示完全同款竞品（'+COMP.filter(function(c){return c.same;}).length+'/'+COMP.length+'）</label>'+
-    '<button class="btn s" data-act="stepprev">← 调研输入</button>'+
-    '<button class="btn p" data-act="stepnext">进入建议清单 →</button></div>'+
-    '<div class="card mb10"><h3>手动补充竞品<span class="n">开发补充 AI 遗漏</span></h3><div class="cb">'+
-    '<div class="rowline"><input class="inp" style="flex:1" placeholder="输入竞品 ASIN，支持逗号 / 空格 / 换行分隔多个，如 B0CXXXXXXX, B0CYYYYYYY">'+
-    '<button class="btn s p" data-act="compAdd">＋ 添加到竞品集合</button></div>'+
-    '<div class="xs dim" style="margin-top:6px">添加后将自动抓取该竞品的销量 / 评论 / 价格 / FBA 费等数据并标注「手动」来源</div></div></div>'+
-    '<div class="card"><h3>竞品集合 · '+esc(t.kw)+'（'+t.market+'）<span class="n">'+list.length+' / '+COMP.length+' 个</span></h3><div class="cb tight">'+
-    '<div class="tr th" style="grid-template-columns:'+cols+'">'+
-    '<div>ASIN</div><div>来源</div><div>同款</div><div>评分·评论·年限·配送</div><div>CVR</div><div>年购买 / 点击</div><div>价格</div><div>FBA 费</div><div>自然 / 广告</div><div>SP·SB·SBV</div><div>操作</div></div>'+
-    rows+
-    '<div class="trfoot">「同款」= 外观与功能完全一致的竞品（后续 ④ 说明书 / 专利排查重点关注）· CVR 数据接口暂缺，以 — 显示</div></div></div>'+
-    '<div class="card mt10"><h3>AI 差评分析 · 痛点与原因总结<span class="n">3,214 条评论聚类</span></h3><div class="cb">'+
-    '<div class="runlogs"><b>01</b> 挂不住 / 掉落（31%）<span class="ok"> → 单钩承重不足，多为 3M 胶老化</span><br>'+
-    '<b>02</b> 少件 / 配件不齐（22%）<span class="ok"> → 竞品 8 件装实际需求 11 件（定位销 + 备用胶）</span><br>'+
-    '<b>03</b> 留胶 / 撕下有痕（17%）<span class="ok"> → 胶条材质差，高温环境加速失效</span><br>'+
-    '<b>04</b> 不知道怎么装（12%）<span class="ok"> → 无安装说明，竞品普遍缺失图文教程</span><br>'+
-    '<b>05</b> 其他（18%）<span class="ai"> → 物流破损 / 色差等长尾</span></div>'+
-    '<div class="tip b mt10"><span class="ico">i</span><div>开发请在下方填写目标售价，供第二步 CPC 定价与广告成本计算使用（自动同步）</div></div>'+
-    '<div class="rowline mt6"><span class="sm" style="width:90px">目标售价</span><input class="inp" style="width:120px" value="$14.9">'+
-    '<span class="sm" style="width:90px;margin-left:14px">目标月销</span><input class="inp" style="width:120px" value="2,500"></div></div></div>';
+    '<div class="trfoot">导入后在竞品集合「初筛」→ 工作台五步分析 → 三道审核</div></div></div>';
 }
 
 function fld(label,val,type){
@@ -1356,15 +1406,25 @@ function poolDots(s){
 /* v13: 商品池 SKU 详情抽屉内容 */
 DRW.pool={
   title:function(s){ return esc(s.name); },
-  sub:function(s){ return esc(s.code)+' · '+esc(s.asin)+' · '+esc(s.market)+' · 负责人：'+esc(s.owner); },
+  sub:function(s){ return esc(s.code)+' · '+esc(s.asin)+' · '+esc(s.market)+' · 提交人：'+esc(s.devOwn||s.submitter||'AI')+(s.opOwn?' · 运营：'+esc(s.opOwn):'')+' · 进池 '+esc(s.inT||'—'); },
   body:function(s){
+    /* v16: 时间轴样式（对齐客户详情截图：每步状态+完成时间+操作） */
     let dots='';
-    EXEC.forEach(function(k){
+    EXEC.forEach(function(k,idx){
       const st=mstat(s,k), mm=M(k);
       const cls=st==='done'?'done':(st==='doing'||st==='rej'?'rej':(st==='todo'?'doing':'wait'));
-      const mark=st==='done'?' ✓':(st==='rej'?' ✕':(st==='doing'?' …':''));
-      dots+='<div class="xd '+cls+'"><i></i>'+mm.no+' '+mm.name+mark+'</div>';
+      const mark=st==='done'?'已完成 ✓':(st==='rej'?'已驳回 ✕':(st==='doing'?'进行中 …':'待处理'));
+      const tm=st==='done'?('完成于 '+cdate(s)):(st==='todo'?'':'');
+      const go2=st!=='done'?'<button class="btn xs" data-act="gotoStep" data-id="'+s.id+'" data-k="'+k+'">去处理</button>':'';
+      dots+='<div class="xd '+cls+'"><i></i><div style="flex:1;min-width:0"><div class="rowline" style="gap:6px">'+mm.no+' '+mm.name+' <span class="xs dim">'+mark+'</span>'+go2+'</div>'+
+      (tm?'<div class="xs dim" style="margin:1px 0 0 16px">'+tm+'</div>':'')+'</div></div>';
     });
+    /* 选品三道审核时间轴 */
+    if(s.rv){
+      dots+='<div class="xd done"><i></i><div style="flex:1"><div class="rowline" style="gap:6px">选品审核（工作台）<span class="xs dim">'+
+      (allRvPass(s)?'三审通过 ✓':(s.rv.dev==='rej'?'开发驳回 ✕':(s.rv.dev==='wait'?'待开发递交/审核':(s.rv.mgr==='wait'?'待主管审核':(s.rv.boss==='wait'?'待老板终审':'流转中')))))+'</span></div>'+
+      '<div class="xs dim" style="margin:1px 0 0 16px">'+(s.rv.dev==='pass'?'开发(吴楠) ✓ ':'—')+(s.rv.mgr==='pass'?'· 主管(刘洋) ✓ ':'')+(s.rv.boss==='pass'?'· 老板(周小清) ✓':'')+'</div></div></div>';
+    }
     let h='<div class="xg">'+
     '<div class="xf"><b>ASIN</b><span>'+esc(s.asin)+'</span></div>'+
     '<div class="xf"><b>站点</b><span>'+esc(s.market)+'</span></div>'+
@@ -1498,118 +1558,157 @@ function vWork(){
     rows+
     '<div class="trfoot">五步分析：竞品转化率 → CPC 定价 → 广告成本 → 综合决策 →（点「下一步」触发）专利排查 · 完成后进入三道审核 · 另有 '+passedN+' 个产品三审通过已进入新品流程（① 样品验收）</div></div></div>';
   }
-  /* 五步视图 */
+  /* 五步视图（v16：顶栏对齐客户截图「返回列表·修改名称·产品已通过·已关联产品池」） */
   const s=sk(S.workSel);
   if(!s){ S.workSel=null; return vWork(); }
-  const bar='<div class="rowline mb10"><span class="tip b" style="flex:1"><span class="ico">AI</span><div>'+
-    '五步深度分析 · '+esc(s.name)+' · 数据源：卖家精灵 MCP（竞品 / 关键词 / FBA 费）· 每步结果自动同步给下一步</div></span>'+
+  const bar='<div class="rowline mb10" style="gap:8px;flex-wrap:wrap">'+
     '<button class="btn s" data-act="workBack">← 返回列表</button>'+
-    (S.step<4?'<button class="btn '+(S.step===3?'p':'s')+' p" data-act="stepnext">'+(S.step===3?'下一步：排查专利（消耗 API）→':'下一步：'+MODS[S.m].steps[S.step+1]+' →')+'</button>':'<button class="btn p" data-act="workDone">完成五步分析 → 提交开发审核</button>')+
+    '<button class="btn s" data-act="workRename" data-id="'+s.id+'" title="修改该产品在工作台的显示名称">修改名称</button>'+
+    '<span class="pill p-ok" title="产品池初筛通过后自动关联">产品已通过初筛</span>'+
+    '<span class="pill p-cy" title="已关联产品池记录">已关联产品池 · '+esc(s.code)+'</span>'+
+    '<span class="xs dim" style="margin-left:auto">五步分析 · '+esc(s.name)+' · 数据源：卖家精灵 MCP</span></div>'+
+    '<div class="rowline mb10"><span class="tip b" style="flex:1"><span class="ico">AI</span><div>'+
+    '每步结果自动同步给下一步：转化率 ← 竞品集合 · CPC ← 转化率 · 广告成本 ← CPC · 综合决策 ← 广告成本 ·（点「下一步」才触发）专利风险</div></span>'+
+    (S.step<4?'<button class="btn '+(S.step===3?'p':'s')+' p" data-act="stepnext">'+(S.step===3?'下一步：排查专利风险（消耗 API）→':'下一步：'+MODS[S.m].steps[S.step+1]+' →')+'</button>':'<button class="btn p" data-act="workDone">完成五步分析 → 提交审核</button>')+
     '</div>';
   if(S.step===0){
     const same=COMP.filter(function(c){return c.same;});
-    const rows=same.map(function(c){
-      return '<div class="tr body" style="grid-template-columns:1.2fr 90px 70px 70px 1.4fr 70px 60px 60px">'+
+    const show=S.onlySame?same:COMP;
+    const rows=show.map(function(c){
+      return '<div class="tr body" style="grid-template-columns:1.1fr 70px 60px 74px 96px 1.5fr 60px 62px 70px 1.1fr 84px">'+
       '<div class="sm ell" style="font-family:ui-monospace,monospace;min-width:0">'+c.asin+'</div>'+
-      '<div><span class="pill p-ok">同款</span></div>'+
+      '<div><span class="pill '+(c.src==='AI'?'p-cy':'p-ok')+'">'+c.src+'</span></div>'+
       '<div class="sm dim" title="转化率接口暂缺">—</div>'+
       '<div class="sm">'+c.buy+'</div>'+
-      '<div class="sm ell" style="min-width:0">★ '+c.rate+' · '+c.rcnt+' 评论 · '+c.price+' · FBA '+c.fba+'</div>'+
-      '<div class="sm dim">'+c.nat+'</div><div class="sm dim">'+c.adv+'</div><div class="sm dim">'+c.age+'</div></div>';
+      '<div class="sm dim">'+c.clk+'</div>'+
+      '<div class="sm ell" style="min-width:0">★'+c.rate+' · '+c.rcnt+'评</div>'+
+      '<div><span class="pill p-mute">'+c.price+'</span></div>'+
+      '<div class="sm dim">'+c.fba+'</div>'+
+      '<div class="sm dim">'+c.ship+' · '+c.age+'</div>'+
+      '<div class="xs dim ell" style="min-width:0">'+c.sp+' · 自'+c.nat+'</div>'+
+      '<div class="rowline" style="gap:3px"><button class="btn xs" data-act="toast" data-t="已加入同款标记切换（演示）">同款</button><button class="btn xs" data-act="toast" data-t="已从本表移除（演示）">移除</button></div></div>';
     }).join('');
     return bar+
-    '<div class="card"><h3>第一步 · 竞品转化率<span class="n">同款竞品 '+same.length+' 个 · 重点参照</span></h3><div class="cb tight">'+
-    '<div class="tr th" style="grid-template-columns:1.2fr 90px 70px 70px 1.4fr 70px 60px 60px">'+
-    '<div>ASIN</div><div>同款</div><div>CVR</div><div>年购买</div><div>评分·评论·价格·FBA</div><div>自然%</div><div>广告%</div><div>年限</div></div>'+
+    '<div class="rowline mb10" style="gap:8px;flex-wrap:wrap">'+
+    '<button class="btn s" data-act="toast" data-t="已重新拉取竞品数据（卖家精灵 MCP · 演示）">拉取数据</button>'+
+    '<button class="btn s" data-act="toast" data-t="已同步到竞品池（演示）">同步竞品池</button>'+
+    '<button class="btn s" data-act="toast" data-t="在亚马逊查看全部竞品（新窗口 · 演示）">在亚马逊查看全部竞品</button>'+
+    '<span class="pill p-mute">'+COMP.length+' 个竞品 · 已选 '+same.length+' 个同款</span>'+
+    '<label class="rowline" style="gap:5px;cursor:pointer;font-size:12px;margin-left:auto"><input type="checkbox" '+(S.onlySame?'checked':'')+' data-act="onlySame"> 仅显示完全同款竞品</label></div>'+
+    '<div class="card mb10"><h3>补充竞品 ASIN<span class="n">支持逗号 · 中文逗号 · 分号 · 竖线 · 换行分隔</span></h3><div class="cb">'+
+    '<div class="rowline"><input class="inp" style="flex:1" placeholder="输入竞品 ASIN，如 B0CXXXXXXX，B0CYYYYYYY；B0CZZZZZZZ">'+
+    '<button class="btn s p" data-act="compAdd">＋ 添加竞品</button></div></div></div>'+
+    '<div class="card"><h3>竞品转化率参考<span class="n">'+show.length+' / '+COMP.length+'</span></h3><div class="cb tight amzscroll">'+
+    '<div class="tr th" style="grid-template-columns:1.1fr 70px 60px 74px 96px 1.5fr 60px 62px 70px 1.1fr 84px">'+
+    '<div>ASIN</div><div>来源</div><div>CVR</div><div>年购买</div><div>年点击</div><div>评分·评论</div><div>价格</div><div>FBA费</div><div>配送·年限</div><div>广告·自然</div><div>操作</div></div>'+
     rows+
-    '<div class="trfoot">CVR 转化率数据接口暂缺（以 — 显示），年购买 / 年点击 / 自然·广告占比可反推转化效率 · 完整 12 竞品在竞品集合查看</div></div></div>'+
-    '<div class="tip b mt10"><span class="ico">i</span><div>开发可返回「竞品集合」手动补充遗漏竞品（支持 ASIN 批量粘贴）；同款竞品是 ④ 说明书与 ⑤ 专利排查的重点参照。</div></div>';
+    '<div class="trfoot">CVR 转化率数据接口暂缺（—）；年购买 ÷ 年点击可反推转化效率 · 除转化率外均可第三方抓取</div></div></div>';
   }
   if(S.step===1){
     const rows=KWS.map(function(k){
-      return '<div class="tr body" style="grid-template-columns:1.5fr 1fr 80px 1.2fr 110px 1fr 90px">'+
-      '<div class="sm ell" style="min-width:0;font-weight:600">'+esc(k.kw)+'</div>'+
+      return '<div class="tr body" style="grid-template-columns:1.7fr 1fr 90px 1fr 1.2fr 96px 130px 96px">'+
+      '<div class="sm ell" style="min-width:0;font-weight:600" title="'+esc(k.kw)+'">'+esc(k.kw)+'</div>'+
       '<div class="sm dim">'+esc(k.cn)+'</div>'+
       '<div><span class="pill '+(k.src==='SIF'?'p-cy':'p-mute')+'">'+k.src+'</span></div>'+
-      '<div><div class="rowline" style="gap:6px"><div class="bt" style="flex:1;min-width:50px"><i style="width:'+Math.min(100,Math.round(k.cov/0.9))+'%"></i></div><span class="xs dim">'+k.cov+'%</span></div></div>'+
-      '<div class="sm">'+k.bid+'</div>'+
-      '<div>'+(k.cov>=20?'<span class="pill p-ok">≥20% ✓</span>':'<span class="pill p-bad" title="低于 20% 竞品占有率门槛，不入核心词">已过滤</span>')+'</div>'+
-      '<div>'+(k.core?'<input class="inp" style="width:80px" value="'+k.pick+'" title="核心关键词竞价">':'<span class="xs dim">—</span>')+'</div></div>';
+      '<div class="sm dim">12 相关 ASIN</div>'+
+      '<div class="sm dim">18.1K / 月</div>'+
+      '<div><div class="rowline" style="gap:5px"><div class="bt" style="flex:1;min-width:44px"><i style="width:'+Math.min(100,Math.round(k.cov/0.9))+'%"></i></div><span class="xs dim">'+k.cov+'%</span></div></div>'+
+      '<div class="sm" title="建议竞价低 / 中 / 高">$'+(k.cov>=50?'0.85':'0.62')+' / <b>$'+(k.cov>=50?'1.05':'0.83')+'</b> / $'+(k.cov>=50?'1.32':'1.08')+'</div>'+
+      '<div class="sm dim">2 页 200 条</div>'+
+      '<div>'+(k.core?'<span class="pill p-ok">已加核心词 ✓</span>':'<button class="btn xs p" data-act="kwCore" data-id="'+esc(k.kw)+'">添加为核心关键词</button>')+'</div></div>';
     }).join('');
     return bar+
-    '<div class="card"><h3>第二步 · CPC 定价<span class="n">门槛：≥20% 竞品有该关键词才入列表</span></h3><div class="cb tight">'+
-    '<div class="tr th" style="grid-template-columns:1.5fr 1fr 80px 1.2fr 110px 1fr 90px">'+
-    '<div>关键词</div><div>中文翻译</div><div>来源</div><div>竞品占有率</div><div>建议竞价</div><div>门槛</div><div>核心词竞价（填写）</div></div>'+
+    '<div class="rowline mb10" style="gap:8px;flex-wrap:wrap;align-items:center">'+
+    '<span class="sm" style="font-weight:700">关键词:</span><input class="inp" style="width:140px;height:30px" placeholder="Enter">'+
+    '<select class="inp" style="width:120px;height:30px"><option>全部</option><option>精准核心词</option><option>非精准核心词</option></select>'+
+    '<span class="sm" style="font-weight:700">相关ASIN数:</span><input class="inp" style="width:90px;height:30px" placeholder="Enter">'+
+    '<span class="sm" style="font-weight:700">月搜索量(SIF):</span><input class="inp" style="width:90px;height:30px" placeholder="Enter">'+
+    '<button class="btn s" data-act="toast" data-t="已按条件筛选（演示）">查询</button>'+
+    '<span class="xs dim" style="margin-left:auto">抓取卖家精灵竞品关键词 · ≥20% 竞品占有率才进入列表</span></div>'+
+    '<div class="card"><h3>CPC 定价<span class="n">核心词 '+KWS.filter(function(k){return k.core;}).length+' 个 · 共 2 页 200 条</span></h3><div class="cb tight">'+
+    '<div class="tr th" style="grid-template-columns:1.7fr 1fr 90px 1fr 1.2fr 96px 130px 96px">'+
+    '<div>关键词</div><div>中文翻译</div><div>来源</div><div>相关ASIN数</div><div>月搜索量</div><div>竞品占有率</div><div>建议竞价(低/中/高)</div><div>操作</div></div>'+
     rows+
-    '<div class="trfoot">抓取卖家精灵竞品关键词并比对占有率；勾选核心关键词后在右侧填写竞价，作为第三步广告成本计算的输入</div></div></div>';
+    '<div class="trfoot">核心词将带入第三步广告成本计算（取中档竞价均值）· 竞品占有率 = 含该词的竞品 ÷ 全部竞品</div></div></div>';
   }
   if(S.step===2){
     return bar+
     '<div class="grid2">'+
-    '<div class="card"><h3>第三步 · 广告成本计算<span class="n">输入 → 自动计算</span></h3><div class="cb">'+
+    '<div class="card"><h3>广告成本计算<span class="n">输入 → 系统自动计算</span></h3><div class="cb">'+
     '<div class="xg">'+
-    '<div class="xf"><b>预估 CPC（美元）</b><input class="inp" value="1.05" data-act="acosIn" data-k="cpc"></div>'+
-    '<div class="xf"><b>预估转化率 CVR（%）</b><input class="inp" value="9.8" data-act="acosIn" data-k="cvr"></div>'+
-    '<div class="xf"><b>确定售价（美元）</b><input class="inp" value="14.9" data-act="acosIn" data-k="price"></div>'+
-    '<div class="xf"><b>佣金比例（默认 15%）</b><input class="inp" value="15%" disabled title="按亚马逊标准 15%"></div>'+
+    '<div class="xf"><b>预估 CPC ($)</b><input class="inp" value="1.05" title="取第二步核心词中档竞价均值"></div>'+
+    '<div class="xf"><b>预估 CVR (%)</b><input class="inp" value="9.80%" title="同款竞品年购买÷年点击反推"></div>'+
+    '<div class="xf"><b>确定售价 ($)</b><input class="inp" value="14.99" title="来自第一步开发填写"></div>'+
+    '<div class="xf"><b>佣金比例 (%)</b><input class="inp" value="15" title="亚马逊默认 15%"></div>'+
     '</div>'+
-    '<div class="tip b mt10"><span class="ico">∑</span><div>ACOS =（CPC × 100）÷（售价 × 转化率）=（1.05 × 100）÷（14.9 × 9.8%）= <b>71.9%</b>（新品期正常范围，稳定后目标 <30%）</div></div>'+
+    '<div class="tip b mt10"><span class="ico">∑</span><div><b>系统计算 ACOS：</b>CPC ÷（售价 × CVR）= 1.05 ÷（14.99 × 9.8%）= <b>71.4%</b></div></div>'+
     '<div class="xg mt10">'+
-    '<div class="xf"><b>ACOS</b><span><b>71.9%</b> <span class="xs dim">（系统自动计算）</span></span></div>'+
-    '<div class="xf"><b>单位广告费</b><span><b>$10.72</b> <span class="xs dim">= ACOS × 售价</span></span></div>'+
-    '</div></div></div>'+
-    '<div class="card"><h3>成本口径说明</h3><div class="cb">'+
-    '<div class="runlogs"><b>01</b> 预估 CPC：取第二步核心词竞价均值（$1.05）<span class="ok"> ✓</span><br>'+
-    '<b>02</b> 预估 CVR：同款竞品年购买 ÷ 年点击 反推（9.8%）<span class="ok"> ✓</span><br>'+
-    '<b>03</b> 售价：第一步开发填写（$14.9，试算不保存）<span class="ok"> ✓</span><br>'+
-    '<b>04</b> ACOS 与单位广告费 → 传入第四步利润计算<span class="ai">→ 自动</span></div>'+
-    '<div class="tip b mt10"><span class="ico">i</span><div>确认 ACOS 后进入综合决策；广告成本将计入毛利率与广告毛利率两项指标。</div></div></div></div>'+
+    '<div class="xf"><b>系统计算单位广告费</b><span>$10.71 <span class="xs dim">= ACOS × 售价</span></span></div>'+
+    '<div class="xf"><b>确认 ACOS (%)</b><input class="inp" value="71.4" title="留空用系统值"></div>'+
+    '</div>'+
+    '<div class="tip b mt10"><span class="ico">→</span><div>提交后自动生成<b>预估月销量</b>（30 天广告点击 × CVR 反推），带入第四步综合决策。</div></div>'+
+    '<div class="rowline mt10" style="justify-content:flex-end"><button class="btn p" data-act="stepnext">提交 → Step 3 综合决策</button></div>'+
+    '</div></div>'+
+    '<div class="card"><h3>计算口径</h3><div class="cb">'+
+    '<div class="runlogs"><b>01</b> 预估 CPC ← 第二步核心词竞价中档均值<span class="ok"> ✓ $1.05</span><br>'+
+    '<b>02</b> 预估 CVR ← 同款竞品年购买 ÷ 年点击<span class="ok"> ✓ 9.8%</span><br>'+
+    '<b>03</b> 确定售价 ← 第一步开发填写<span class="ok"> ✓ $14.99</span><br>'+
+    '<b>04</b> ACOS = CPC ÷ (售价 × CVR)<span class="ai"> → 71.4%</span><br>'+
+    '<b>05</b> 单位广告费 = ACOS × 售价<span class="ai"> → $10.71</span></div></div></div>'+
     '</div>';
   }
   if(S.step===3){
     return bar+
     '<div class="grid2 mb10">'+
-    '<div class="card"><h3>第四步 · 供应链与利润计算<span class="n">填写后系统自动计算</span></h3><div class="cb">'+
+    '<div class="card"><h3>供应链信息 + 利润计算<span class="n">填写后系统自动计算</span></h3><div class="cb">'+
     '<div class="xg">'+
-    '<div class="xf"><b>出价（RMB）</b><input class="inp" value="'+PROFIT.bid+'"></div>'+
-    '<div class="xf"><b>税点</b><input class="inp" value="'+PROFIT.tax+'"></div>'+
-    '<div class="xf"><b>售价（USD）</b><input class="inp" value="'+PROFIT.price+'"></div>'+
-    '<div class="xf"><b>国内运费（RMB）</b><input class="inp" value="'+PROFIT.shipC+'"></div>'+
-    '<div class="xf"><b>FBA 费（预估）</b><input class="inp" value="'+PROFIT.fba+'" disabled title="卖家精灵 MCP 抓取"></div>'+
-    '<div class="xf"><b>包装长宽高（cm）</b><input class="inp" value="'+PROFIT.box+'"></div>'+
+    '<div class="xf"><b>出价 (RMB)</b><input class="inp" value="'+PROFIT.bid+'"></div>'+
+    '<div class="xf"><b>税点 (%)</b><input class="inp" value="6"></div>'+
+    '<div class="xf"><b>售价 (USD)</b><div class="rowline" style="gap:4px"><input class="inp" style="min-width:0" value="14.99" title="试算不保存"><button class="btn xs" data-act="toast" data-t="售价已保存（演示）">保存售价</button></div></div>'+
+    '<div class="xf"><b>国内运费 (RMB)</b><input class="inp" value="'+PROFIT.shipC+'"></div>'+
+    '<div class="xf"><b>包装长 (cm)</b><input class="inp" value="19"></div>'+
+    '<div class="xf"><b>包装宽 (cm)</b><input class="inp" value="12"></div>'+
+    '<div class="xf"><b>包装高 (cm)</b><input class="inp" value="4"></div>'+
+    '<div class="xf"><b>头程 (RMB/件)</b><input class="inp" value="2.36" title="系统按重量段预估"></div>'+
     '</div>'+
     '<div class="xg mt10">'+
-    '<div class="xf"><b>采购成本</b><span>'+PROFIT.cost+' <span class="xs dim">（系统算）</span></span></div>'+
-    '<div class="xf"><b>佣金</b><span>'+PROFIT.fee+'</span></div>'+
-    '<div class="xf"><b>头程</b><span>'+PROFIT.head+'</span></div>'+
-    '<div class="xf"><b>广告费</b><span>'+PROFIT.ad+' <span class="xs dim">← 第三步 ACOS</span></span></div>'+
-    '<div class="xf"><b>退货损失</b><span>'+PROFIT.ret+'</span></div>'+
-    '<div class="xf"><b>总成本</b><span>'+PROFIT.total+'</span></div>'+
-    '<div class="xf"><b>单件利润</b><span>'+PROFIT.unit+'</span></div>'+
-    '<div class="xf"><b>20% 毛利对应售价</b><span>'+PROFIT.p20+'</span></div>'+
-    '<div class="xf"><b>毛利率</b><span><span class="pill p-ok">'+PROFIT.rate+'</span></span></div>'+
-    '<div class="xf"><b>广告毛利率</b><span><span class="pill p-wait">'+PROFIT.adRate+'</span></span></div>'+
-    '</div></div></div>'+
-    '<div class="card"><h3>候选供应商<span class="n">1688 / 淘宝链接</span></h3><div class="cb tight">'+
-    '<div class="tr th" style="grid-template-columns:2fr 1fr 1fr 90px">'+
-    '<div>采购链接</div><div>供应商</div><div>报价</div><div>操作</div></div>'+
-    '<div class="tr body" style="grid-template-columns:2fr 1fr 1fr 90px"><div class="xs ell" style="min-width:0">detail.1688.com/offer/786K3M7X2…</div><div class="sm">永康五金 8 年店</div><div class="sm">¥42.0 / 千套</div><div class="sm"><span class="pill p-ok">主选</span></div></div>'+
-    '<div class="tr body" style="grid-template-columns:2fr 1fr 1fr 90px"><div class="xs ell" style="min-width:0">item.taobao.com/item.htm?id=678…</div><div class="sm">义乌日用批发行</div><div class="sm">¥45.5 / 千套</div><div class="sm dim">备选</div></div>'+
-    '<div class="rowline mt6"><input class="inp" style="flex:1" placeholder="粘贴 1688 / 淘宝采购链接添加候选供应商"><button class="btn s" data-act="supAdd">＋ 添加</button></div>'+
+    '<div class="xf"><b>采购成本 (系统算)</b><span>$8.66 <span class="xs dim">= (出价+税+运)÷汇率</span></span></div>'+
+    '<div class="xf"><b>FBA 费 (USD)</b><input class="inp" value="4.63" title="手动改或取默认"></div>'+
+    '<div class="xf"><b>佣金 (USD)</b><span>$2.25 <span class="xs dim">默认 15%</span></span></div>'+
+    '<div class="xf"><b>广告费 (USD)</b><span>$10.71 <span class="xs dim">← 第三步 ACOS</span></span></div>'+
+    '<div class="xf"><b>退货损失 (USD)</b><span>$0.42</span></div>'+
+    '<div class="xf"><b>总成本 (USD)</b><span><b>$26.67</b></span></div>'+
+    '<div class="xf"><b>单件利润（不含广告）</b><span><b>$5.66</b></span></div>'+
+    '<div class="xf"><b>20% 毛利对应售价</b><span>$17.40</span></div>'+
+    '<div class="xf"><b>毛利率</b><span><span class="pill p-ok">40.1%</span> <span class="xs dim">不含广告</span></span></div>'+
+    '<div class="xf"><b>广告毛利率</b><span><span class="pill p-wait">18.0%</span></span></div>'+
     '</div>'+
-    '<div class="card mt10"><h3>综合决策区</h3><div class="cb">'+
+    '<div class="rowline mt10" style="justify-content:flex-end"><button class="btn" data-act="toast" data-t="供应链信息已保存（演示）">保存供应链信息</button></div>'+
+    '</div></div>'+
+    '<div>'+
+    '<div class="card mb10"><h3>候选供应商<span class="n">2 个 · 粘贴采购链接添加</span></h3><div class="cb tight">'+
+    '<div class="tr th" style="grid-template-columns:1.9fr 1fr 1fr 1fr 70px"><div>采购链接</div><div>供应商</div><div>报价(RMB)</div><div>备注</div><div>操作</div></div>'+
+    '<div class="tr body" style="grid-template-columns:1.9fr 1fr 1fr 1fr 70px"><div class="xs ell" style="min-width:0">detail.1688.com/offer/786K3M7X2.html</div><div class="sm">永康五金 8 年</div><div class="sm">¥42.0 / 千套</div><div class="sm dim">含税含包装</div><div><span class="pill p-ok">主选</span></div></div>'+
+    '<div class="tr body" style="grid-template-columns:1.9fr 1fr 1fr 1fr 70px"><div class="xs ell" style="min-width:0">item.taobao.com/item.htm?id=678</div><div class="sm">义乌日用批发行</div><div class="sm">¥45.5 / 千套</div><div class="sm dim">选填</div><div class="sm dim">备选</div></div>'+
+    '<div class="rowline mt6"><input class="inp" style="flex:1" placeholder="粘贴 1688 / 淘宝等采购链接"><input class="inp" style="width:110px" placeholder="报价"><button class="btn s" data-act="supAdd">＋ 添加</button></div>'+
+    '</div></div>'+
+    '<div class="card"><h3>综合决策<span class="n">保存后触发专利风险</span></h3><div class="cb">'+
     '<div class="xg">'+
     '<div class="xf" style="grid-column:span 2"><b>产品优势</b><input class="inp" value="11 件全配件竞品罕见 · 50 Lbs 承重超同类 40%"></div>'+
-    '<div class="xf" style="grid-column:span 2"><b>产品劣势</b><input class="inp" value="外观与竞品高度相似需做配色差异"></div>'+
-    '<div class="xf"><b>预估月销量</b><input class="inp" value="2,500"></div>'+
-    '<div class="xf"><b>首批订货量</b><input class="inp" value="1,000"></div>'+
-    '<div class="xf"><b>选品评分（1-10）</b><input class="inp" value="7.8"></div>'+
+    '<div class="xf" style="grid-column:span 2"><b>产品劣势</b><input class="inp" value="外观与竞品高度相似，需做配色差异"></div>'+
     '<div class="xf"><b>有竞品</b><input class="inp" value="同款 6 · 非同款 6"></div>'+
-    '</div></div></div>'+
+    '<div class="xf"><b>预估月销量</b><input class="inp" value="2,500" title="← 第三步提交自动生成"></div>'+
+    '<div class="xf"><b>首批订货量</b><input class="inp" value="1,000"></div>'+
+    '<div class="xf"><b>选品评分 (1-10)</b><input class="inp" value="7.8"></div>'+
     '</div>'+
-    '<div class="tip b mt10"><span class="ico">!</span><div><b>专利排查较贵：</b>本页填完后点「下一步：排查专利（消耗 API）」才会触发 9 步法排查，不点不跑。</div></div>';
+    '<div class="rowline mt10" style="justify-content:flex-end"><button class="btn" data-act="toast" data-t="决策信息已保存（演示）">保存决策信息</button></div>'+
+    '</div></div>'+
+    '</div>'+
+    '</div>'+
+    '<div class="tip r mt10"><span class="ico">!</span><div><b>专利排查较贵，谨慎触发：</b>只有竞品集合评分 ≥3 个 ASIN 才值得跑；本页保存后点「下一步：排查专利风险」才执行，不点不跑。</div></div>';
   }
   /* step4 专利排查 */
+  /* v16: 对齐客户报告模板：产品基本信息 + 最终定论 + Step1-7 + 汇总表 + 综合结论 + 可行路径 + 核查清单 */
   const steps=PATENT.steps.map(function(st){
     return '<div class="xd done"><i></i>'+st[0]+' <span class="xs dim">· '+st[1]+'</span>'+
     '<div class="xs dim" style="margin:2px 0 0 18px">'+esc(st[2])+'</div></div>';
@@ -1619,19 +1718,54 @@ function vWork(){
     return '<div class="tr body" style="grid-template-columns:1.2fr 80px 2.4fr">'+
     '<div class="sm">'+r[0]+'</div><div><span class="pill '+cl+'">'+r[1]+'</span></div><div class="xs dim ell" style="min-width:0">'+esc(r[2])+'</div></div>';
   }).join('');
+  /* 报告头部：产品基本信息（对齐客户模板） */
+  const sObj=sk(S.workSel)||SK[0];
   return bar+
-    '<div class="card mb10"><h3>最终定论<span class="n">AI 专利排查 · 9 步法</span></h3><div class="cb">'+
+    '<div class="card mb10"><h3>专利风险评估报告<span class="n">9 步法 · task #328</span></h3><div class="cb">'+
+    '<div class="dim xs" style="font-weight:700;margin:2px 0 6px">产品基本信息</div>'+
+    '<div class="xg" style="grid-template-columns:repeat(4,1fr)">'+
+    '<div class="xf" style="grid-column:span 4"><b>产品</b><span class="xs">'+esc(sObj.name)+' · '+esc(sObj.et||'')+'</span></div>'+
+    '<div class="xf"><b>ASIN（父/子）</b><span class="xs">'+esc(sObj.asin)+'（父）· 10 个变体</span></div>'+
+    '<div class="xf"><b>品牌</b><span class="xs">XIAOQING</span></div>'+
+    '<div class="xf"><b>真实品类</b><span class="xs">家居挂架五金件（11 件套）</span></div>'+
+    '<div class="xf"><b>Amazon 类目</b><span class="xs">Tools › Hardware › Hooks · $'+(sObj.price||'').replace('$','')+' · 评分 '+(sObj.star||'4.6')+'（'+(sObj.rc||'2,861')+' 条）</span></div>'+
+    '</div></div></div>'+
+    '<div class="card mb10"><div class="cb">'+
+    '<div class="dim xs" style="font-weight:700;margin:2px 0 6px">最终定论</div>'+
     '<div class="kpis" style="margin:0">'+
-    '<div class="kpi"><div class="l">结论</div><div class="v sm" style="font-size:15px;color:#12a06a">'+esc(PATENT.verdict)+'</div><div class="m">风险载体：'+esc(PATENT.carrier)+'</div></div>'+
-    '<div class="kpi"><div class="l">风险等级</div><div class="v" style="color:#12a06a">低</div><div class="m">'+esc(PATENT.trol)+' · '+esc(PATENT.case)+'</div></div>'+
-    '<div class="kpi"><div class="l">一句话理由</div><div class="v sm" style="font-size:12px;line-height:1.5">'+esc(PATENT.reason)+'</div><div class="m">需怎么改：'+esc(PATENT.change)+'</div></div>'+
+    '<div class="kpi"><div class="l">能不能做</div><div class="v sm" style="font-size:15px;color:#12a06a">'+esc(PATENT.verdict)+'</div><div class="m">风险载体：'+esc(PATENT.carrier)+'</div></div>'+
+    '<div class="kpi"><div class="l">风险等级 / 活跃维权方</div><div class="v" style="color:#12a06a">'+esc(PATENT.level)+'</div><div class="m">'+esc(PATENT.trol)+' · '+esc(PATENT.case)+'</div></div>'+
+    '<div class="kpi" style="grid-column:span 2"><div class="l">一句话理由 / 需怎么改</div><div class="v xs" style="font-size:12px;line-height:1.6;text-align:left">'+esc(PATENT.reason)+'<br><b>需怎么改：</b>'+esc(PATENT.change)+'</div></div>'+
     '</div></div></div>'+
     '<div class="grid2 mb10">'+
     '<div class="card"><h3>排查过程 · Step 1–7<span class="n">全部完成</span></h3><div class="cb"><div class="xdots">'+steps+'</div></div></div>'+
-    '<div class="card"><h3>风险发现汇总</h3><div class="cb tight">'+
-    '<div class="tr th" style="grid-template-columns:1.2fr 80px 2.4fr"><div>维度</div><div>等级</div><div>说明</div></div>'+risks+'</div></div>'+
+    '<div class="card"><h3>风险发现汇总表</h3><div class="cb tight">'+
+    '<div class="tr th" style="grid-template-columns:1.2fr 80px 2.4fr"><div>维度</div><div>等级</div><div>说明 / 差异点</div></div>'+risks+'</div></div>'+
     '</div>'+
-    '<div class="tip b"><span class="ico">→</span><div><b>'+esc(PATENT.path)+'</b>　点击右上「完成五步分析 → 提交开发审核」，进入三道审核流。</div></div>';
+    '<div class="card mb10"><h3>综合风险结论<span class="n">按维度</span></h3><div class="cb tight">'+
+    [['实用专利','低','最贴近的同类专利已失效；其余是整套系统/方法专利，不覆盖单卖挂件'],['外观设计专利','极低','未检到相关外观专利；多家同款在售'],['Pending 申请','极低','未发现相关近期公开申请'],['文字商标 (TM)','极低','XIAOQING 为自有品牌不侵权'],['图像商标 / Trade Dress','极低','未发现'],['版权形象 (7C)','极低','无 IP 元素'],['Amazon 投诉历史','极低','未查到针对该类目的投诉/诉讼']].map(function(r){
+      const cl=r[1]==='高'?'p-bad':(r[1]==='中'?'p-wait':'p-ok');
+      return '<div class="tr body" style="grid-template-columns:1.4fr 80px 3fr"><div class="sm">'+r[0]+'</div><div><span class="pill '+cl+'">'+r[1]+'</span></div><div class="xs dim ell" style="min-width:0">'+r[2]+'</div></div>';
+    }).join('')+
+    '<div class="rowline mt10" style="gap:8px"><span class="pill p-ok">结论：可安全销售</span><span class="xs dim">建议：用自有品牌+自拍图；兼容词只写 Compatible with；不把竞品专利结构打包进套装</span></div>'+
+    '</div></div>'+
+    '<div class="grid2 mb10">'+
+    '<div class="card"><h3>可行路径</h3><div class="cb"><div class="runlogs">'+
+    '<b>01</b> 自有品牌 + 承重 50 Lbs 差异配色 → 直接上架（无需规避设计）<br>'+
+    '<b>02</b> 上架前到 USPTO 复查近似专利状态（确认没被恢复）<br>'+
+    '<b>03</b> 美国专利律师 FTO 分析（$2000-5000，本品无需）<br>'+
+    '<b>04</b> 购买授权 / Royalty 合作（本品无需）</div></div></div>'+
+    '<div class="card"><h3>排查步骤核查清单<span class="n">报告依据</span></h3><div class="cb"><div class="runlogs">'+
+    '<b>S1</b> 产品识别：主图已看 · 无专利声明 · ip_risk_flags 空 ✓<br>'+
+    '<b>S2</b> 专利初筛：match_ratio 0.743 · 补搜 8 组 · 读 5 件权利要求 ✓<br>'+
+    '<b>S3</b> 权利人识别：4 家 · 同行系统诉讼不针对挂件 ✓<br>'+
+    '<b>S4</b> 深挖：最贴近专利已失效（欠年费）✓<br>'+
+    '<b>S5</b> 图像反查：Lens 命中均为同类在售 ✓<br>'+
+    '<b>S6</b> Pending：未找到相关申请 ✓<br>'+
+    '<b>S7</b> 商标：自有品牌 · 行业词只做兼容说明 ✓</div>'+
+    '<div class="xs dim mt6">数据来源：USPTO · Google Patents · Justia · Serper · 卖家精灵 ASIN 详情 · 违禁词清单（49 品牌 1496 关键词）</div></div></div>'+
+    '</div>'+
+    '<div class="tip b"><span class="ico">→</span><div><b>'+esc(PATENT.path)+'</b>　点击右上「完成五步分析 → 提交审核」，进入三道审核流（开发 → 主管 → 老板）。</div></div>';
 }
 
 /* v15: 工作台辅助 */
@@ -1690,6 +1824,118 @@ function vTask(){
     '<div>ID</div><div>任务（来源）</div><div>关联 SKU</div><div>状态</div><div>截止时间</div><div>操作</div></div>'+
     rows+
     '<div class="trfoot">系统任务由流程节点自动派发（如初筛通过 → 五步分析）· 到期未处理飞书 at 运营 ×2 后升级 at 主管 · 完成点「确认」自动进当日日报</div></div></div>';
+}
+
+/* =========================================================
+   9e. v16: 审核中心（主管/老板落地页）+ 数据看板（老板）
+   ========================================================= */
+function vRv(){
+  const isBoss=S.role==='boss';
+  /* 待我审核：当前角色可审的节点 */
+  const pend=SK.filter(function(s){ return s.rv && !allRvPass(s) && roleCanSee(s) && rvMyTurn(s); });
+  /* 已处理：RVLOG 中我处理的 + 我驳回返回的 */
+  const done=RVLOG.filter(function(r){ return r.by===ROLES[S.role].who; });
+  const tab=S.rvtab||'pend';
+  const rvCard=function(s){
+    const chain=rvChainOf(s);
+    const nodeLab={dev:'开发审核（一审）',mgr:'主管审核（二审）',boss:'老板终审（三审）'};
+    const prevName=chain==='mgr'?'开发 吴楠':(chain==='boss'?'主管 刘洋':'五步分析');
+    return '<div class="rvcard">'+
+    '<div class="rvh"><div class="ph">IMG</div><div style="min-width:0;flex:1">'+
+    '<div class="sm" style="font-weight:700">'+esc(s.name)+'</div>'+
+    '<div class="xs dim">'+esc(s.asin)+' · '+esc(s.code)+' · 提交人 '+(s.devOwn||s.submitter||'AI')+' · 上一步：'+prevName+'</div></div>'+
+    '<span class="pill p-do">'+nodeLab[chain||'dev']+'</span></div>'+
+    '<div class="rvb"><div class="xg" style="grid-template-columns:repeat(6,1fr)">'+
+    '<div class="xf"><b>AI 打分</b><span>'+(s.aiScore||'—')+'</span></div>'+
+    '<div class="xf"><b>毛利率</b><span>40.1%</span></div>'+
+    '<div class="xf"><b>广告毛利率</b><span>18.0%</span></div>'+
+    '<div class="xf"><b>预估月销</b><span>2,500</span></div>'+
+    '<div class="xf"><b>首批订货</b><span>1,000</span></div>'+
+    '<div class="xf"><b>选品评分</b><span>7.8/10</span></div>'+
+    '</div>'+
+    '<div class="runlogs mt6"><b>五步结论</b>：同款 6 · 核心词 3（≥20%）· ACOS 71.4% 新品期 · 专利低风险（承重 50 Lbs + 差异配色可行）</div></div>'+
+    '<div class="rvf">'+
+    '<button class="btn xs" data-act="workGo" data-id="'+s.id+'">查看五步分析</button>'+
+    '<button class="btn xs d" data-act="rvRejOpen" data-id="'+s.id+'">驳回（返回提交人）</button>'+
+    '<button class="btn xs p" data-act="rvPass" data-id="'+s.id+'">通过'+(chain==='boss'?' → 进入新品流程':' → 推送下一节点')+'</button>'+
+    '</div></div>';
+  };
+  const pendHtml=pend.length?pend.map(rvCard).join(''):
+    '<div class="card"><div class="empty"><div class="e1">暂无待审核内容</div><div class="e2">'+ROLES[S.role].n+'视角：递交到您节点的内容会出现在这里</div></div></div>';
+  const doneRows=done.map(function(r){
+    const s=sk(r.sku);
+    return '<div class="tr body" style="grid-template-columns:60px 1.8fr 90px 80px 110px 2.2fr 90px">'+
+    '<div><span class="pill p-mute">'+r.id+'</span></div>'+
+    '<div class="sm ell" style="min-width:0">'+(s?esc(s.name):r.sku)+'</div>'+
+    '<div><span class="pill p-cy">'+RVLAB[r.node]+'</span></div>'+
+    '<div>'+(r.act==='pass'?'<span class="pill p-ok">通过</span>':'<span class="pill p-bad">驳回</span>')+'</div>'+
+    '<div class="xs dim">'+r.time+'</div>'+
+    '<div class="xs dim ell" style="min-width:0" title="'+esc(r.note)+'">'+(r.note?('备注：'+esc(r.note.slice(0,40))):'—')+'</div>'+
+    '<div class="rowline">'+(s?'<button class="btn xs" data-act="workGo" data-id="'+s.id+'">查看</button>':'')+'</div></div>';
+  }).join('');
+  const doneHtml='<div class="card"><h3>我已处理<span class="n">'+done.length+' 条</span></h3><div class="cb tight">'+
+    '<div class="tr th" style="grid-template-columns:60px 1.8fr 90px 80px 110px 2.2fr 90px">'+
+    '<div>ID</div><div>产品</div><div>审核节点</div><div>动作</div><div>时间</div><div>备注/驳回意见</div><div>操作</div></div>'+
+    (doneRows||'<div class="trfoot">暂无记录</div>')+'</div></div>';
+  return '<div class="kpis mb10">'+
+  '<div class="kpi"><div class="l">待我审核</div><div class="v" style="color:'+(pend.length?'#3d6dff':'var(--ink)')+'">'+pend.length+'</div><div class="m">'+ROLES[S.role].n+'（'+ROLES[S.role].who+'）</div></div>'+
+  '<div class="kpi"><div class="l">今日已处理</div><div class="v">'+done.filter(function(r){return r.time.indexOf('11-10')===0||r.time.indexOf('11-09')===0;}).length+'</div><div class="m">通过 '+done.filter(function(r){return r.act==='pass';}).length+' · 驳回 '+done.filter(function(r){return r.act==='rej';}).length+'</div></div>'+
+  '<div class="kpi"><div class="l">审核流转中</div><div class="v">'+SK.filter(function(s){return s.rv&&!allRvPass(s)&&s.rv.dev!=='rej';}).length+'</div><div class="m">全流程</div></div>'+
+  '<div class="kpi"><div class="l">审核规则</div><div class="v sm" style="font-size:13px">'+(isBoss?'开发→主管→老板（终审）':'开发→主管（二审）')+'</div><div class="m">驳回返回提交人 · 后面节点不再推送</div></div>'+
+  '</div>'+
+  '<div class="rowline mb10"><div class="gtabs">'+
+  '<div class="gtab2'+(tab==='pend'?' on':'')+'" data-act="rvtab" data-v="pend">📥 待我审核 <span class="xs dim">'+pend.length+'</span></div>'+
+  '<div class="gtab2'+(tab==='done'?' on':'')+'" data-act="rvtab" data-v="done">📋 已处理 <span class="xs dim">'+done.length+'</span></div>'+
+  '</div><span class="xs dim">审核通过自动流转下一节点并飞书通知 · 驳回需备注原因与修改意见</span></div>'+
+  (tab==='pend'?pendHtml:doneHtml);
+}
+
+/* v16: 数据看板（老板专属） */
+function vDash(){
+  const all=SK;
+  const inFlow=all.filter(function(s){return !s.poolOnly&&!s.stop;});
+  /* 各环节漏斗 */
+  let funnel='';
+  const funData=[['竞品集合',all.length],['初筛通过·工作台',all.filter(function(s){return s.rv||!s.poolOnly;}).length],['三审通过·进新品',all.filter(function(s){return !s.poolOnly&&atOf2(s,'accept')>0;}).length],['卖点',all.filter(function(s){return atOf2(s,'sp')>0;}).length],['Listing',all.filter(function(s){return atOf2(s,'copy')>0;}).length],['生图入库',all.filter(function(s){return atOf2(s,'gen')>0;}).length],['视频',all.filter(function(s){return atOf2(s,'video')>0;}).length],['上架',all.filter(function(s){return atOf2(s,'sipp')>0;}).length]];
+  const mx=funData[0][1]||1;
+  funData.forEach(function(d){
+    funnel+='<div class="brow"><span class="bl" style="min-width:110px">'+d[0]+'</span><div class="bt"><i style="width:'+Math.round(d[1]/mx*100)+'%;background:linear-gradient(90deg,#3d6dff,#7aa6ff)"></i></div><span class="bv">'+d[1]+'</span></div>';
+  });
+  /* 用户使用表 */
+  const urows=USAGE.map(function(u){
+    return '<div class="tr body" style="grid-template-columns:1.2fr 70px 70px 80px 80px 70px 100px 100px">'+
+    '<div class="sm" style="font-weight:600">'+u.u+'</div>'+
+    '<div><span class="pill '+(u.r==='老板'?'p-bad':(u.r==='主管'?'p-wait':(u.r==='开发'?'p-cy':'p-mute')))+'">'+u.r+'</span></div>'+
+    '<div class="sm">'+u.sku+'</div>'+
+    '<div class="sm dim">'+u.gen+'</div>'+
+    '<div class="sm dim">'+u.copy+'</div>'+
+    '<div class="sm dim">'+u.rv+'</div>'+
+    '<div class="xs dim">'+u.last+'</div>'+
+    '<div>'+(u.on?'<span class="pill p-ok">在线</span>':'<span class="pill p-mute">离线</span>')+'</div></div>';
+  }).join('');
+  /* 各角色在办 */
+  const doing=all.filter(function(s){ return curNode(s) && !s.stop; });
+  const byRole={};
+  doing.forEach(function(s){ const r=s.opOwn||s.devOwn||'—'; byRole[r]=(byRole[r]||0)+1; });
+  const roleRows=Object.keys(byRole).map(function(r){
+    return '<div class="brow"><span class="bl" style="min-width:80px">'+r+'</span><div class="bt"><i style="width:'+Math.round(byRole[r]/doing.length*100)+'%;background:linear-gradient(90deg,#12a06a,#5cc79a)"></i></div><span class="bv">'+byRole[r]+'</span></div>';
+  }).join('');
+  return '<div class="kpis mb10">'+
+  '<div class="kpi"><div class="l">在池产品</div><div class="v">'+all.length+'</div><div class="m">待初筛 '+all.filter(function(s){return s.poolOnly&&!s.rv;}).length+'</div></div>'+
+  '<div class="kpi"><div class="l">审核流转中</div><div class="v">'+all.filter(function(s){return s.rv&&!allRvPass(s);}).length+'</div><div class="m">驳回 '+all.filter(function(s){return s.rv&&s.rv.dev==='rej';}).length+'</div></div>'+
+  '<div class="kpi"><div class="l">新品流程中</div><div class="v">'+inFlow.length+'</div><div class="m">已完成上架 '+all.filter(function(s){return atOf2(s,'sipp')>0;}).length+'</div></div>'+
+  '<div class="kpi"><div class="l">本月全员产出</div><div class="v">1,306<small> 图</small></div><div class="m">Listing 60 条 · 审核 17 次</div></div>'+
+  '</div>'+
+  '<div class="grid2 mb10">'+
+  '<div class="card"><h3>全流程漏斗<span class="n">竞品集合 → 上架</span></h3><div class="cb"><div class="chart">'+funnel+'</div></div></div>'+
+  '<div class="card"><h3>各负责人在办分布</h3><div class="cb"><div class="chart">'+roleRows+'</div>'+
+  '<div class="xs dim mt6">点击「审核中心」处理待审 · 点击侧栏各环节查看明细</div></div></div>'+
+  '</div>'+
+  '<div class="card"><h3>全用户使用情况<span class="n">'+USAGE.length+' 个账号</span><span class="acts"><button class="btn s" data-act="goto" data-k="set">账号管理 →</button></span></h3><div class="cb tight">'+
+  '<div class="tr th" style="grid-template-columns:1.2fr 70px 70px 80px 80px 70px 100px 100px">'+
+  '<div>用户</div><div>角色</div><div>负责SKU</div><div>生图(张)</div><div>Listing</div><div>审核(次)</div><div>最近活跃</div><div>状态</div></div>'+
+  urows+
+  '<div class="trfoot">老板账号可见全部用户与全部数据 · 数据每小时刷新</div></div></div>';
 }
 /* =========================================================
    10. ① 样品验收（验收 + 补资料合并）
@@ -2553,50 +2799,69 @@ function amzModal(id){
    17. 设置（管理员 / 员工）
    ========================================================= */
 function vSet(){
-  return (S.role==='boss'||S.role==='mgr') ? setAdmin() : setStaff();
+  return S.role==='boss' ? setBoss() : setStaff();
 }
-function setAdmin(){
-  return '<div class="setnav"><span class="pill p-do">全局配置视图（老板 / 主管）</span><span class="xs dim">账号 / AI / 接口全局面板 · 模型选择对运营同样开放（各角色可自选模型）</span></div>'+
-  '<div class="grid2">'+
-  '<div><div class="scard"><div class="sh"><span class="no">1</span>账号管理</div><div class="sb tight">'+
-    '<div class="tr th" style="grid-template-columns:1.4fr 90px 110px 90px 130px"><div>账号</div><div>角色</div><div>本月用量</div><div>状态</div><div>操作</div></div>'+
-    [['ellon@xiaoqing.cn','管理员','12.4K 图','正常'],['xiaolin@xiaoqing.cn','员工','8.2K 图','正常'],['may@xiaoqing.cn','员工','6.9K 图','已停用']].map(function(a){
-      return '<div class="tr body" style="grid-template-columns:1.4fr 90px 110px 90px 130px"><div class="xs">'+a[0]+'</div><div class="xs">'+a[1]+'</div>'+
-      '<div class="xs">'+a[2]+'</div><div>'+(a[3]==='正常'?'<span class="pill p-ok">正常</span>':'<span class="pill p-mute">停用</span>')+'</div>'+
-      '<div class="rowline"><button class="btn xs" data-act="toast" data-t="权限已更新">权限</button><button class="btn xs" data-act="toast" data-t="已重置密码">重置密码</button></div></div>';
-    }).join('')+
-    '<div class="trfoot"><button class="btn xs" data-act="toast" data-t="新建账号（演示）">+ 新建账号</button></div></div></div>'+
-  '<div class="scard"><div class="sh"><span class="no">2</span>AI 配置<span class="acts"><button class="btn xs" data-act="toast" data-t="已保存（演示）">保存</button></span></div><div class="sb">'+
-    '<div class="fld"><label>默认模型 API Key（GPT-4o / Imagen 2）</label><input class="inp" value="sk-••••••••••••••••3d7f" type="password"></div>'+
-    '<div class="fld"><label>Skills 管理<span>（上传 .skill 包即全员可用）</span></label>'+
-    '<div class="rowline">'+['sp-gen','listing-wf','img-batch','manual-6lang'].map(function(x){return '<span class="pill p-pur">⚡ '+x+'</span>';}).join('')+
-    '<button class="btn xs" data-act="toast" data-t="上传 Skill（演示）">+ 上传</button></div></div>'+
-    '<div class="fld"><label>各环节默认提示词</label><select class="inp"><option>卖点生成 · v3（当前）</option><option>Listing 埋词 · v2</option><option>生图 · 结构化四字段 v7</option></select></div>'+
+/* 老板 = 管理员：账号增删 / 权限分配 / MCP 接口配置 */
+function setBoss(){
+  const arows=USAGE.map(function(u,i){
+    const isBoss=u.r==='老板';
+    return '<div class="tr body" style="grid-template-columns:1.3fr 80px 1.6fr 90px 80px 90px 130px">'+
+    '<div class="sm" style="font-weight:600">'+u.u+(isBoss?' <span class="pill p-bad">管理员</span>':'')+'</div>'+
+    '<div><span class="pill '+(u.r==='老板'?'p-bad':(u.r==='主管'?'p-wait':(u.r==='开发'?'p-cy':'p-mute')))+'">'+u.r+'</span></div>'+
+    '<div class="xs dim ell" style="min-width:0">'+(isBoss?'全部权限':(u.r==='主管'?'审核中心 + 全流程查看':(u.r==='开发'?'商品中心（竞品集合/产品池/工作台）':'新品管理 ①-⑧')))+'</div>'+
+    '<div class="xs dim">'+(isBoss?'全部':(u.r==='主管'?'全部审核':(u.r==='开发'?'自己提交的':'自己负责的')))+'</div>'+
+    '<div>'+(isBoss?'<span class="pill p-ok">正常</span>':(u.on?'<span class="pill p-ok">正常</span>':'<span class="pill p-mute">停用</span>'))+'</div>'+
+    '<div class="xs dim">'+u.last+'</div>'+
+    '<div class="rowline">'+(isBoss?'':'<button class="btn xs" data-act="toast" data-t="已切换该账号权限（演示）">权限</button>'+
+      (u.on?'<button class="btn xs d" data-act="toast" data-t="已停用该账号（演示）">停用</button>':'<button class="btn xs" data-act="toast" data-t="已启用（演示）">启用</button>')+
+      '<button class="btn xs d" data-act="toast" data-t="已删除该账号（演示）">删</button>')+'</div></div>';
+  }).join('');
+  return '<div class="setnav"><span class="pill p-bad">管理员视图（老板）</span><span class="xs dim">账号增删 / 权限分配 / MCP 接口与模型配置 · 全员数据可见</span></div>'+
+  '<div class="grid2 mb10">'+
+  '<div><div class="scard"><div class="sh"><span class="no">1</span>账号管理<span class="acts"><button class="btn xs p" data-act="toast" data-t="新建账号（演示）：姓名 / 角色 / 权限">＋ 新增账号</button></span></div><div class="sb tight">'+
+    '<div class="tr th" style="grid-template-columns:1.3fr 80px 1.6fr 90px 80px 90px 130px"><div>账号</div><div>角色</div><div>功能权限</div><div>数据范围</div><div>状态</div><div>最近活跃</div><div>操作</div></div>'+
+    arows+
+    '<div class="trfoot">权限可按账号分配：功能模块 + 数据范围（自己 / 全部）</div></div></div>'+
+  '<div class="scard"><div class="sh"><span class="no">2</span>MCP 接口与全局模型</div><div class="sb">'+
+    '<div class="fld"><label>卖家精灵 MCP（选品数据核心）</label><div class="rowline"><span class="pill p-ok">已连接 · 正式账号</span><button class="btn xs" data-act="toast" data-t="已重新授权（演示）">重新授权</button></div></div>'+
+    '<div class="fld"><label>其他 MCP</label><div class="rowline">'+['SIF ✓','EchoTik ✓','领星 ⏳ 待接入','蒙拉数据 ⏳ 预留','蓝鲸数据 ⏳ 预留'].map(function(x){return '<span class="pill '+(x.indexOf('✓')>=0?'p-ok':'p-wait')+'">'+x+'</span>';}).join('')+'</div></div>'+
+    '<div class="fld"><label>全局默认模型（各角色可在自己设置里覆盖）</label><select class="inp"><option>GPT-4o（文案默认）</option><option>Claude Sonnet</option><option>Gemini 2.0</option></select></div>'+
+    '<div class="fld"><label>生图模型</label><select class="inp"><option>Imagen 2</option><option>GPT Image</option></select></div>'+
+    '<div class="fld"><label>飞书机器人（催办 at ×2 → 升级主管）</label><div class="rowline"><span class="pill p-ok">已连接 · xiaoqing-bot</span><button class="btn xs" data-act="toast" data-t="已重新授权（演示）">重新授权</button></div></div>'+
   '</div></div></div>'+
-  '<div><div class="scard"><div class="sh"><span class="no">3</span>第三方接口</div><div class="sb">'+
-    '<div class="fld"><label>飞书机器人</label><div class="rowline"><span class="pill p-ok">已连接 · xiaoqing-bot</span><button class="btn xs" data-act="toast" data-t="已重新授权">重新授权</button></div></div>'+
-    '<div class="fld"><label>飞书通知联系人（缺资料 7 天自动提醒）</label><select class="inp"><option>SKU 负责人（自动匹配）</option><option>Ellen（主管）</option></select></div>'+
-    '<div class="fld"><label>MCP 接口</label><div class="rowline">'+['卖家精灵 ✓','SIF ✓','EchoTik ✓','领星 ⏳ 待接入'].map(function(x){return '<span class="pill '+(x.indexOf('✓')>=0?'p-ok':'p-wait')+'">'+x+'</span>';}).join('')+'</div></div>'+
-  '</div></div>'+
-  '<div class="scard"><div class="sh"><span class="no">4</span>全员使用情况</div><div class="sb"><div class="grid3">'+
-    '<div class="kpi"><div class="l">本月生图</div><div class="v">27.5K<small>张</small></div></div>'+
-    '<div class="kpi"><div class="l">本月 Listing</div><div class="v">128<small>条</small></div></div>'+
-    '<div class="kpi"><div class="l">Token 消耗</div><div class="v">4.2<small>M</small></div></div>'+
-  '</div></div></div></div>';
+  '<div><div class="scard"><div class="sh"><span class="no">3</span>全员使用情况</div><div class="sb"><div class="grid3">'+
+    '<div class="kpi"><div class="l">本月生图</div><div class="v">1,306<small>张</small></div></div>'+
+    '<div class="kpi"><div class="l">本月 Listing</div><div class="v">60<small>条</small></div></div>'+
+    '<div class="kpi"><div class="l">本月审核</div><div class="v">17<small>次</small></div></div>'+
+  '</div>'+
+  '<div class="xs dim mt6">明细在「数据看板」查看</div></div></div>'+
+  '<div class="scard"><div class="sh"><span class="no">4</span>Skills 管理<span>（上传 .skill 包全员可用）</span></span></div><div class="sb">'+
+    '<div class="rowline">'+['pick-research','sp-gen','listing-wf','img-batch','manual-6lang','video-gen'].map(function(x){return '<span class="pill p-pur">⚡ '+x+'</span>';}).join('')+
+    '<button class="btn xs" data-act="toast" data-t="上传 Skill（演示）">＋ 上传</button></div>'+
+  '</div></div></div>'+
+  '</div>';
 }
+/* 开发/主管/运营 = 员工视图：使用情况 + 飞书 + 密码 + 模型 API Key（Post URL / API Key 必填 / 模型名称选填） */
 function setStaff(){
-  return '<div class="setnav"><span class="pill p-ok">员工视图（开发 / 运营）</span><span class="xs dim">可管理自己的飞书 / 通知配置 · 模型可按实际情况自选（客户要求对运营开放）</span></div>'+
+  const me=USAGE.find(function(u){return u.u===ROLES[S.role].who;})||USAGE[3];
+  return '<div class="setnav"><span class="pill p-ok">'+ROLES[S.role].n+'视图（'+ROLES[S.role].who+'）</span><span class="xs dim">仅看到自己生成或审核的内容 · 模型可按实际情况自选</span></div>'+
   '<div class="grid2">'+
   '<div><div class="scard"><div class="sh"><span class="no">1</span>我的使用情况</div><div class="sb"><div class="grid3">'+
-    '<div class="kpi"><div class="l">本月生图</div><div class="v">8.2K<small>张</small></div></div>'+
-    '<div class="kpi"><div class="l">本月 Listing</div><div class="v">42<small>条</small></div></div>'+
-    '<div class="kpi"><div class="l">待我处理</div><div class="v">6<small>个 SKU</small></div></div>'+
+    '<div class="kpi"><div class="l">负责 SKU</div><div class="v">'+me.sku+'</div></div>'+
+    '<div class="kpi"><div class="l">本月生图</div><div class="v">'+me.gen+'<small>张</small></div></div>'+
+    '<div class="kpi"><div class="l">本月 Listing</div><div class="v">'+me.copy+'<small>条</small></div></div>'+
   '</div></div></div>'+
-  '<div class="scard"><div class="sh"><span class="no">2</span>我的飞书配置</div><div class="sb">'+
-    '<div class="fld"><label>飞书接收提醒</label><div class="rowline"><span class="pill p-ok">已连接 · 小林</span><button class="btn xs" data-act="toast" data-t="已重新授权">重新授权</button></div></div>'+
-    '<div class="fld"><label>缺资料提醒联系人</label><select class="inp"><option>我自己</option><option>SKU 负责人（自动）</option></select></div>'+
+  '<div class="scard"><div class="sh"><span class="no">2</span>模型 API Key 配置<span class="acts"><button class="btn xs p" data-act="toast" data-t="模型配置已保存（演示）">保存</button></span></div><div class="sb">'+
+    '<div class="fld"><label>Post URL <span class="req">* 必填</span></label><input class="inp" value="https://api.atomx.top/v1/chat/completions" placeholder="中转站 / 官方 API 地址"></div>'+
+    '<div class="fld"><label>API Key <span class="req">* 必填</span></label><input class="inp" type="password" value="sk-••••••••••••••••3d7f" placeholder="sk-…"></div>'+
+    '<div class="fld"><label>模型名称 <span>（选填 · 留空用管理员全局默认）</span></label><input class="inp" placeholder="例：gpt-4o / claude-sonnet / gemini-2.0"></div>'+
+    '<div class="tip b"><span class="ico">i</span><div>用于卖点 / Listing / 说明书 / 分析等所有 AI 调用；未配置时使用管理员设置的全局模型。</div></div>'+
   '</div></div></div>'+
-  '<div><div class="scard"><div class="sh"><span class="no">3</span>账号安全</div><div class="sb">'+
+  '<div><div class="scard"><div class="sh"><span class="no">3</span>我的飞书配置</div><div class="sb">'+
+    '<div class="fld"><label>飞书接收提醒（实名登录 · 与飞书名字一致）</label><div class="rowline"><span class="pill p-ok">已连接 · '+ROLES[S.role].who+'</span><button class="btn xs" data-act="toast" data-t="已重新授权（演示）">重新授权</button></div></div>'+
+    '<div class="fld"><label>通知内容</label><select class="inp"><option>全部（审核结果 / 催办 / 任务）</option><option>仅审核结果</option><option>仅催办</option></select></div>'+
+  '</div></div>'+
+  '<div class="scard"><div class="sh"><span class="no">4</span>账号安全</div><div class="sb">'+
     '<div class="fld"><label>修改密码</label><input class="inp" type="password" placeholder="新密码"></div>'+
     '<div class="fld"><label>确认新密码</label><input class="inp" type="password"></div>'+
     '<button class="btn p" data-act="toast" data-t="密码已修改（演示）">保存密码</button>'+
@@ -2604,7 +2869,23 @@ function setStaff(){
 }
 
 
-/* v15: 三道审核 modal */
+/* v16: 审核驳回弹窗（原因+修改意见必填） */
+function rvRejModal(id){
+  const s=sk(id); if(!s) return {t:'',b:'',f:''};
+  const chain=rvChainOf(s);
+  const nodeLab={dev:'开发审核',mgr:'主管审核',boss:'老板终审'};
+  const backTo=chain==='boss'?'主管（刘洋）':(chain==='mgr'?'开发（吴楠）':'开发（吴楠）');
+  return {t:'驳回 · '+nodeLab[chain||'dev']+' · '+esc(s.name),w:'560px',b:
+    '<div class="tip r mb10"><span class="ico">!</span><div>驳回后数据返回提交人 <b>'+backTo+'</b>，后面节点不再推送；提交人按意见修改后重新递交。</div></div>'+
+    '<div class="fld"><label>驳回原因 <span class="req">* 必填</span></label>'+
+    '<input class="inp" id="rvReason" placeholder="例：毛利率测算口径不对 / 差评对策证据不足"></div>'+
+    '<div class="fld"><label>修改意见 <span>（给提交人的具体修改指引）</span></label>'+
+    '<textarea class="inp" rows="3" placeholder="例：请按含头程口径重算毛利率；补充竞品 VOC 聚类证据（≥10 条差评）后再提"></textarea></div>',
+    f:'<button class="btn" data-act="mclose">取消</button><button class="btn d" data-act="rvRejGo" data-id="'+id+'">确认驳回（返回提交人）</button>'};
+}
+
+
+/* v15 恢复：审核/日报/领星 modal（v16 重写 vSet 时误删，从 git 恢复） */
 function rvChainOf(s){
   if(!s.rv) return null;
   if(S.role==='boss' && s.rv.mgr==='pass') return 'boss';
@@ -2612,6 +2893,7 @@ function rvChainOf(s){
   if((S.role==='dev'||S.role==='op')) return 'dev';
   return null;
 }
+
 function rvModal(id){
   const s=sk(id); if(!s) return {t:'',b:'',f:''};
   const chain=rvChainOf(s);
@@ -2634,7 +2916,7 @@ function rvModal(id){
     f:'<button class="btn" data-act="mclose">取消</button>'+
     (chain?'<button class="btn d" data-act="rvRej" data-id="'+id+'">驳回（返回上一步）</button><button class="btn p" data-act="rvPass" data-id="'+id+'">审核通过'+(chain==='boss'?' → 进入新品流程':' → 推送下一节点')+'</button>':'')};
 }
-/* v15: 日报 modal */
+
 function dailyModal(){
   const rows=DAILY.map(function(d){
     return '<div class="tr body" style="grid-template-columns:1.6fr 120px 2.2fr">'+
@@ -2648,8 +2930,6 @@ function dailyModal(){
     f:'<button class="btn" data-act="mclose">关闭</button><button class="btn p" data-act="dailysend">发送飞书日报</button>'};
 }
 
-
-/* v15: 领星一键上架 modal */
 function lxModal(){
   return {t:'领星一键上架（对接领星 ERP 接口）', w:'640px', b:
     '<div class="tip b mb10"><span class="ico">🚀</span><div>通过接口直接对接<b>领星 ERP</b>：运营确认内容后一键完成 Listing 上架，无需人工手动上传。有问题填驳回理由，AI 自己改（不回到前序人工），改完再确认。</div></div>'+
@@ -2729,7 +3009,8 @@ document.addEventListener('click',function(ev){
   if(S.lpop!==null && !ev.target.closest('.lsel')){ S.lpop=null; render(); }
 
   if(a==='goto'){ go(el.dataset.k); return; }
-  if(a==='role'){ S.role=el.dataset.r; render(); return; }
+  if(a==='role'){ S.role=el.dataset.r; S.step=0; S.workSel=null; S.drw=null;
+    const home=ROLES[S.role].home; if(home){ S.m=MI(home); } render(); return; }
   if(a==='reset'){ location.reload(); return; }
   if(a==='step'){ S.step=+el.dataset.i; S.lpop=null; render(); return; }
   if(a==='stepnext'){ S.step=Math.min(S.step+1,(M(MODS[S.m].k).steps.length-1)); S.lpop=null; render(); return; }
@@ -2922,15 +3203,14 @@ document.addEventListener('click',function(ev){
     else if((S.role==='dev'||S.role==='op')) node='dev';
     if(!node){ toast('当前身份无可审核节点','warn'); return; }
     s.rv[node]='pass';
+    RVLOG.unshift({id:'R'+(RVLOG.length+1), sku:s.id, node:node, by:ROLES[S.role].who, act:'pass', time:'11-10 '+(new Date().getHours()+':'+String(new Date().getMinutes()).padStart(2,'0')), note:''});
     closeModal();
     if(node==='dev'){ s.rv.mgr='wait'; toast('开发审核通过 ✓ 已推送主管（刘洋）飞书审核','ok'); }
     else if(node==='mgr'){ s.rv.boss='wait'; toast('主管审核通过 ✓ 已推送老板（周小清）终审','ok'); }
     else { s.poolOnly=false; s.at.accept=1;
       toast('老板终审通过 ✓ 三道审核完成 → 已进入新品流程 ① 样品验收（选品信息自动同步商品中心）','ok'); }
     render(); return; }
-  if(a==='rvRej'){ closeModal(); const chain=rvChainOf(s);
-    if(chain){ s.rv[chain]='rej'; }
-    toast('已驳回：数据返回上一步，后面节点不再推送；驳回理由已记录并飞书通知递交者','ok'); render(); return; }
+  if(a==='rvRej'){ closeModal(); openModal(rvRejModal(id)); return; }
   if(a==='rvBack'){ s.rv={dev:'wait',mgr:'none',boss:'none'};
     toast('已根据驳回意见修改，重新提交开发审核','ok'); render(); return; }
   if(a==='acosIn'){ return; }
@@ -2953,6 +3233,44 @@ document.addEventListener('click',function(ev){
   if(a==='viddl'){ toast('视频已开始下载（MP4）','ok'); return; }
   if(a==='vidok'||a==='vidok2'){ if(a==='vidok2') closeModal();
     toast('视频审核通过 ✓ 已入库并同步 ⑧ 上架','ok'); render(); return; }
+
+  /* v16: 审核中心 */
+  if(a==='rvtab'){ S.rvtab=el.dataset.v; render(); return; }
+  if(a==='rvRejOpen'){ openModal(rvRejModal(id)); return; }
+  if(a==='rvRejGo'){ const reason=$('#rvReason')?$('#rvReason').value:'';
+    if(!reason){ toast('请填写驳回原因与修改意见','warn'); return; }
+    const chain=rvChainOf(s);
+    closeModal();
+    if(chain){ s.rv[chain]='rej'; s.rv.r=reason;
+      RVLOG.unshift({id:'R'+(RVLOG.length+1), sku:s.id, node:chain, by:ROLES[S.role].who, act:'rej', time:'11-10 '+(new Date().getHours()+':'+String(new Date().getMinutes()).padStart(2,'0')), note:reason});
+      toast('已驳回 → 返回提交人（'+(s.devOwn||'开发')+'）· 后面节点不再推送 · 飞书已通知并附原因','ok'); }
+    render(); return; }
+
+  /* v16: 竞品集合（对齐截图操作） */
+  if(a==='pickQ'){ toast('已按条件筛选（演示：ASIN / 品名 / 状态）'); return; }
+  if(a==='pickAdd'){ openModal({t:'手动添加 ASIN 到竞品集合',w:'560px',b:
+    '<div class="fld"><label>ASIN 列表 <span class="req">* 每行一个或用逗号 / 分号分隔</span></label>'+
+    '<textarea class="inp" rows="4" placeholder="B0CXXXXXXX\uFF0CB0CYYYYYYY\uFF1B B0CZZZZZZZ"></textarea></div>'+
+    '<div class="fld"><label>认领人</label><select class="inp"><option>吴楠（开发）</option><option>小林（开发）</option></select>'+
+    '<div class="xs dim" style="margin-top:4px">添加后自动抓取主图 / 近30天流动 / 评论 / 评分 / 毛利（卖家精灵 MCP）</div></div>',
+    f:'<button class="btn" data-act="mclose">取消</button><button class="btn p" data-act="pickAddGo">＋ 添加到竞品集合</button>'}); return; }
+  if(a==='pickAddGo'){ closeModal();
+    const nid='N'+SK.length;
+    SK.push({id:nid,code:'2411-0'+(SK.length-13),name:'手动添加竞品（待抓取）',asin:'B0DN'+Math.random().toString(36).slice(2,7).toUpperCase(),
+      cat:'家居 › 挂钩',market:'US',price:'$—',sales:'—',score:50,owner:ROLES[S.role].who,at:{},poolOnly:true,size:'—',wt:'—',
+      et:'Pending fetch…',flow:'—',rc:'—',star:'—',gm:'—',inT:'2026-11-10 17:30',devOwn:ROLES[S.role].who,aiScore:50,submitter:ROLES[S.role].who+'（手动）',rv:null});
+    S.pg.pick=1; toast('已添加到竞品集合：AI 正在抓取该 ASIN 数据（主图/流动/评论/评分/毛利）','ok'); render(); return; }
+  if(a==='imgSearch'){ toast('打开以图搜图（上传图片 → 搜索同款，演示）'); return; }
+  if(a==='w1688'){ toast('打开 1688 找货源（新窗口，演示）'); return; }
+  if(a==='wtao'){ toast('打开淘宝找货源（新窗口，演示）'); return; }
+  if(a==='compDel2'){ s.stop=true; s.stopr='开发从竞品集合删除';
+    toast('已从竞品集合删除（数据保留可恢复）'); render(); return; }
+  if(a==='kwCore'){ toast('「'+id+'」已添加为核心关键词 ✓（带入第三步广告成本计算）','ok'); return; }
+  if(a==='workRename'){ openModal({t:'修改产品名称',w:'480px',b:
+    '<div class="fld"><label>显示名称</label><input class="inp" value="'+esc(s.name)+'"></div>',
+    f:'<button class="btn" data-act="mclose">取消</button><button class="btn p" data-act="mcloseok">保存</button>'}); return; }
+  if(a==='gotoStep'){ S.sel.clear(); S.sel.add(id); const k=el.dataset.k; go(k);
+    toast('已跳转 '+M(k).name+' · 该 SKU 已勾选，完成后状态自动更新','ok'); return; }
 
   /* 反馈 */
   if(a==='feedback'){ S.fbopen=true; S.fshots=[]; openModal(feedbackModal()); return; }
